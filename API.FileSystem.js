@@ -1,9 +1,8 @@
-/**
+/*
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
  * Titanium Appcelerator 3.2.0GA
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
- *
  */
 
 "use strict";
@@ -13,14 +12,18 @@ var Filesystem = (function() {
 
     var CALL_FAILURE = "call failed: ";
 
+    /** It contains several useful methods to manage files and directories.
+     * @author Santiago Blanco
+     * @version 1.0.0
+     * @alias API.Filesystem
+     * @namespace */
     var self = {};
 
     /** It returns a file descriptor from path.
      *  @private
      *  @exception {String} funcName
      *  @param {String} funcName
-     *  @param {String} path
-     */
+     *  @param {String} path */
     var getFileDescriptor = function getFileDescriptor(funcName, path) {
         var tiFile = Ti.FileSystem.getFile(path);
 
@@ -66,8 +69,7 @@ var Filesystem = (function() {
      * @method
      * @exception {TiError} Throws an exception if path already exists.
      * @param {String} path of parent directory
-     * @return {String} filePath
-     */
+     * @return {String} filePath */
     self.createFile = function createFile(path) {
         var fileDescriptor = Ti.FileSystem.getFile(path);
         if (!fileDescriptor.createFile()) {
@@ -82,8 +84,7 @@ var Filesystem = (function() {
     /** It creates a new directory.
      *  @method
      *  @param {String} path of parent directory
-     *  @return {String} directoryPath
-     */
+     *  @return {String} directoryPath */
     self.createDirectory = function createDirectory(path) {
         var fileDescriptor = Ti.FileSystem.getFile(path);
         if (!fileDescriptor.createDirectory()) {

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
  * Titanium Appcelerator 3.2.0GA
  * Licensed under the terms of the Apache Public License
@@ -58,6 +58,11 @@
 
 var Contacts = (function() {
 
+    /** It allows to manage local contacts from device.
+     * @author Alejandro FCarrera
+     * @version 1.0.0
+     * @alias API.Contacts
+     * @namespace */
     var _self = {
         'tempContacts': []
     };

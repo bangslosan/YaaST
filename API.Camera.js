@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
  * Titanium Appcelerator 3.2.0GA
  * Licensed under the terms of the Apache Public License
@@ -6,6 +6,18 @@
  */
 
 "use strict";
+
+/**
+ * Response indicating the operation status and result
+ * @typedef ResponseCallback
+ * @property {String} status It should be "SUCCESS" or "FAILURE"
+ * @property {String} data It should be the resulted data.
+ */
+
+/**
+ * @callback ShowCameraCallback
+ * @param {ResponseCallback} response
+ */
 
 /* FYI: http://docs.appcelerator.com/titanium/3.0/#!/api/Titanium.Media*/
 var Camera = (function() {
@@ -91,6 +103,11 @@ var Camera = (function() {
         }
     };
 
+    /** It allows to take pictures from native camera.
+     * @author Santiago Blanco
+     * @version 1.0.0
+     * @alias API.Camera
+     * @namespace */
     var self = {};
 
     /** Gets the value of the availableCameras property.
@@ -113,11 +130,11 @@ var Camera = (function() {
         // process("openPhotoGallery", [options]);
     };
 
-    /** Shows the camera. By default, the native camera controls are displayed.
-     *  To add your own camera controls, you can add an overlay view by setting
-     *  the overlay property on the options argument.
-     * @param {Function} callback
-     * @param {Object} [options] */
+    /** Shows the camera. The native camera controls are displayed. A photo can
+     * be taken and it will returned in callback first parameter.
+     * @param {ShowCameraCallback} callback
+     * @param {Object} [options] Aditional options that should be passed as
+     *  parameter of native call */
     self.showCamera = function showCamera(callback, options) {
         var key;
         var showCameraOptions = {

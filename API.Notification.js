@@ -1,108 +1,109 @@
-/**
+/*
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
  * Titanium Appcelerator 3.2.0GA
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
- *
- *   createNotification
- *      Parameters of visualization
- *      must have{
- *          message: {String},
- *      }
- *      optional{
- *          height: {Number}            -default = 100
- *          opacity: {Number}           -default = 1 [0 .. 1]
- *          borderColor: {String}       -default = #D3D3D3
- *          borderWidth: {Number}       -default = 1
- *          borderRadius: {Number}      -default = 5
- *          backgroundColor: {String}   -default = #E6E6E6
- *          fontSize: {Number}          -default = 16
- *          fontWeight: {String}        -default = normal ['bold', 'normal']
- *          textColor: {String}         -default = #000000
- *      }
- *      Return {String} JSON Information of Notification created
- *
+ */
+
+/**
+ * Toast notification.
+ * @typedef {Object} Notification
+ * @property {String} message
+ * @property {Number} [height=100]
+ * @property {Number} [opacity=1] 0 or 1
+ * @property {String} [borderColor=#D3D3D3]
+ * @property {Number} [borderWidth=1]
+ * @property {Number} [borderRadius=5]
+ * @property {String} [backgroundColor=#E6E6E6]
+ * @property {Number} [fontSize=16]
+ * @property {String} [fontWeight=normal] 'bold' or 'normal'
+ * @property {String} [textColor=#000000]
  */
 
 "use strict";
 
 var Notification = (function() {
 
+    /** It contains a method to manage notifications.
+     * @author Alejandro FCarrera
+     * @version 1.0.0
+     * @alias API.Notification
+     * @namespace */
     var _self = {};
 
     /** Private Function to Validate Toast Notification info
-      *  @param: {Object} parameter with notification info
-      *  @return : {Object} Notification info validated */
-    var validateToastNotification = function validateToastNotification(parameter) {
+      *  @param: {Object} notification with notification info
+      *  @return {Notification} notification info validated */
+    var validateToastNotification = function validateToastNotification(notification) {
         var keys = {'backgroundColor' : '', 'borderColor' : '', 'borderRadius' : '',
         'borderWidth' : '', 'message' : '', 'opacity' : '', 'fontSize' : '', 'fontWeight' : '',
         'textColor' : '', 'duration' : ''}, key, temp;
-        if(typeof parameter.message === 'undefined'){
-            parameter.message = '[WARN] Key message should be defined';
-            parameter.validate = false;
+        if(typeof notification.message === 'undefined'){
+            notification.message = '[WARN] Key message should be defined';
+            notification.validate = false;
         }
         else{
-            temp = JSON.stringify(parameter);
-            parameter.validate = true;
+            temp = JSON.stringify(notification);
+            notification.validate = true;
             for(key in JSON.parse(temp)){
                 if(!keys.hasOwnProperty(key)){
-                    parameter[key] = '[WARN] Key '+key+' is not valid';
-                    parameter.validate = false;
+                    notification[key] = '[WARN] Key '+key+' is not valid';
+                    notification.validate = false;
                 }
                 else if((key === 'backgroundColor' || key === 'borderColor' ||
                 key === 'message' || key === 'opacity' || key === 'textColor' ||
-                key === 'duration') && typeof parameter[key] !== 'string'){
-                    parameter[key] = '[WARN] Key '+key+' should be String';
-                    parameter.validate = false;
+                key === 'duration') && typeof notification[key] !== 'string'){
+                    notification[key] = '[WARN] Key '+key+' should be String';
+                    notification.validate = false;
                 }
                 else if((key === 'borderWidth' || key === 'borderRadius' || key === 'fontSize' ||
                 key === 'fontWeight' || key === 'height')
-                && typeof parameter[key] !== 'number'){
-                    parameter[key] = '[WARN] Key '+key+' should be Number';
-                    parameter.validate = false;
+                && typeof notification[key] !== 'number'){
+                    notification[key] = '[WARN] Key '+key+' should be Number';
+                    notification.validate = false;
                 }
-                else if(key === 'duration' && typeof parameter.duration !== 'undefined' &&
-                (parameter[key] !== 'DURATION_SHORT' || parameter[key !== 'DURATION_LONG'])){
-                    parameter[key] = '[WARN] Key '+key+' should be DURATION_SHORT or DURATION_LONG';
-                    parameter.validate = false;
+                else if(key === 'duration' && typeof notification.duration !== 'undefined' &&
+                (notification[key] !== 'DURATION_SHORT' || notification[key !== 'DURATION_LONG'])){
+                    notification[key] = '[WARN] Key '+key+' should be DURATION_SHORT or DURATION_LONG';
+                    notification.validate = false;
                 }
             }
-            if(parameter.validate !== false){
-                if(typeof parameter.opacity === 'undefined'){
-                    parameter.opacity = 0.9;
+            if(notification.validate !== false){
+                if(typeof notification.opacity === 'undefined'){
+                    notification.opacity = 0.9;
                 }
-                if(typeof parameter.height === 'undefined'){
-                    parameter.height = 100;
+                if(typeof notification.height === 'undefined'){
+                    notification.height = 100;
                 }
-                if(typeof parameter.borderColor === 'undefined'){
-                    parameter.borderColor = '#D3D3D3';
+                if(typeof notification.borderColor === 'undefined'){
+                    notification.borderColor = '#D3D3D3';
                 }
-                if(typeof parameter.borderWidth === 'undefined'){
-                    parameter.borderWidth = 1;
+                if(typeof notification.borderWidth === 'undefined'){
+                    notification.borderWidth = 1;
                 }
-                if(typeof parameter.borderRadius === 'undefined'){
-                    parameter.borderRadius = 5;
+                if(typeof notification.borderRadius === 'undefined'){
+                    notification.borderRadius = 5;
                 }
-                if(typeof parameter.backgroundColor === 'undefined'){
-                    parameter.backgroundColor = '#E6E6E6';
+                if(typeof notification.backgroundColor === 'undefined'){
+                    notification.backgroundColor = '#E6E6E6';
                 }
-                if(typeof parameter.fontSize === 'undefined'){
-                    parameter.fontSize = 16;
+                if(typeof notification.fontSize === 'undefined'){
+                    notification.fontSize = 16;
                 }
-                if(typeof parameter.fontWeight === 'undefined'){
-                    parameter.fontWeight = 'normal';
+                if(typeof notification.fontWeight === 'undefined'){
+                    notification.fontWeight = 'normal';
                 }
-                if(typeof parameter.textColor === 'undefined'){
-                    parameter.textColor = '#000000';
+                if(typeof notification.textColor === 'undefined'){
+                    notification.textColor = '#000000';
                 }
             }
         }
-        return parameter;
+        return notification;
     };
 
     /** Private Function to Create Custom Toast Notification (iOS)
-      *  @param: {Object} [contact] parameter with notification info
-      *  @return : {TiProxyView} Notification */
+      *  @param: {Object} contact with notification info
+      *  @return {TiProxyView} Notification */
     var createToastNotification = function createToastNotification(contact) {
         var window = Ti.UI.createWindow({
             touchEnabled: false
@@ -149,15 +150,15 @@ var Notification = (function() {
     };
 
 	/** Create Toast Notification
-	  *  @param: {Object} parameter notification info
-	  *  @return : Object Notification */
-	_self.createNotification = function createNotification(parameter) {
-		parameter = validateToastNotification(parameter);
-		if(parameter.validate !== false){
-			delete parameter.validate;
-			createToastNotification(parameter);
+	  *  @param: {Object} notification info
+	  *  @return {Notification} notification info */
+	_self.createNotification = function createNotification(notification) {
+		notification = validateToastNotification(notification);
+		if(notification.validate !== false){
+			delete notification.validate;
+			createToastNotification(notification);
 		}
-		return parameter;
+		return notification;
 	};
 
 	return _self;

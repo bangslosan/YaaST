@@ -1,14 +1,19 @@
-/**
+/*
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
  * Titanium Appcelerator 3.2.0GA
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
- *
  */
+
 'use strict';
 
 var Battery = (function() {
 
+    /** It allows to monitor battery state.
+     * @author Carlos Blanco
+     * @version 1.0.0
+     * @alias API.Battery
+     * @namespace */
     var _self = {};
 
     /** Private Function to check if battery monitoring is enabled.

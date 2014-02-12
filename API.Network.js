@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
  * Titanium Appcelerator 3.2.0GA
  * Licensed under the terms of the Apache Public License
@@ -128,7 +128,11 @@
 
 var Network = (function () {
 
-    // Configuration Network
+    /** It contains several useful methods to manage network.
+     * @author Alejandro FCarrera
+     * @version 1.0.0
+     * @alias API.Network
+     * @namespace */
     var _self = {},
     mainURL = 'http://138.100.12.106:8088/',
     loginURL = 'http://138.100.12.106:8088/login',
