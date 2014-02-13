@@ -21,15 +21,28 @@ var Filesystem = (function() {
 
     /** It returns a file descriptor from path.
      *  @private
-     *  @exception {String} funcName
+     *  @param {String} funcName */
+    var getThrowError = function getThrowError (funcName) {
+        return {
+            name: 'TiError',
+            message: funcName + ": File does not exists"
+        };
+    };
+
+    /** It returns a file descriptor from path.
+     *  @private
+     *  @exception {String} TiError
      *  @param {String} funcName
      *  @param {String} path */
     var getFileDescriptor = function getFileDescriptor(funcName, path) {
-        var tiFile = Ti.FileSystem.getFile(path);
+        if (!path) {
+            throw getThrowError(funcName);
+        }
+
+        var tiFile = Ti.Filesystem.getFile(path);
 
         if (!tiFile.exists()) {
-            var TiError = require('APIError');
-            throw new TiError(funcName + ": File does not exists.");
+            throw getThrowError(funcName);
         }
 
         return tiFile;
