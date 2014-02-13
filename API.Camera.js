@@ -38,7 +38,7 @@ var Camera = (function() {
         var result;
 
         try {
-            result = Ti.Media[funcName].apply(Ti.Media[funcName]);
+            result = Ti.Media[funcName]();
         } catch (e) {
             throw new TiError(funcName + " " + CALL_FAILURE + e.message);
         }
