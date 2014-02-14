@@ -23,6 +23,9 @@ Ti.App.platformWidth = Ti.Platform.displayCaps.getPlatformWidth();
 var API = (function() {
     var _self;
 
+    //TODO: only for debug
+    var eventcounter = {};
+
     _self = {
         SW : {
             Contacts : require('lib/API.Contacts'),
@@ -48,17 +51,18 @@ var API = (function() {
 
     _self.events = {
         activeHandlers: {},
-        availableEvents: {}
+        availableEvents: {},
+        publicEvents: {}
     };
 
     var _initEvents = function _initEvents() {
-        var key, eventId, publicName, eventData, enventId;
+        var key, eventId, eventData, enventId;
 
         /* TODO new class eventData
          * API.Example.events = {
          *      'publicEventName': {
          *          event: 'titaniumeventname',
-         *          listener: Ti.thePathToMethod.addEventListener
+         *          listener: Ti.thePathToTitModule
          *      }
          * };
          */
@@ -66,18 +70,26 @@ var API = (function() {
         for (key in _self.SW) {
             if (_self.SW[key].events) {
                 for (eventId in _self.SW[key].events) {
-                    publicName = enventId;
                     eventData = _self.SW[key].events[eventId];
-                    _self.events.availableEvents[publicName] = eventData;
+                    _self.events.availableEvents[eventId] = {
+                        keylist: eventData.keylist,
+                        event: eventData.event,
+                        listener: eventData.listener
+                    };
+                    _self.events.publicEvents[eventData.event] = eventId;
                 }
             }
         }
         for (key in _self.HW) {
             if (_self.HW[key].events) {
                 for (eventId in _self.HW[key].events) {
-                    publicName = enventId;
                     eventData = _self.HW[key].events[eventId];
-                    _self.events.availableEvents[publicName] = eventData;
+                    _self.events.availableEvents[eventId] = {
+                        keylist: eventData.keylist,
+                        event: eventData.event,
+                        listener: eventData.listener
+                    };
+                    _self.events.publicEvents[eventData.event] = eventId;
                 }
             }
         }
@@ -87,14 +99,25 @@ var API = (function() {
      * @param: {eventName} the name of the Titanium event.
      * @param: {data} event data.
      * @return : Bool true if success or false if error*/
-    var _fireHTMLEvents = function _fireHTMLEvents(eventName, data) {
+    _self.events.fireHTMLEvents = function fireHTMLEvents(data) {
         var key, viewId, result;
 
-        if (_self.events.activeHandlers[eventName]) {
-            for (key in _self.events.activeHandlers[eventName].views) {
-                viewId = _self.events.activeHandlers[eventName].views[key];
-                // This event will be received by all listeners API.Commons
-                Ti.App.fireEvent(eventName, data);
+        if (_self.events.activeHandlers[data.publicEvent]) {
+            /*
+             TODO: other way... maybe more efficient
+            for (key in _self.events.activeHandlers[publicEvent].views) {
+                viewId = _self.events.activeHandlers[publicEvent].views[key];
+                // This event must be send to each view
+                evaljs...
+            }*/
+            eventcounter[data.publicEvent] ++;
+            // for all events with timestamp
+            if (data.timestamp !== null && (data.timestamp - eventControl[data.publicEvent]) < 500){
+                // discart event to improve
+            } else {
+				// TODO: only for debug
+                console.debug('-------------> Event: ' + data.publicEvent + ' counter: ' + eventcounter[data.publicEvent] + '; data: ' + JSON.stringify(data));
+                Ti.App.fireEvent(data.publicEvent, data);
             }
             result = true;
         } else {
@@ -102,42 +125,49 @@ var API = (function() {
         }
         return result;
     };
-
+    // Create new handler
+    _self.eventHandler = function(e) {
+        var i;
+        var data = {};
+        var publicEvent = _self.events.publicEvents[e.type];
+        data['publicEvent'] = publicEvent;
+        for (i = 0; i < _self.events.availableEvents[publicEvent].keylist.length; i++) {
+            data[_self.events.availableEvents[publicEvent].keylist[i]] = e[_self.events.availableEvents[publicEvent].keylist[i]];
+        }
+        _self.events.fireHTMLEvents(data);
+    };
     /** AddEventListener from a HTML view (througth APICommons.js TODO)
      * @param: {publicEvent} the public html name for the event.
      * @param: {viewId} the id of the interested html view.
      * @return : Bool true if success or false if error*/
     _self.events.addEventListener = function addEventListener(publicEvent, viewId) {
-        var eventData, eventHandler;
+        var eventData;
 
         eventData = _self.events.availableEvents[publicEvent];
         if (!eventData) {
             // Public event doesn't exist
             return false;
         }
-        if (_self.events.activeHandlers[publicEvent]) {
+        if (typeof _self.events.activeHandlers[publicEvent] !== 'undefined') {
             // Main listener active yet
             _self.events.activeHandlers[publicEvent].nlisteners += 1;
-            if (!_self.events.activeHandlers[publicEvent].views[viewId]) {
+            if (_self.events.activeHandlers[publicEvent].views[viewId] !== 0) {
                 _self.events.activeHandlers[publicEvent].views[viewId] = 0;
             }
-            _self.events.activeHandlers[publicEvent].views[viewId] += 1 ;
+            _self.events.activeHandlers[publicEvent].views[viewId] += 1;
         } else {
-            // Create new handler
-            eventHandler = function(theEvent, e) {
-                _fireHTMLEvents.call(_self, theEvent, {
-                        'level': e.level,
-                        'state': e.state,
-                        'type': e.type
-                    }
-                );
-            }.bind(_self, publicEvent);
-
             // Inicialize handler for this event
-            _self.events.availableEvents[publicEvent].listener.addEventListener(_self.events.availableEvents[publicEvent].event, eventHandler);
-            _self.events.activeHandlers[publicEvent].handler = eventHandler;
-            _self.events.activeHandlers[publicEvent].nlisteners = 1;
-            _self.events.activeHandlers[publicEvent].views = {};
+            _self.events.activeHandlers[publicEvent] = {
+                nlisteners: 1,
+                views: {}
+            };
+            eventcounter[publicEvent] = 0;
+            if (_self.events.availableEvents[publicEvent].listener === 'accelerometer') {
+                // Accelerometer is special.
+                Ti.Accelerometer.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
+            } else {
+                _self.events.availableEvents[publicEvent].listener.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
+            }
             _self.events.activeHandlers[publicEvent].views[viewId] = 1;
         }
     };
@@ -146,8 +176,8 @@ var API = (function() {
      * @param: {publicEvent} the public html name for the event.
      * @param: {viewId} the id of the interested html view.
      * @return : Bool true if success or false if error*/
-    _self.events.RemoveEventListener = function RemoveEventListener(publicEvent, viewId) {
-        var eventData, eventHandler;
+    _self.events.removeEventListener = function removeEventListener(publicEvent, viewId) {
+        var eventData;
 
         eventData = _self.events.availableEvents[publicEvent];
         if (!eventData || !_self.events.activeHandlers[publicEvent]) {
@@ -157,7 +187,15 @@ var API = (function() {
 
         _self.events.activeHandlers[publicEvent].nlisteners -= 1;
         _self.events.activeHandlers[publicEvent].views[viewId] -= 1 ;
-        _self.events.availableEvents[publicEvent].listener.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.events.activeHandlers[publicEvent].handler);
+        if (_self.events.availableEvents[publicEvent].listener === 'accelerometer') {
+            // Accelerometer is special.
+            Ti.Accelerometer.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
+        } else {
+            _self.events.availableEvents[publicEvent].listener.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
+        }
+        if (_self.events.activeHandlers[publicEvent].nlisteners == 0) {
+            delete _self.events.activeHandlers[publicEvent];
+        }
     };
 
     /** Handler for the events from a HTML view througth APICommons.js
@@ -213,10 +251,17 @@ var API = (function() {
             Ti.App.fireEvent(data.method.eventName + '_' + data.viewId + '_' + data.callId, result);
         };
 
-        if (data.method !== null && data.params == null) {
-            _self[data.method.type][data.method.subapi][data.method.name](genericHandler.bind(_self, data));
-        } else if (data.method !== null && data.params !== null) {
-            result = _self[data.method.type][data.method.subapi][data.method.name](genericHandler.bind(_self, data), data.params);
+        if (data.method !== null && data.params.length === 0) {
+            _self[data.method.type][data.method.subapi][data.method.name](function(result) {
+                    Ti.App.fireEvent(data.method.eventName + '_' + data.viewId + '_' + data.callId, result);
+                });
+        } else if (data.method !== null) {
+            if (data.options !== null) {
+                data.params.push(data.options);
+            }
+            _self[data.method.type][data.method.subapi][data.method.name](function(result) {
+                    Ti.App.fireEvent(data.method.eventName + '_' + data.viewId + '_' + data.callId, result);
+            }, data.params);
         } else {
             // Error. Method doesn't exist
             result = "Error. Unknown API method";
