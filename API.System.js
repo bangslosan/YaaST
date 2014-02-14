@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
- * Titanium Appcelerator 3.2.0GA
+ * Titanium Appcelerator 3.2.1GA
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
  */
@@ -15,6 +15,20 @@ var System = (function() {
      * @alias API.System
      * @namespace */
     var _self = {};
+
+    /** Check Apple platform
+     * @method
+     * @return {Boolean} */
+    _self.isApple = function isApple(){
+        return Ti.App.isApple;
+    };
+
+    /** Check Apple Retina Display
+     * @method
+     * @return {Boolean} */
+    _self.isRetina = function isRetina(){
+        return Ti.App.isRetina;
+    };
 
     /** Get device platform
      * @method
@@ -50,13 +64,11 @@ var System = (function() {
 
     /** Get available memory
      * @method
-     * @return {Number} an integer (Bytes)
-     * @todo _device does not exists */
+     * @return {Number} an integer (Bytes) */
     _self.getAvailableMemory = function getAvailableMemory() {
         var mem = Ti.Platform.getAvailableMemory();
-        if (_device == 'ios') {
-            // Megabytes to bytes
-            mem = mem * 1024;
+        if (_self.isApple) {
+            mem = mem * 1024; // Megabytes to bytes
         }
         return mem;
     };
@@ -77,7 +89,7 @@ var System = (function() {
 
     /** Get the number of processing cores.
      * @method
-     * @return {String} */
+     * @return {Number} */
     _self.getProcessorCount = function getProcessorCount() {
         return Ti.Platform.getProcessorCount();
     };
@@ -91,7 +103,7 @@ var System = (function() {
 
     /** Get system's default language.
      * @method
-     * @return {String} */
+     * @return {String} ISO639-1 + - + ISO3166-1Alpha2 */
     _self.getLocale = function getLocale() {
         return Ti.Platform.getLocale();
     };
