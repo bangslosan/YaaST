@@ -1,9 +1,24 @@
-/*
+/**
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
+ * Titanium Appcelerator 3.2.1GA
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
+ *
+ * API Team
+ *
+ *  Alejandro F.Carrera
+ *  Carlos Blanco Vallejo
+ *  Santiago Blanco Ventas
+ *
  */
+
 'use strict';
+
+// System Global Variables
+Ti.App.isApple = (Ti.Platform.getOsname() === 'ipad' || Ti.Platform.getOsname() === 'iphone');
+Ti.App.isRetina = (Ti.App.isApple && Ti.Platform.displayCaps.getDpi() === 260) ? true : false;
+Ti.App.platformHeight = Ti.Platform.displayCaps.getPlatformHeight();
+Ti.App.platformWidth = Ti.Platform.displayCaps.getPlatformWidth();
 
 var API = (function() {
     var _self;
