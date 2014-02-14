@@ -5,7 +5,7 @@
  * Please see the LICENSE included with this distribution for details.
  */
 
-"use strict";
+'use strict';
 
 var Accelerometer = (function() {
 
@@ -20,10 +20,11 @@ var Accelerometer = (function() {
      * @event AccelerometerChange
      */
     _self.events = {
-        "AccelerometerChange": {
-            event: "update",
-            listener: Ti.Accelerometer
-        }
+                    'accelerometerchange': {
+                        event: 'update',
+                        listener: 'accelerometer',
+                        keylist: ['timestamp', 'x', 'y', 'z']
+                    }
     };
     return _self;
 

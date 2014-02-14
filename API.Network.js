@@ -592,7 +592,8 @@ var Network = (function () {
     _self.events = {
         'networkchange': {
             event: 'change',
-            listener: Ti.Network
+            listener: Ti.Network,
+            keylist: ['networkTypeName', 'online', 'reason']
         }
     };
 

@@ -63,7 +63,8 @@ var Battery = (function() {
     _self.events = {
         'batterychange': {
             event: 'battery',
-            listener: Ti.Platform
+            listener: Ti.Platform,
+            keylist: ['level', 'state']
         }
     };
 
