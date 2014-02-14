@@ -31,53 +31,17 @@ var Camera = (function() {
 
     TiError.prototype = new Error();
 
-    /** It will return the result of function called.
+    /** It returns the result of Ti.Media native call.
      *  @private
-     *  @param {String} funcName : The function name. */
-    var returnFunctionWithoutParams = function returnFunctionWithoutParams(funcName){
+     *  @param {String} funcName : The function name.
+     *  @return Object : Native result. */
+    var returnFunction = function returnFunction(funcName){
         var result;
 
         try {
             result = Ti.Media[funcName]();
         } catch (e) {
             throw new TiError(funcName + " " + CALL_FAILURE + e.message);
-        }
-
-        return result;
-    };
-
-    /** It will return the result of function called.
-     *  @private
-     *  @param {String} funcName : The function name.
-     *  @param {String} params : An array of params. */
-    var returnFunctionWithParams = function returnFunctionWithParams(funcName, params){
-        var result;
-
-        var paramsIsArray = params instanceof Array;
-        if (!paramsIsArray) {
-            throw new TypeError("returnFunction call failed. 'params' is not an Array.");
-        }
-
-        try {
-            result = Ti.Media[funcName].apply(Ti.Media[funcName], params);
-        } catch (e) {
-            throw new TiError(funcName + " " + CALL_FAILURE + e.message);
-        }
-
-        return result;
-    };
-
-    /** It returns the result of Ti.Media native call.
-     *  @private
-     *  @param {String} funcName : The function name.
-     *  @param {String} params : An array of params.
-     *  @return Object : Native result. */
-    var returnFunction = function returnFunction(funcName, params){
-        var result;
-        if (!params) {
-            result = returnFunctionWithoutParams(funcName);
-        } else {
-            result = returnFunctionWithParams(funcName, params);
         }
 
         return result;
@@ -119,15 +83,7 @@ var Camera = (function() {
     /** Gets the value of the isCameraSupported property.
      * @return {Boolean} */
     self.isCameraSupported = function isCameraSupported() {
-        return returnFunction("getIsCameraSupported");
-    };
-
-    /** Opens the photo gallery image picker.
-     * @param {PhotoGalleryOptionsType} options : Photo gallery options as
-     *      described in PhotoGalleryOptionsType. */
-    self.openPhotoGallery = function openPhotoGallery(options) {
-        // TODO
-        // process("openPhotoGallery", [options]);
+        return returnFunction("isCameraSupported");
     };
 
     /** Shows the camera. The native camera controls are displayed. A photo can
@@ -169,16 +125,6 @@ var Camera = (function() {
             }
         }
         Ti.Media.showCamera(showCameraOptions);
-    };
-
-    /** Takes a screen shot of the visible UI on the device. This method is
-     *  asynchronous. The screenshot is returned in the callback argument. The
-     *  callback argument's media property contains the screenshot image as a
-     *  Blob object.
-     * @param {Function} callback
-     * @return {Object} */
-    self.takeScreenshot = function takeScreenshot(callback) {
-        //TODO
     };
 
     return self;
