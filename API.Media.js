@@ -7,46 +7,46 @@
 
 "use strict";
 
-/** The parameter passed to takeScreenshot callback.
- * @typedef ScreenshotResult
- * @property {String} media It is the screenshot image (a Blob). */
-
-/** The screenshot is returned in this callback argument.
- * @callback ScreenshotCallback
- * @param {ScreenshotResult} result */
+/**
+ * PhotoGalleryOptionsType.
+ * @typedef {Object} PhotoGalleryOptionsType
+ * @property {callback} success
+ * @property {callback} error
+ * @property {callback} cancel
+ */
 
 /* FYI: http://docs.appcelerator.com/titanium/3.0/#!/api/Titanium.Media*/
 var Media = (function() {
 
     /** It allows to manage photo gallery and other native services.
-     * @author Santiago Blanco
+     * @author Santiago Blanco & Carlos Blanco
      * @version 1.0.0
      * @alias API.Media
      * @namespace */
     var self = {};
 
     /** Opens the photo gallery image picker.
-     * @param {PhotoGalleryOptionsType} options : Photo gallery options as
-     *      described in PhotoGalleryOptionsType. */
+     * @param {PhotoGalleryOptionsType} */
     self.openPhotoGallery = function openPhotoGallery(options) {
-        // TODO
-        // process("openPhotoGallery", [options]);
-    };
-
-    /** It saves an image on native photo gallery.
-     * @method
-     * @param {Object} options
-     * @todo It still needs to be implemented
-     */
-    self.saveToPhotoGallery = function saveToPhotoGallery(options) {
-        //TODO
+        Titanium.Media.openPhotoGallery(options);
     };
 
     /** Takes a screen shot of the visible UI on the device. This method is
      *  asynchronous.
-     * @param {ScreenshotResult} callback */
+     * @param {screenSotCallback} callback that will receive screenshot image as Blob object */
     self.takeScreenshot = function takeScreenshot(callback) {
-        //TODO
+        Titanium.Media.takeScreenshot(callback);
+    };
+
+    /** Takes a screen shot of the visible UI on the device. This method is
+     *  asynchronous.
+     * @param {pattern} [Number[]=[100, 300, 100, 200, 100, 50]] optional vibrate pattern only available for Android.*/
+    self.vibrate = function vibrate(pattern) {
+        if (Ti.App.isApple || pattern == null || !(pattern instanceof Array)) {
+            Titanium.Media.vibrate();
+        }
+        // pattern only available for Android
+        Titanium.Media.vibrate(pattern);
     };
 
     return self;
