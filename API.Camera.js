@@ -68,11 +68,17 @@ var Camera = (function() {
     };
 
     /** It allows to take pictures from native camera.
-     * @author Santiago Blanco
+     * @author Santiago Blanco & Carlos Blanco
      * @version 1.0.0
      * @alias API.Camera
      * @namespace */
     var self = {};
+
+    /** Change between cameras
+     * @param {Number} : CAMERA_FRONT, CAMERA_REAR*/
+    self.switchCamera = function switchCamera(camera) {
+        return Titanium.Media.switchCamera(camera);
+    };
 
     /** Gets the value of the availableCameras property.
      * @return {Number[]} : CAMERA_FRONT, CAMERA_REAR or both*/
@@ -86,11 +92,12 @@ var Camera = (function() {
         return returnFunction("isCameraSupported");
     };
 
-    /** Shows the camera. The native camera controls are displayed. A photo can
-     * be taken and it will returned in callback first parameter.
+    /** Shows the native camera application. The native camera controls are displayed.
+     * A photo can be taken and it will returned in callback first parameter.
      * @param {ShowCameraCallback} callback
      * @param {Object} [options] Aditional options that should be passed as
      *  parameter of native call */
+    // TODO: show the real time camera image in a webView.
     self.showCamera = function showCamera(callback, options) {
         var key;
         var showCameraOptions = {
@@ -125,6 +132,18 @@ var Camera = (function() {
             }
         }
         Ti.Media.showCamera(showCameraOptions);
+    };
+
+    /** Hide the native camera application */
+    self.hideCamera = function hideCamera() {
+        Titanium.Media.hideCamera();
+    };
+
+    /** Uses the device camera to capture a photo.
+     * Must be called after calling showCamera This method causes the media
+     * capture device to capture a photo and call the success callback.*/
+    self.takePicture = function takePicture() {
+        Titanium.Media.takePicture();
     };
 
     return self;
