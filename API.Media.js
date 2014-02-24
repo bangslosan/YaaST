@@ -178,6 +178,153 @@ var Media = (function() {
         audioPlayerList[playerId].stop();
     };
 
+    // TODO select other place to put that fkngShit
+    // Private?
+    self.convertPointToView = function convertPointToView(point, destinationView) {
+        if (destinationView == null) {
+            destinationView = 'Titanium.UI.View';
+        }
+        convertPointToView(point, destinationView);
+    };
+
+    // Video Player
+    /** videoPlayerOptions
+      * @typedef {Object} videoPlayerOptions
+      * TODO: check accesibility methods
+      * @property {Boolean} autoplay
+      * @property {String} backgroundColor
+      * @property {Boolean} backgroundRepeat
+      * @property {String} borderColor
+      * @property {Number} borderRadius
+      * @property {Number} borderWidth
+      * @property {Number/String} bottom, View's bottom position. Can be either a float value or a dimension string (for example, '50%' or '10px')
+      * @property {Number/String} top, View's top position. Can be either a float value or a dimension string (for example, '50%' or '10px')
+      * @property {Number/String} left, View's left position. Can be either a float value or a dimension string (for example, '50%' or '10px')
+      * @property {Number/String} rigth, View's right position. Can be either a float value or a dimension string (for example, '50%' or '10px')
+      * @property {Number/String} height, View's height. Can be either a float value or a dimension string (for example, '50%' or '40dp')
+      * @property {Number/String} width, View's width. Can be either a float value or a dimension string (for example, '50%' or '40dp')
+      * @property {String} layout, Specifies how the view positions its children. One of: 'composite', 'vertical', or 'horizontal'
+      * @property {Number/String} height, Can be either a float value or a dimension string (for example, '50%' or '40dp')
+      * @property {Boolean} horizontalWrap, Determines whether the layout has wrapping behavior
+      * @property {Point} center, View's center position, in the parent view's coordinates. // TODO: check this pos
+      * @property {Number} currentPlaybackTime, Current playback time of the current movie in milliseconds
+      * @property {Number} duration, The duration of the current movie in milliseconds, or 0.0 if not known
+      * @property {Boolean} fullscreen, Determines if the movie is presented in the entire screen (obscuring all other application content)
+      * @property {Number} initialPlaybackTime, The start time of movie playback, in milliseconds
+      * @property {Number} loadState, Returns the network load state of the movie player
+      * @property {Number} opacity, Opacity of this view, from 0.0 (transparent) to 1.0 (opaque)
+      * @property {Number} playbackState, Current playback state of the video player. One of the VIDEO_PLAYBACK_STATE constants defined in Titanium.Media
+      * @property {Number} playing, Indicate if the player has started playing
+      * @property {Dimension} rect, The bounding box of the view relative to its parent, in system units
+      * @property {Dimension} size, The size of the view in system units
+      * @property {String} url, URL identifying a local or remote video to play.
+      * @property {Boolena} visible, Determines whether the view is visible.
+      * @property {Number} zIndex, Z-index stack order position, relative to other sibling views.
+      */
+     /** point
+      * @typedef {Object} point
+      * @property {Number} x
+      * @property {Number} y
+      */
+     /** dimension
+      * @typedef {Object} dimension
+      * @property {Number} x
+      * @property {Number} y
+      * @property {Number} height
+      * @property {Number} width
+      */
+    var videoPlayerList = {};
+    var videoPlayerId = 0;
+
+    /** Create new VideoPlayer
+     * @param {videoPlayerOptions} options
+     * @return {Number} videoPlayer ID*/
+    self.createVideoPlayer = function createVideoPlayer(options) {
+        var tiVideoPlayer;
+
+        //TODO: 4test
+        options.resource = 'http://www.youtube.com/watch?v=d6C0bNDqf3Y';
+
+        videoPlayerId ++;
+        tiVideoPlayer = Ti.Media.createVideoPlayer({
+            url: options.resource,
+        });
+
+        videoPlayerList[videoPlayerId] = tiVideoPlayer;
+
+        return audioPlayerId;
+    };
+
+    // TODO generic get and set methods?
+    self.getVideoPlayerAttribute = function getVideoPlayerAttribute(playerId, attr) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+        }
+        return videoPlayerList[playerId][attr];
+    };
+    self.setVideoPlayerAttribute = function setVideoPlayerAttribute(playerId, attr, value) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+        }
+        videoPlayerList[playerId][attr] = value;
+    };
+
+    /** Hide a VideoPlayer */
+    self.hideVideoPlayer = function hideVideoPlayer(playerId) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+        }
+        videoPlayerList[playerId].hide();
+    };
+
+    /** Show a VideoPlayer */
+    self.showVideoPlayer = function showVideoPlayer(playerId) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+        }
+        videoPlayerList[playerId].show();
+    };
+
+    /** Pause a VideoPlayer */
+    self.pauseVideoPlayer = function pauseVideoPlayer(playerId) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+        }
+        videoPlayerList[playerId].pause();
+    };
+
+    /** Stop a VideoPlayer */
+    self.stopVideoPlayer = function stopVideoPlayer(playerId) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+        }
+        videoPlayerList[playerId].stop();
+    };
+
+    /** Release a VideoPlayer. Releases the internal video resources immediately.
+     *  This is not usually necessary but can help if you no longer need to use the
+     *  player after it is used to help converse memory */
+    self.releaseVideoPlayer = function releaseVideoPlayer(playerId) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+        }
+        videoPlayerList[playerId].release();
+    };
+
+    /** Capture an image of the rendered view, as a Blob.
+     * @param {callback} Function to be invoked upon completion with the
+     * image Titanium.Blob ass param(TODO:check this) */
+    self.captureVideoPlayer = function captureVideoPlayer(playerId, callback) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+        }
+        videoPlayerList[playerId].toImage(callback);
+    };
+
+    // TODO: http://docs.appcelerator.com/titanium/latest/#!/api/Titanium.Media.VideoPlayer. Estudiar los eventos relaccionados con
+    // los videoPlayers... al no ser eventos generales, sino que se tienen que escuchar sobre el objeto TI.VideoPlayer, no tiene
+    // sentido añadirlos como tal, así que o pensamos una solución bonita, o implementamos una simulación de objeto en el Bridge...
+    // o lo dejamos para más adelante y que lo sulucionen los futuros Alex, Santi y Carlos.
     _self.events = {
         /** Fired when the state of the playback changes.This event can be generated by programmatic
          *  events, such as pausing or stopping the audio, and also by external events, such as the
