@@ -71,6 +71,8 @@ var Media = (function() {
      * @param {audioPlayerOptions} options
      * @return {Number} audioPlayer ID*/
     self.createAudioPlayer = function createAudioPlayer(options) {
+        var tiAudioPlayer;
+
         //TODO: 4test
         options.resource = 'http://audio.ancientfaith.com/wardrobe/atw_2014-02-06.mp3';
 
