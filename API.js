@@ -217,6 +217,7 @@ var API = (function() {
      * @param: {data} data = {
      *     'method': 'API.Example.getBlabla',
      *     'params': [param],
+     *     'options': {},
      *     'eventName': eventName
      * }
      **/
