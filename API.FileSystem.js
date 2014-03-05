@@ -1,16 +1,14 @@
-/*
- * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
- * Titanium Appcelerator 3.2.0GA
+/* Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
+ * Titanium Appcelerator 3.2.1GA
  * Licensed under the terms of the Apache Public License
- * Please see the LICENSE included with this distribution for details.
- */
+ * Please see the LICENSE included with this distribution for details. */
 
 "use strict";
 
-/* FYI: http://docs.appcelerator.com/titanium/3.0/#!/api/Titanium.Filesystem */
+/* For Your Information:
+ * http://docs.appcelerator.com/titanium/3.0/#!/api/Titanium.Filesystem
+ * http://docs.appcelerator.com/titanium/latest/#!/api/Titanium.Filesystem.File */
 var Filesystem = (function() {
-
-    var CALL_FAILURE = "call failed: ";
 
     /** It contains several useful methods to manage files and directories.
      * @author Santiago Blanco
@@ -21,31 +19,55 @@ var Filesystem = (function() {
 
     /** It returns a file descriptor from path.
      *  @private
-     *  @param {String} funcName */
-    var getThrowError = function getThrowError (funcName) {
-        return {
-            name: 'TiError',
-            message: funcName + ": File does not exists"
-        };
-    };
-
-    /** It returns a file descriptor from path.
-     *  @private
      *  @exception {String} TiError
      *  @param {String} funcName
-     *  @param {String} path */
-    var getFileDescriptor = function getFileDescriptor(funcName, path) {
-        if (!path) {
-            throw getThrowError(funcName);
+     *  @param {String} path
+     *  @return {Ti.Filesystem.File} file descriptor */
+    var getFileDescriptor = function getFileDescriptor(path) {
+        if (!path || typeof path !== 'string') {
+            throw new TypeError("Invalid type for input parameter");
+        }
+        var fileDescriptor = Ti.Filesystem.getFile(path);
+
+        return fileDescriptor;
+    };
+
+    var buildPath = function buildPath (parentPath, name) {
+        if (!parentPath) {
+            throw new TypeError("Parent path is not valid");
+        }
+        if (!name) {
+            throw new TypeError("Name is not valid");
         }
 
-        var tiFile = Ti.Filesystem.getFile(path);
+        return parentPath + "/" + name;
+    };
 
-        if (!tiFile.exists()) {
-            throw getThrowError(funcName);
+    var throwFileNoExist = function throwFileNoExist(fileDescriptor) {
+        if (!fileDescriptor.exists()) {
+            throw {
+                name: "FileNoExists",
+                message: "File does not exists"
+            };
+        }
+    };
+
+    var throwFileExist = function throwFileExist(fileDescriptor) {
+        if (fileDescriptor.exists()) {
+            throw {
+                name: 'FileExists',
+                message: 'File already exists'
+            };
+        }
+    };
+    var write = function write(path, data, append) {
+        var fileDescriptor = getFileDescriptor(path);
+
+        if (!(fileDescriptor.isFile())) {
+            throw new TypeError("File is not a regular file");
         }
 
-        return tiFile;
+        fileDescriptor.write(data, append); // true === append, false === overwrite
     };
 
     /** Check if the given path is a regular file.
@@ -54,7 +76,9 @@ var Filesystem = (function() {
      * @exception {TiError} Throws an APIError if path does not exist.
      * @return {Boolean} */
     self.isFile = function isFile(path) {
-        var fileDescriptor = getFileDescriptor.call(this, "isFile", path);
+        var fileDescriptor = getFileDescriptor.call(this, path);
+        throwFileNoExist(fileDescriptor);
+
         return fileDescriptor.isFile();
     };
 
@@ -64,7 +88,9 @@ var Filesystem = (function() {
      * @exception {TiError} Throws an APIError if path does not exist.
      * @return {Boolean} */
     self.isDirectory = function isDirectory(path) {
-        var fileDescriptor = getFileDescriptor.call(this, "isDirectory", path);
+        var fileDescriptor = getFileDescriptor.call(this, path);
+        throwFileNoExist(fileDescriptor);
+
         return fileDescriptor.isDirectory();
     };
 
@@ -74,113 +100,125 @@ var Filesystem = (function() {
      * @exception {TiError} Throws an APIError if path does not exist.
      * @return {Boolean} */
     self.isSymbolicLink = function isSymbolicLink(path) {
-        var fileDescriptor = getFileDescriptor.call(this, "isSymbolicLink", path);
+        var fileDescriptor = getFileDescriptor.call(this, path);
+        throwFileNoExist(fileDescriptor);
+
         return fileDescriptor.getSymbolicLink();
     };
 
     /** It creates a new void regular file.
      * @method
-     * @exception {TiError} Throws an exception if path already exists.
+     * @exception {FileExists} File already exists.
      * @param {String} path of parent directory
-     * @return {String} filePath */
-    self.createFile = function createFile(path) {
-        var fileDescriptor = Ti.FileSystem.getFile(path);
-        if (!fileDescriptor.createFile()) {
-            var msg = "The file " + path + "could not be created";
-            throw Ti.App.Log("Ti.API.createFile failed", null, {
-                message: "Ti.API.createFile: " + msg,
-                name: 'TiException'
-            });
+     * @param {String} fileName name of the file wants to be created */
+    self.createFile = function createFile(parentPath, fileName) {
+        var path = buildPath(parentPath, fileName);
+        var fileDescriptor = getFileDescriptor.call(this, path);
+        throwFileExist(fileDescriptor);
+        if (!fileDescriptor.write("")){
+            throw {
+                name: "WriteError",
+                message: "The file couldn't be created"
+            };
         }
     };
 
     /** It creates a new directory.
      *  @method
-     *  @param {String} path of parent directory
-     *  @return {String} directoryPath */
-    self.createDirectory = function createDirectory(path) {
-        var fileDescriptor = Ti.FileSystem.getFile(path);
-        if (!fileDescriptor.createDirectory()) {
-            var msg = "The directory " + path + "could not be created";
-            throw Ti.App.Log("Ti.API.createDirectory failed", null, {
-                message: "Ti.API.createDirectory: " + msg,
-                name: 'TiException'
-            });
+     *  @exception {FileExists} File already exists.
+     *  @param {String} path of parent directory */
+    self.createDirectory = function createDirectory(parentPath, directoryName) {
+        var path = buildPath(parentPath, directoryName);
+        var fileDescriptor = getFileDescriptor.call(this, path);
+        throwFileExist(fileDescriptor);
+        if (!fileDescriptor.createDirectory()){
+            throw {
+                name: "CreateError",
+                message: "The directory could not be created"
+            };
+        }
+    };
+
+    /** It deletes an existing file.
+     *  @method
+     *  @exception {FileNoExists} File does not exists.
+     *  @param {String} path of file */
+    self.deleteFile = function deleteFile (path) {
+        var fileDescriptor = getFileDescriptor.call(this, path);
+        fileDescriptor.deleteFile();
+    };
+
+    /** It deletes an existing directory.
+     *  @method
+     *  @exception {FileNoExists} File does not exists.
+     *  @param {String} path directory */
+    self.deleteDirectory = function deleteDirectory (path) {
+        var fileDescriptor = getFileDescriptor.call(this, path);
+        if (!fileDescriptor.deleteDirectory()) {
+            throw {
+                name: "DeleteError",
+                message: "Directory is not void"
+            };
         }
     };
 
     /** Read from 'path' file.
      * @method
-     * @param {String} path
-     * @exception {TiError} Throws an APIError if path does not exist.
-     * @return {Object} */
+     * @param {String} path where file is stored
+     * @exception {TypeError} Throws a TypeError if path is not a regular file.
+     * @return {String} */
     self.read = function read(path) {
-        var TiError;
         var fileDescriptor;
         var blob;
+        
         fileDescriptor = getFileDescriptor(path);
+        
         if (!(fileDescriptor.isFile())) {
-            throw Ti.App.Log("Ti.API.read failed", null, {
-                name: "TiApiError",
-                message: "Ti.API.read: File is not a regular file"
-            });
+            throw new TypeError("Path is not a regular file");
         }
+        
         blob = fileDescriptor.read();
+        
         return blob.toString();
     };
 
-    /** Write data to 'path' file.
+    /** Append data to 'path' file.
      * @method
-     * @param {String} path
-     * @param {String} data
-     * @exception {TiError} Throws an APIError if path does not exist. */
-    self.write = function write(path, data) {
-        var TiError;
-        var fileDescriptor;
-        var blob;
-        fileDescriptor = getFileDescriptor(path);
-        if (!(fileDescriptor.isFile())) {
-            throw Ti.App.Log("Ti.API.write failed", null, {
-                name: "TiApiError",
-                message: "Ti.API.write: File is not a regular file"
-            });
-        }
-        fileDescriptor.write(data, true); // true === append
+     * @param {String} path where file is stored
+     * @param {String} data should be written
+     * @exception {TypeError} throws a TypeError if path is not a regular file. */
+    self.append = function append(path, data) {
+        write(path, data, true);
     };
 
     /** Overwrite data from 'path' file.
      * @method
      * @param {String} path
      * @param {String} data
-     * @exception {TiError} Throws an APIError if path does not exist. */
+     * @exception {TypeError} throws a TypeError if path is not a regular file. */
     self.overwrite = function overwrite(path, data) {
-        var TiError;
-        var blob;
-
-        var fileDescriptor = getFileDescriptor(path);
-        if (!(fileDescriptor.isFile())) {
-            throw Ti.App.Log("Ti.API.overwrite failed", null, {
-                name: "TiApiError",
-                message: "Ti.API.overwrite: File is not a regular file"
-            });
-        }
-        fileDescriptor.write(data, false); // false === overwrite.
+        write(path, data, false);
     };
 
     /** Rename a file to newName.
      * @method
      * @param {String} newName of file.
      * @param {String} path file which the name should be change.
-     * @exception {TiError} Throws an APIError if any path does not exist. */
-    self.rename = function move(newName, path) {
+     * @exception {TypeError} throws a TypeError if path is not a regular file. */
+    self.rename = function rename(path, newName) {
         var fileDescriptor = getFileDescriptor(path);
-        try {
-            fileDescriptor.rename(newName);
-        } catch (e) {
-            throw Ti.App.Log("Ti.API.rename failed", null, {
-                name: "TiApiError",
-                message: "Ti.API.rename failed"
-            });
+        fileDescriptor.rename(newName);
+    };
+
+    /** Move a file from oldPath to newPath.
+     * @method
+     * @param {String} newPath where will be stored.
+     * @param {String} oldPath where file is stored.
+     * @exception {TypeError} throws a TypeError if destination is not valid. */
+    self.move = function move(origin, destination) {
+        var fileDescriptor = getFileDescriptor(origin);
+        if (!(fileDescriptor.move(destination))) {
+            throw new TypeError("Invalid type for input parameter");
         }
     };
 
@@ -188,14 +226,11 @@ var Filesystem = (function() {
      * @method
      * @param {String} newPath where will be stored.
      * @param {String} oldPath where file is stored.
-     * @exception {TiApiError} Throws TiApiError if any path does not exist. */
-    self.copy = function copy(destinationPath, oldPath) {
-        var fileDescriptor = getFileDescriptor(oldPath);
-        if (!(fileDescriptor.copy(destinationPath))) {
-            throw Ti.App.Log("Ti.API.copy failed", null, {
-                name: "TiApiError",
-                message: "Ti.API.copy failed"
-            });
+     * @exception {TypeError} throws a TypeError if destination is not valid. */
+    self.copy = function copy(origin, destination) {
+        var fileDescriptor = getFileDescriptor(origin);
+        if (!(fileDescriptor.copy(destination))) {
+            throw new TypeError("Invalid type for input parameter");
         }
     };
 
