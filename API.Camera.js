@@ -18,6 +18,7 @@
  * @typedef ResponseCallback
  * @property {String} status It should be "SUCCESS" or "FAILURE"
  * @property {String} data It should be the resulted data. */
+
 /**
  * @callback ShowCameraCallback
  * @param {ResponseCallback} response */
@@ -207,12 +208,14 @@ var Camera = (function() {
     var self = {};
 
     /** Gets the value of the availableCameras property.
+     * @method
      * @return {Number[]} : CAMERA_FRONT, CAMERA_REAR or both*/
     self.getAvailableCameras = function getAvailableCameras() {
         return returnFunction("getAvailableCameras");
     };
 
     /** Gets the value of the isCameraSupported property.
+     * @method
      * @return {Boolean} */
     self.isCameraSupported = function isCameraSupported() {
         return returnFunction("getIsCameraSupported");
@@ -220,6 +223,7 @@ var Camera = (function() {
 
     /** Shows the native camera controls. A photo can be taken and it will be
      * returned in the first parameter of the callback.
+     * @method
      * @param {ShowCameraCallback} callback
      * @param {CameraOptions} [options] Additional options that should be passed as
      *  parameter of native call */
@@ -241,6 +245,13 @@ var Camera = (function() {
         } else {
             showCameraAndroid(callback, options);
         }
+    };
+
+    /** Hide the native camera application
+     * @method
+     * */
+    self.hideCamera = function hideCamera() {
+        Titanium.Media.hideCamera();
     };
 
     return self;
