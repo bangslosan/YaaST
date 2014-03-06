@@ -170,15 +170,15 @@ var Filesystem = (function() {
     self.read = function read(path) {
         var fileDescriptor;
         var blob;
-        
+
         fileDescriptor = getFileDescriptor(path);
-        
+
         if (!(fileDescriptor.isFile())) {
             throw new TypeError("Path is not a regular file");
         }
-        
+
         blob = fileDescriptor.read();
-        
+
         return blob.toString();
     };
 
