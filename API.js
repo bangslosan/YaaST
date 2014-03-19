@@ -115,7 +115,7 @@ var API = (function() {
             if (data.timestamp !== null && (data.timestamp - eventControl[data.publicEvent]) < 500){
                 // discart event to improve
             } else {
-				// TODO: only for debug
+                // TODO: only for debug
                 console.debug('-------------> Event: ' + data.publicEvent + ' counter: ' + eventcounter[data.publicEvent] + '; data: ' + JSON.stringify(data));
                 Ti.App.fireEvent(data.publicEvent, data);
             }
@@ -228,12 +228,22 @@ var API = (function() {
         Ti.API.info('____Con los parámetros:' + JSON.stringify(data.params));
         Ti.API.info('____Con las opciones:' + JSON.stringify(data.options));
         if (data.method !== null && data.params == null && data.options == null) {
-            result = _self[data.method.type][data.method.subapi][data.method.name]();
+            try {
+                result = _self[data.method.type][data.method.subapi][data.method.name]();
+            } catch (e) {
+                // TODO
+                Ti.API.info('[API ERROR] ' + e);
+            }
         } else if (data.method !== null && data.params !== null) {
             if (data.options !== null) {
                 data.params.push(data.options);
             }
-            result = _self[data.method.type][data.method.subapi][data.method.name].apply(null, data.params);
+            try {
+                result = _self[data.method.type][data.method.subapi][data.method.name].apply(null, data.params);
+            } catch (e) {
+                // TODO
+                Ti.API.info('[API ERROR] ' + e);
+            }
         } else {
             // Error. Method doesn't exist
             result = "Error. Unknown API method";
