@@ -74,11 +74,12 @@ var Media = (function() {
         var tiAudioPlayer;
 
         //TODO: 4test
-        options.resource = 'http://audio.ancientfaith.com/wardrobe/atw_2014-02-06.mp3';
+        //options.resource = 'http://audio.ancientfaith.com/wardrobe/atw_2014-02-06.mp3';
 
         audioPlayerId ++;
+        Ti.API.info('[API.Media]  Creating Audio Player: ' + audioPlayerId);
         tiAudioPlayer = Ti.Media.createAudioPlayer({
-            url: options.resource,
+            //url: options.resource,
             // allowBackground: true on Android allows the
             // player to keep playing when the app is in the
             // background.
@@ -86,7 +87,7 @@ var Media = (function() {
         });
 
         audioPlayerList[audioPlayerId] = tiAudioPlayer;
-
+        Ti.API.info('[API.Media]  Audio Player created: ' + audioPlayerId);
         return audioPlayerId;
     };
 
@@ -123,7 +124,7 @@ var Media = (function() {
     /** Set Audio Player URL
      * @param {Number} playerId, the audio player ID number
      * @param {String} url, The Audio Player URL */
-    self.setAudioPlayerVolume = function getAudioPlayerVolume(playerId, url) {
+    self.setAudioPlayerURL = function getAudioPlayerURL(playerId, url) {
         if (audioPlayerList[playerId] == null) {
             //TODO: error. Unknown Audio Player ID
         }
@@ -167,6 +168,7 @@ var Media = (function() {
             //TODO: error. Unknown Audio Player ID
         }
         audioPlayerList[playerId].start();
+        Ti.API.info('[API.Media]  Play activated in player ' + playerId);
     };
 
     /** Stop Audio Player
@@ -176,6 +178,10 @@ var Media = (function() {
             //TODO: error. Unknown Audio Player ID
         }
         audioPlayerList[playerId].stop();
+        if (Ti.Platform.name === 'android')
+        {
+            audioPlayerList[playerId].release();
+        }
     };
 
     // TODO select other place to put that fkngShit
