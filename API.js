@@ -71,25 +71,55 @@ var API = (function() {
             if (_self.SW[key].events) {
                 for (eventId in _self.SW[key].events) {
                     eventData = _self.SW[key].events[eventId];
-                    _self.events.availableEvents[eventId] = {
-                        keylist: eventData.keylist,
-                        event: eventData.event,
-                        listener: eventData.listener
-                    };
-                    _self.events.publicEvents[eventData.event] = eventId;
-                }
+                    if (eventData.dummy) {
+                        _self.events.availableEvents[eventId] = {
+                            keylist: eventData.keylist,
+                            event: eventData.event,
+                            listener: _self.SW[key],
+                            source: eventData.source,
+                            dummy: true
+                        };
+                    } else {
+                        _self.events.availableEvents[eventId] = {
+                            keylist: eventData.keylist,
+                            event: eventData.event,
+                            listener: eventData.listener,
+                            source: eventData.source
+                        };
+                    }
+                    //_self.events.publicEvents[eventData.event] = eventId;
+                    if (_self.events.publicEvents[eventData.source] == null) {
+                        _self.events.publicEvents[eventData.source] = {};
+                    }
+                    _self.events.publicEvents[eventData.source][eventData.event] = eventId;
+                    }
             }
         }
         for (key in _self.HW) {
             if (_self.HW[key].events) {
                 for (eventId in _self.HW[key].events) {
                     eventData = _self.HW[key].events[eventId];
-                    _self.events.availableEvents[eventId] = {
-                        keylist: eventData.keylist,
-                        event: eventData.event,
-                        listener: eventData.listener
-                    };
-                    _self.events.publicEvents[eventData.event] = eventId;
+                    if (eventData.dummy) {
+                        _self.events.availableEvents[eventId] = {
+                            keylist: eventData.keylist,
+                            event: eventData.event,
+                            listener: _self.HW[key],
+                            source: eventData.source,
+                            dummy: true
+                        };
+                    } else {
+                        _self.events.availableEvents[eventId] = {
+                            keylist: eventData.keylist,
+                            event: eventData.event,
+                            listener: eventData.listener,
+                            source: eventData.source
+                        };
+                    }
+                    //_self.events.publicEvents[eventData.event] = eventId;
+                    if (_self.events.publicEvents[eventData.source] == null) {
+                        _self.events.publicEvents[eventData.source] = {};
+                    }
+                    _self.events.publicEvents[eventData.source][eventData.event] = eventId;
                 }
             }
         }
@@ -112,11 +142,11 @@ var API = (function() {
             }*/
             eventcounter[data.publicEvent] ++;
             // for all events with timestamp
-            if (data.timestamp !== null && (data.timestamp - eventControl[data.publicEvent]) < 500){
+            if (data.timestamp != null && (data.timestamp - eventControl[data.publicEvent]) < 500){
                 // discart event to improve
             } else {
                 // TODO: only for debug
-                console.debug('-------------> Event: ' + data.publicEvent + ' counter: ' + eventcounter[data.publicEvent] + '; data: ' + JSON.stringify(data));
+                console.log('-------------> Event: ' + data.publicEvent + ' counter: ' + eventcounter[data.publicEvent] + '; data: ' + JSON.stringify(data));
                 Ti.App.fireEvent(data.publicEvent, data);
             }
             result = true;
@@ -129,7 +159,7 @@ var API = (function() {
     _self.eventHandler = function(e) {
         var i;
         var data = {};
-        var publicEvent = _self.events.publicEvents[e.type];
+        var publicEvent = _self.events.publicEvents[e.source.apiName][e.type];
         data['publicEvent'] = publicEvent;
         for (i = 0; i < _self.events.availableEvents[publicEvent].keylist.length; i++) {
             data[_self.events.availableEvents[publicEvent].keylist[i]] = e[_self.events.availableEvents[publicEvent].keylist[i]];
@@ -140,7 +170,7 @@ var API = (function() {
      * @param: {publicEvent} the public html name for the event.
      * @param: {viewId} the id of the interested html view.
      * @return : Bool true if success or false if error*/
-    _self.events.addEventListener = function addEventListener(publicEvent, viewId) {
+    _self.events.addEventListener = function addEventListener(publicEvent, viewId, entityId) {
         var eventData;
 
         eventData = _self.events.availableEvents[publicEvent];
@@ -161,10 +191,15 @@ var API = (function() {
                 nlisteners: 1,
                 views: {}
             };
+            Ti.API.info('****Event: ' + publicEvent + ', privateEvent: ' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId + ', isDummy?: ' + _self.events.availableEvents[publicEvent].dummy);
             eventcounter[publicEvent] = 0;
             if (_self.events.availableEvents[publicEvent].listener === 'accelerometer') {
                 // Accelerometer is special.
                 Ti.Accelerometer.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
+            } else if (_self.events.availableEvents[publicEvent].dummy) {
+                // Special Dummy events. This events depends of Titnaium Objects
+                Ti.API.info('****SpecialEvent: ' + publicEvent + ', privateEvent: ' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId);
+                _self.events.availableEvents[publicEvent].listener.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler, entityId);
             } else {
                 _self.events.availableEvents[publicEvent].listener.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
             }
@@ -176,7 +211,7 @@ var API = (function() {
      * @param: {publicEvent} the public html name for the event.
      * @param: {viewId} the id of the interested html view.
      * @return : Bool true if success or false if error*/
-    _self.events.removeEventListener = function removeEventListener(publicEvent, viewId) {
+    _self.events.removeEventListener = function removeEventListener(publicEvent, viewId, entityId) {
         var eventData;
 
         eventData = _self.events.availableEvents[publicEvent];
@@ -191,7 +226,8 @@ var API = (function() {
             // Accelerometer is special.
             Ti.Accelerometer.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
         } else {
-            _self.events.availableEvents[publicEvent].listener.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
+            Ti.API.info('****SpecialEvent: ' + publicEvent + ', privateEvent' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId);
+            _self.events.availableEvents[publicEvent].listener.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler, entityId);
         }
         if (_self.events.activeHandlers[publicEvent].nlisteners == 0) {
             delete _self.events.activeHandlers[publicEvent];
@@ -201,15 +237,16 @@ var API = (function() {
     /** Handler for the events from a HTML view througth APICommons.js
      * @param: {data} data = {
      *     'action': 'addEventListener'/'removeEventListener',
-     *     'viewId': viewId
+     *     'viewId': viewId,
+     *     'entityId': entityId optional param. the Titanium Object ID.
      * }
      **/
     _self.events.APIEventHandler = function APIEventHandler(data) {
-
+        Ti.API.info('*APIEventHandler: ' + data + ', entityId: ' + data.entityId, ', viewId: ' + data.viewId + ', event: ' + data.event);
         if (data.action === 'addEventListener') {
-            _self.events.addEventListener(data.event, data.viewId);
+            _self.events.addEventListener(data.event, data.viewId, data.entityId);
         } else if (data.action === 'removeEventListener') {
-            _self.events.removeEventListener(data.event, data.viewId);
+            _self.events.removeEventListener(data.event, data.viewId, data.entityId);
         }
     };
 
