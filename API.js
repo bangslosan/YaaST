@@ -146,7 +146,7 @@ var API = (function() {
                 // discart event to improve
             } else {
                 // TODO: only for debug
-                console.log('-------------> Event: ' + data.publicEvent + ' counter: ' + eventcounter[data.publicEvent] + '; data: ' + JSON.stringify(data));
+                console.log('[API]---------> new event: ' + data.publicEvent + ' counter: ' + eventcounter[data.publicEvent] + '; data: ' + JSON.stringify(data));
                 Ti.App.fireEvent(data.publicEvent, data);
             }
             result = true;
@@ -191,14 +191,14 @@ var API = (function() {
                 nlisteners: 1,
                 views: {}
             };
-            Ti.API.info('****Event: ' + publicEvent + ', privateEvent: ' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId + ', isDummy?: ' + _self.events.availableEvents[publicEvent].dummy);
+            Ti.API.info('[API.addEventListener] event: ' + publicEvent + ', privateEvent: ' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId + ', isDummy?: ' + _self.events.availableEvents[publicEvent].dummy);
             eventcounter[publicEvent] = 0;
             if (_self.events.availableEvents[publicEvent].listener === 'accelerometer') {
                 // Accelerometer is special.
                 Ti.Accelerometer.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
             } else if (_self.events.availableEvents[publicEvent].dummy) {
                 // Special Dummy events. This events depends of Titnaium Objects
-                Ti.API.info('****SpecialEvent: ' + publicEvent + ', privateEvent: ' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId);
+                Ti.API.info('[API.addEventListener] special event for dummy: ' + publicEvent + ', privateEvent: ' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId);
                 _self.events.availableEvents[publicEvent].listener.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler, entityId);
             } else {
                 _self.events.availableEvents[publicEvent].listener.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
@@ -226,7 +226,7 @@ var API = (function() {
             // Accelerometer is special.
             Ti.Accelerometer.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
         } else {
-            Ti.API.info('****SpecialEvent: ' + publicEvent + ', privateEvent' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId);
+            Ti.API.info('[API.removeEventListener] special event: ' + publicEvent + ', privateEvent' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId);
             _self.events.availableEvents[publicEvent].listener.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler, entityId);
         }
         if (_self.events.activeHandlers[publicEvent].nlisteners == 0) {
@@ -242,7 +242,7 @@ var API = (function() {
      * }
      **/
     _self.events.APIEventHandler = function APIEventHandler(data) {
-        Ti.API.info('*APIEventHandler: ' + data + ', entityId: ' + data.entityId, ', viewId: ' + data.viewId + ', event: ' + data.event);
+        Ti.API.info('[API.APIEventHandler]: ' + data + ', entityId: ' + data.entityId, ', viewId: ' + data.viewId + ', event: ' + data.event);
         if (data.action === 'addEventListener') {
             _self.events.addEventListener(data.event, data.viewId, data.entityId);
         } else if (data.action === 'removeEventListener') {
@@ -259,17 +259,16 @@ var API = (function() {
      * }
      **/
     _self.events.APIMethodHandler = function APIMethodHandler(data) {
-        console.log('____APIMethodHandler------ data: ' + JSON.stringify(data));
         var result;
-        Ti.API.info('____Evento recibido en API: ' + JSON.stringify(data));
-        Ti.API.info('____Con los parámetros:' + JSON.stringify(data.params));
-        Ti.API.info('____Con las opciones:' + JSON.stringify(data.options));
+        Ti.API.info('[API.APIMethodHandler] Method event recieved: ' + JSON.stringify(data));
+        Ti.API.info('[API.APIMethodHandler] Params:' + JSON.stringify(data.params));
+        Ti.API.info('[API.APIMethodHandler] Options:' + JSON.stringify(data.options));
         if (data.method !== null && data.params == null && data.options == null) {
             try {
                 result = _self[data.method.type][data.method.subapi][data.method.name]();
             } catch (e) {
                 // TODO
-                Ti.API.info('[API ERROR] ' + e);
+                Ti.API.info('[----- ¡¡API METHOD ERROR!!] ' + e);
             }
         } else if (data.method !== null && data.params !== null) {
             if (data.options !== null) {
@@ -279,36 +278,39 @@ var API = (function() {
                 result = _self[data.method.type][data.method.subapi][data.method.name].apply(null, data.params);
             } catch (e) {
                 // TODO
-                Ti.API.info('[API ERROR] ' + e);
+                Ti.API.info('[----- ¡¡API METHOD ERROR!!] ' + e);
             }
         } else {
             // Error. Method doesn't exist
             result = "Error. Unknown API method";
         }
-        Ti.API.info('____Evento de vuelta  deste API: ' + data.method.eventName + '_' + data.viewId + '_' + data.callId);
-        Ti.API.info('____con los datos: ' + result);
-        var resultStringi = JSON.stringify(result);
-        Ti.API.info('____stringificados: ' + resultStringi);
+        Ti.API.info('[API.APIMethodHandler] Setting method event from aPI to Bridge: ' + data.method.eventName + '_' + data.viewId + '_' + data.callId);
+        Ti.API.info('[API.APIMethodHandler] data: ' + JSON.stringify(result));
         Ti.App.fireEvent(data.method.eventName + '_' + data.viewId + '_' + data.callId, {'returnedData': result});
     };
 
     _self.events.APIMethodAsyncHandler = function APIMethodAsyncHandler(data) {
         var result;
 
+        Ti.API.info('[API.APIMethodAsyncHandler] Async Method event recived: ' + JSON.stringify(data));
+        Ti.API.info('[API.APIMethodAsyncHandler] Params:' + JSON.stringify(data.params));
+        Ti.API.info('[API.APIMethodAsyncHandler] Options:' + JSON.stringify(data.options));
         var genericHandler = function(initialData, result) {
             Ti.App.fireEvent(data.method.eventName + '_' + data.viewId + '_' + data.callId, result);
         };
 
         if (data.method !== null && data.params.length === 0) {
             _self[data.method.type][data.method.subapi][data.method.name](function(result) {
-                    Ti.App.fireEvent(data.method.eventName + '_' + data.viewId + '_' + data.callId, result);
-                });
+                Ti.API.info('[API.APIMethodAsyncHandler] Setting method event from aPI to Bridge: :' + data.method.eventName + '_' + data.viewId + '_' + data.callId);
+                Ti.App.fireEvent(data.method.eventName + '_' + data.viewId + '_' + data.callId, result);
+            });
         } else if (data.method !== null) {
             if (data.options !== null) {
                 data.params.push(data.options);
             }
             _self[data.method.type][data.method.subapi][data.method.name](function(result) {
-                    Ti.App.fireEvent(data.method.eventName + '_' + data.viewId + '_' + data.callId, result);
+                Ti.API.info('[API.APIMethodAsyncHandler] Setting method event from aPI to Bridge: :' + data.method.eventName + '_' + data.viewId + '_' + data.callId);
+                Ti.App.fireEvent(data.method.eventName + '_' + data.viewId + '_' + data.callId, result);
             }, data.params);
         } else {
             // Error. Method doesn't exist
