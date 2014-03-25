@@ -13,6 +13,7 @@
     var eventHandlers = {};
     var methodHandlers = {};
     // TODO: When titanium load, will replace "var id = null" with the correct id value. This line must be unique in this file.
+    var appleOS = ;
     var id = 69;
     var prefs = null;
     var inputs = {};
@@ -371,15 +372,31 @@
     /* Audio Dummy */
     // TODO jsdoc
     var dummyAudioPlayer = function dummyAudioPlayer(API, options) {
-        this.STATE_BUFFERING = 0;
-        this.STATE_INITIALIZED = 1;
-        this.STATE_PAUSED = 2;
-        this.STATE_PLAYING  = 3;
-        this.STATE_STARTING  = 4;
-        this.STATE_STOPPED = 5;
+
+        if(appleOS === true){
+            Ti.API.info('******* iOS System LOADED *******');
+            this.STATE_BUFFERING = 5;
+            this.STATE_INITIALIZED = 0;
+            this.STATE_PAUSED = 8;
+            this.STATE_PLAYING  = 4;
+            this.STATE_STARTING  = 1;
+            this.STATE_STOPPED = 7;
+            this.STATE_WAITING_FOR_DATA = 2;
+            this.STATE_WAITING_FOR_QUEUE = 3;
+        }
+        else {
+            Ti.API.info('******* Android System LOADED *******');
+            this.STATE_BUFFERING = 0;
+            this.STATE_INITIALIZED = 1;
+            this.STATE_PAUSED = 2;
+            this.STATE_PLAYING  = 3;
+            this.STATE_STARTING  = 4;
+            this.STATE_STOPPED = 5;
+            this.STATE_WAITING_FOR_DATA = 7;
+            this.STATE_WAITING_FOR_QUEUE = 8;
+        }
         this.STATE_STOPPING = 6;
-        this.STATE_WAITING_FOR_DATA = 7;
-        this.STATE_WAITING_FOR_QUEUE = 8;
+
         this.id = null;
         this.pendings = [];
         this.busy = true;
