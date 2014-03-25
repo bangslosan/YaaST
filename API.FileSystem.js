@@ -216,10 +216,13 @@ var Filesystem = (function() {
      * @param {String} oldPath where file is stored.
      * @exception {TypeError} throws a TypeError if destination is not valid. */
     self.move = function move(origin, destination) {
-        var fileDescriptor = getFileDescriptor(origin);
-        if (!(fileDescriptor.move(destination))) {
-            throw new TypeError("Invalid type for input parameter");
+        var originFd = getFileDescriptor(origin);
+        var destinationFd = getFileDescriptor(destination);
+        
+        if (destinationFd.exists()) {
+            throw new TypeError("Destination already exists");
         }
+        originFd.move(destination);
     };
 
     /** Copy a file from oldPath to newPath.
