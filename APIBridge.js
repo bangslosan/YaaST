@@ -22,15 +22,11 @@
     var _genericMethodHandler = function _genericMethodHandler(callback, methName, params, options, isAsync) {
         var methodInfo, data;
 
-        console.log('---callback: ' + callback);
-        console.log('---methName: ' + methName);
-        console.log('---params: ' + params);
-        console.log('---options: ' + options);
-        console.log('---isAsync: ' + isAsync);
-        console.log('---callback s: ' + JSON.stringify(callback));
-        console.log('---methName s: ' + JSON.stringify(methName));
-        console.log('---params s: ' + JSON.stringify(params));
-        console.log('---options s: ' + JSON.stringify(options));
+        /*Ti.API.info('[APIBridge] callback: ' + callback);
+        Ti.API.info('[APIBridge] methName: ' + methName);
+        Ti.API.info('[APIBridge] params: ' + JSON.stringify(params));
+        Ti.API.info('[APIBridge] options: ' + JSON.stringify(options));
+        Ti.API.info('[APIBridge] isAsync: ' + isAsync);*/
 
         if (methodHandlers[methName] == null) {
             methodHandlers[methName] = {};
@@ -41,7 +37,7 @@
 
         methodInfo = methName.split('.');
 
-        console.log('----Adding html listener in APIBridge----: ' + methName + '_' + id + '_' + callCounter);
+        Ti.API.info('[APIBridge] Adding method listener: ' + methName + '_' + id + '_' + callCounter);
         Ti.App.addEventListener(methName + '_' + id + '_' + callCounter, _sendMethodResult.bind(this, methName, callCounter));
 
         data = {
@@ -59,25 +55,28 @@
 
 
         if (!isAsync) {
-            console.log('----Fire Event in APIBridge---- event: "APIMethod". data: ' + JSON.stringify(data));
+            Ti.API.info('[APIBridge] Fire Event "APIMethod". data: ' + JSON.stringify(data));
             Ti.App.fireEvent('APIMethod', data);
         } else {
-            console.log('----Fire Event in APIBridge---- event: "APIMethodAsync". data: ' + JSON.stringify(data));
+            Ti.API.info('[APIBridge] Fire Event "APIMethodAsync". data: ' + JSON.stringify(data));
             Ti.App.fireEvent('APIMethodAsync', data);
         }
     };
 
     var _sendMethodResult = function (methName, callCounter, data) {
-        console.log('++++++++++++BRIDGE++++++++++++++++ HTML!!!');
-        console.log('llegaron los datos: ' + data.returnedData);
-        console.log('estringificados: ' + JSON.stringify(data.returnedData));
-        //console.log('parseados?: ' + JSON.parse(data));
+        Ti.API.info('++++++++++++[APIBridge]+++++++++++++ HTML!!!');
+        Ti.API.info('[APIBridge] Method result recived: ' + JSON.stringify(data.returnedData));
+        //Ti.API.info('parseados?: ' + JSON.parse(data));
         if (methodHandlers[methName] == null || methodHandlers[methName][callCounter] == null) {
             // TODO Error. Callback not found
-            console.log('error in _sendMethodResult APIBridge');
+            Ti.API.info('[APIBridge] error in _sendMethodResult Callback not found');
         } else {
+            // This solve iOs problem and i dont know why this run in Android without this fixed
+            if (data.returnedData === undefined) {
+                data.returnedData = null;
+            }
             // Execute callback
-            console.log('invocando callback html...');
+            Ti.API.info('[APIBridge] invocando callback html...');
             methodHandlers[methName][callCounter](data.returnedData);
         }
     };
@@ -314,32 +313,32 @@
             var i;
             var publicEvent = data.publicEvent;
 
-            console.log('Invoke HTML callbacks for event: ' + publicEvent + ' with data:' + JSON.stringify(data));
+            Ti.API.info('[APIBridge] Invoke HTML callbacks for event: ' + publicEvent + ' with data:' + JSON.stringify(data));
 
             if (eventHandlers[publicEvent] !== null || eventHandlers[publicEvent].length > 0) {
                 for (i = 0; i < eventHandlers[publicEvent].length; i ++) {
-                    console.log('invocando event callback html...');
+                    Ti.API.info('[APIBridge] invocando event callback html ' + publicEvent);
                     eventHandlers[publicEvent][i](data);
                 }
             } else {
                 // TODO Error. Callback not found
-                console.log('error in _invokeEventCallbacks APIBridge');
+                Ti.API.info('[APIBridge] error in _invokeEventCallbacks ' + publicEvent);
             }
     };
 
     Object.defineProperty(window.API, 'addEventListener', {
         value: function addEventListener(publicEvent, handler) {
-            console.log('++addeventlistener de ' + publicEvent);
+            Ti.API.info('[APIBridge] addeventlistener de ' + publicEvent);
             if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
                 // First event listener for this publicEvent
                 eventHandlers[publicEvent] = [];
-                console.log('++eventHandlers[' + publicEvent + '].length : ' + eventHandlers[publicEvent].length);
+                Ti.API.info(' [APIBridge] eventHandlers[' + publicEvent + '].length : ' + eventHandlers[publicEvent].length);
                 // Listen the event
                 Ti.App.addEventListener(publicEvent, _invokeEventCallbacks);
             }
             eventHandlers[publicEvent].push(handler);
-            console.log('++event handler added');
-            console.log('++eventHandlers[' + publicEvent + '].length : ' + eventHandlers[publicEvent].length);
+            Ti.API.info('[APIBridge] event handler added');
+            Ti.API.info('[APIBridge] eventHandlers[' + publicEvent + '].length : ' + eventHandlers[publicEvent].length);
 
             // Subscribe this view to publicEvent
             Ti.App.fireEvent('APIEvent', {'action': 'addEventListener', 'event': publicEvent, 'viewId': id});
@@ -352,14 +351,14 @@
         value: function removeEventListener(publicEvent, handler) {
             var index;
 
-            console.log('++eventHandlers[' + publicEvent + '].length : ' + eventHandlers[publicEvent].length);
+            Ti.API.info('[APIBridge] eventHandlers[' + publicEvent + '].length : ' + eventHandlers[publicEvent].length);
             if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
                 return false;
             }
             index = eventHandlers[publicEvent].indexOf(handler);
             eventHandlers[publicEvent].splice(index, 1);
-            console.log('++event handler removed');
-            console.log('++eventHandlers[' + publicEvent + '].length : ' + eventHandlers[publicEvent].length);
+            Ti.API.info('[APIBridge] event handler removed');
+            Ti.API.info('[APIBridge] eventHandlers[' + publicEvent + '].length : ' + eventHandlers[publicEvent].length);
             // remove listener
             Ti.App.removeEventListener(publicEvent, _invokeEventCallbacks);
 
@@ -399,53 +398,169 @@
 
         this.id = null;
         this.pendings = [];
+        this.callbacks = {
+            'audioChange': [],
+            'audioProgress': [],
+            'audioComplete': []
+        };
+        this.pendingEvents = {
+            'audioChange': {},
+            'audioProgress': {},
+            'audioComplete': {}
+        };
+        this.lastChange = -1;
+        this.lastProgress = -1;
+        this.lastComplete = -1;
         this.busy = true;
+        Ti.API.info('[DUMMY] STATE: creating');
+        this.state = 'creating';
 
         var callback = function(id) {
-            console.log('.............. Dummy available ID:' + id);
+            Ti.API.info('[DUMMY].............. available id:' + id);
             this.id = id;
+            this.syncAddEventListener('audioChange', this.changeHandler.bind(this));
+            this.syncAddEventListener('audioProgress', this.processHandler.bind(this));
+            //this.syncAddEventListener('audioComplete', this.completeHandler.bind(this));
             genericCallback.call(this, id);
+            Ti.API.info('[DUMMY] STATE: stoped');
+            this.state = 'stopped';
         };
-
         if (!(options instanceof Object)) {
             options = null;
         }
-        console.log('Dummy waiting for audioPlayer id ..............');
+        Ti.API.info('[DUMMY] waiting for audioPlayer id ..............');
         _genericMethodHandler.call(API, callback.bind(this), 'API.HW.Media.createAudioPlayer', [], options);
     };
+
     // Public
     dummyAudioPlayer.prototype.addEventListener = function addEventListener(publicEvent, callback) {
-        console.log('addEventListener in Dummy: ' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
+        Ti.API.info('[DUMMY] 13 - addEventListener');
         addProcess.call(this, 13, {'publicEvent': publicEvent, 'callback': callback});
     };
 
-    // Public
     dummyAudioPlayer.prototype.removeEventListener = function removeEventListener(publicEvent, callback) {
-        console.log('removeEventListener in Dummy: ' + publicEvent);
-        addProcess.call(this, 31, {'publicEvent': publicEvent, 'callback': callback});
+        Ti.API.info('[DUMMY] 13 - removeEventListener');
+        addProcess.call(this, 13, {'publicEvent': publicEvent, 'callback': callback});
+    };
+
+    dummyAudioPlayer.prototype.play = function play() {
+        Ti.API.info('[DUMMY] 1 - play');
+        addProcess.call(this, 1);
+    };
+
+    dummyAudioPlayer.prototype.pause = function pause() {
+        Ti.API.info('[DUMMY] 2 - pause');
+        addProcess.call(this, 2);
+    };
+
+    dummyAudioPlayer.prototype.stop = function stop() {
+        Ti.API.info('[DUMMY] 3 - stop');
+        addProcess.call(this, 3);
+    };
+
+    dummyAudioPlayer.prototype.setURL = function setURL(url) {
+        Ti.API.info('[DUMMY] 4 - setURL');
+        addProcess.call(this, 4, {'url': url});
     };
 
     // Private
+    dummyAudioPlayer.prototype.changeHandler = function changeHandler(event) {
+        var i;
+
+        if (this.lastChange + 1 == event.order) {
+            // Real Next
+            Ti.API.info('[DUMMY eventHandler] change event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
+            this.lastChange += 1;
+            for (i = 0; i < this.callbacks.audioChange.length; i ++) {
+                Ti.API.info('[DUMMY eventHandler] launching HTML callback... ' + this.callbacks.audioChange[i]);
+                this.callbacks.audioChange[i](event);
+            }
+            if (this.pendingEvents.audioChange[event.order + 1] != null) {
+                // Pop waiting event
+                this.changeHandler(this.pendingEvents.audioChange[event.order + 1]);
+                delete this.pendingEvents.audioChange[event.order + 1];
+            }
+        } else if (this.lastChange + 1 < event.order) {
+            // Push this event
+            Ti.API.info('[DUMMY eventHandler] save this change event: ' + event.order);
+            this.pendingEvents.audioChange[event.order] = event;
+        } else {
+            // ORDER ERROR
+            Ti.API.info('[DUMMY eventHandler] change event order error ' + event.order + ' < ' + this.lastChange + ', event: ' + JSON.stringify(event));
+            // discard event
+        }
+    };
+
+    dummyAudioPlayer.prototype.completeHandler = function completeHandler(event) {
+        var i;
+
+        if (this.lastComplete + 1 == event.order) {
+            // Real Next
+            Ti.API.info('[DUMMY completeHandler] complete event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
+            this.lastComplete += 1;
+            for (i = 0; i < this.callbacks.audioComplete.length; i ++) {
+                this.callbacks.audioComplete[i](event);
+            }
+            if (this.pendingEvents.audioComplete[event.order + 1] != null) {
+                // Pop waiting event
+                this.changeHandler(this.pendingEvents.audioComplete[event.order + 1]);
+                delete this.pendingEvents.audioComplete[event.order + 1];
+            }
+        } else if (this.lastComplete + 1 < event.order) {
+            // Push this event
+            Ti.API.info('[DUMMY completeHandler] save this progress event: ' + event.order);
+            this.pendingEvents.audioComplete[event.order]= event;
+        } else {
+            // ORDER ERROR
+            Ti.API.info('[DUMMY completeHandler] complete event order error ' + event.order + ' < ' + this.lastChange + ', event: ' + JSON.stringify(event));
+            // discard event
+        }
+    };
+
+    dummyAudioPlayer.prototype.processHandler = function processHandler(event) {
+        var i;
+
+        if (this.lastProgress + 1 == event.order) {
+            // Real Next
+            Ti.API.info('[DUMMY eventHandler] progress event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
+            this.lastProgress += 1;
+            for (i = 0; i < this.callbacks.audioProgress.length; i ++) {
+                this.callbacks.audioProgress[i](event);
+            }
+            if (this.pendingEvents.audioProgress[event.order + 1] != null) {
+                // Pop waiting event
+                this.changeHandler(this.pendingEvents.audioProgress[event.order + 1]);
+                delete this.pendingEvents.audioProgress[event.order + 1];
+            }
+        } else if (this.lastProgress + 1 < event.order) {
+            // Push this event
+            Ti.API.info('[DUMMY eventHandler] save this progress event: ' + event.order);
+            this.pendingEvents.audioProgress[event.order]= event;
+        } else {
+            // ORDER ERROR
+            Ti.API.info('[DUMMY eventHandler] progress event order error ' + event.order + ' < ' + this.lastChange + ', event: ' + JSON.stringify(event));
+            // discard event
+        }
+    };
+
     dummyAudioPlayer.prototype.syncAddEventListener = function SyncAddEventListener(publicEvent, callback) {
-        console.log('Sync-addEventListener in Dummy: ' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
+        Ti.API.info('[DUMMY] Sync-addEventListener. event: ' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
         if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
             // First event listener for this publicEvent
             eventHandlers[publicEvent] = [];
-            console.log('++eventHandlers[' + publicEvent + '].length : ' + eventHandlers[publicEvent].length);
             // Listen the event
             Ti.App.addEventListener(publicEvent, _invokeEventCallbacks);
         }
         eventHandlers[publicEvent].push(callback);
-        console.log('Sync-addEventListener in Dummy prefire');
+        Ti.API.info('[DUMMY] Sync-addEventListener pre-fire');
 
         // Subscribe this view to publicEvent
         Ti.App.fireEvent('APIEvent', {'action': 'addEventListener', 'event': publicEvent, 'viewId': id, 'entityId': this.id});
-        console.log('Sync-addEventListener in Dummy postfire');
+        Ti.API.info('[DUMMY] Sync-addEventListener post-fire');
     };
 
-    // Private
     dummyAudioPlayer.prototype.syncRemoveEventListener = function syncRemoveEventListener(publicEvent, callback) {
-        console.log('Sync-removeEventListener in Dummy: ' + publicEvent);
+        Ti.API.info('[DUMMY] Sync-removeEventListener. event:' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
         var index;
 
         if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
