@@ -27,7 +27,7 @@ var Map = (function() {
             //TODO: Error Unknown Map Id
             return;
         }
-        options = validateAnnotation(options);
+        //options = validateAnnotation(options);
         if(options.validate === true){
             var anon = _self.Map.createAnnotation(options);
             mapsList[mapId].addAnnotation(anon);
@@ -146,14 +146,14 @@ var Map = (function() {
             //TODO: Error Unknown Map Id
             return;
         }
-        options = validateRoute(options);
+        //options = validateRoute(options);
         if(options.validate === true){
             var route = _self.Map.createRoute(options);
             mapsList[mapId].addRoute(route);
             route = null;
         }
         else{
-            //TODO: Error validate Annotation
+            //TODO: Error validate Route
         }
     };
 
