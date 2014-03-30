@@ -33,7 +33,7 @@ var API = (function() {
             FileSystem : require('lib/API.FileSystem'),
             DataBase : '',
             Log : '',
-            Map : '',
+            Map : require('lib/API.Map'),
             Notification : require('lib/API.Notification'),
             Social : ''
         },
