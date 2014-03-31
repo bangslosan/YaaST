@@ -73,9 +73,6 @@ var Media = (function() {
     self.createAudioPlayer = function createAudioPlayer(options) {
         var tiAudioPlayer;
 
-        //TODO: 4test
-        //options.resource = 'http://audio.ancientfaith.com/wardrobe/atw_2014-02-06.mp3';
-
         audioPlayerId ++;
         Ti.API.info('[API.Media]  Creating Audio Player: ' + audioPlayerId);
         tiAudioPlayer = Ti.Media.createAudioPlayer({
@@ -96,8 +93,11 @@ var Media = (function() {
      * @return {Boolean} Boolean indicating if audio playback is paused */
     self.isAudioPlayerPaused = function isAudioPlayerPaused(playerId) {
         if (audioPlayerList[playerId] == null) {
-
+            //TODO: error. Unknown Audio Player ID
+            Ti.API.info('[API.Media.isAudioPlayerPaused] Unknown Audio Player ID: ' + audioPlayerId);
+            return false;
         }
+        Ti.API.info('[API.Media.isAudioPlayerPaused] Audio Player paused: ' + audioPlayerList[playerId].paused);
         return audioPlayerList[playerId].paused;
     };
 
@@ -107,7 +107,10 @@ var Media = (function() {
     self.isAudioPlayerPlaying = function isAudioPlayerPlaying(playerId) {
         if (audioPlayerList[playerId] == null) {
             //TODO: error. Unknown Audio Player ID
+            Ti.API.info('[API.Media.isAudioPlayerPlaying] Unknown Audio Player ID: ' + audioPlayerId);
+            return false;
         }
+        Ti.API.info('[API.Media.isAudioPlayerPlaying] Audio Player playing: ' + audioPlayerList[playerId].playing);
         return audioPlayerList[playerId].playing;
     };
 
@@ -117,7 +120,10 @@ var Media = (function() {
     self.getAudioPlayerURL = function getAudioPlayerURL(playerId) {
         if (audioPlayerList[playerId] == null) {
             //TODO: error. Unknown Audio Player ID
+            Ti.API.info('[API.Media.getAudioPlayerURL] Unknown Audio Player ID: ' + audioPlayerId);
+            return false;
         }
+        Ti.API.info('[API.Media.getAudioPlayerURL] Audio Player URL: ' + audioPlayerList[playerId].url);
         return audioPlayerList[playerId].url;
     };
 
@@ -127,8 +133,12 @@ var Media = (function() {
     self.setAudioPlayerURL = function getAudioPlayerURL(playerId, url) {
         if (audioPlayerList[playerId] == null) {
             //TODO: error. Unknown Audio Player ID
+            Ti.API.info('[API.Media.setAudioPlayerURL] Unknown Audio Player ID: ' + playerId);
+            return false;
         }
         audioPlayerList[playerId].url = url;
+        Ti.API.info('[API.Media.setAudioPlayerURL] Audio Player URL changed: ' + audioPlayerList[playerId].url);
+        return true;
     };
 
     /** Get Audio Player volume
@@ -137,7 +147,10 @@ var Media = (function() {
     self.getAudioPlayerVolume = function getAudioPlayerVolume(playerId) {
         if (audioPlayerList[playerId] == null) {
             //TODO: error. Unknown Audio Player ID
+            Ti.API.info('[API.Media.getAudioPlayerVolume] Unknown Audio Player id: ' + playerId);
+            return false;
         }
+        Ti.API.info('[API.Media.getAudioPlayerVolume] AudioPlayer ' + playerId + ' volume:' + audioPlayerList[playerId].volume);
         return audioPlayerList[playerId].volume;
     };
 
@@ -147,9 +160,13 @@ var Media = (function() {
     self.setAudioPlayerVolume = function getAudioPlayerVolume(playerId, volume) {
         if (audioPlayerList[playerId] == null) {
             //TODO: error. Unknown Audio Player ID
+            Ti.API.info('[API.Media.setAudioPlayerVolume] Unknown Audio Player id: ' + playerId);
+            return false;
         }
         // TODO: check iOS
         audioPlayerList[playerId].volume = volume;
+        Ti.API.info('[API.Media.setAudioPlayerVolume] AudioPlayer ' + playerId + ' new volume: ' + audioPlayerList[playerId].volume);
+        return true;
     };
 
     /** Pause Audio Player
@@ -157,8 +174,12 @@ var Media = (function() {
     self.pauseAudioPlayer = function pauseAudioPlayer(playerId) {
         if (audioPlayerList[playerId] == null) {
             //TODO: error. Unknown Audio Player ID
+            Ti.API.info('[API.Media.pauseAudioPlayer] Unknown Audio Player id: ' + playerId);
+            return false;
         }
         audioPlayerList[playerId].pause();
+        Ti.API.info('[API.Media.pauseAudioPlayer] AudioPlayer ' + playerId + ' Paused!');
+        return true;
     };
 
     /** Play Audio Player
@@ -166,16 +187,21 @@ var Media = (function() {
     self.playAudioPlayer = function playAudioPlayer(playerId) {
         if (audioPlayerList[playerId] == null) {
             //TODO: error. Unknown Audio Player ID
+            Ti.API.info('[API.Media.playAudioPlayer] Unknown Audio Player id: ' + playerId);
+            return false;
         }
         audioPlayerList[playerId].start();
-        Ti.API.info('[API.Media]  Play activated in player ' + playerId);
+        Ti.API.info('[API.Media.playAudioPlayer]  Play activated in player ' + playerId + ' with URL: ' + audioPlayerList[playerId].url);
+        return true;
     };
 
     /** Stop Audio Player
      * @param {Number} playerId, the audio player ID number */
     self.stopAudioPlayer = function stopAudioPlayer(playerId) {
         if (audioPlayerList[playerId] == null) {
+            Ti.API.info('[API.Media.stopAudioPlayer] Unknown Audio Player ID: ' + playerId);
             //TODO: error. Unknown Audio Player ID
+            return false;
         }
         audioPlayerList[playerId].stop();
         if (Ti.Platform.name === 'android')
@@ -184,7 +210,7 @@ var Media = (function() {
         }
     };
 
-    // TODO select other place to put that fkngShit
+    // TODO
     // Private?
     self.convertPointToView = function convertPointToView(point, destinationView) {
         if (destinationView == null) {
