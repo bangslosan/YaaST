@@ -439,8 +439,8 @@
     };
 
     dummyAudioPlayer.prototype.removeEventListener = function removeEventListener(publicEvent, callback) {
-        Ti.API.info('[Audio DUMMY] 13 - removeEventListener');
-        addProcess.call(this, 13, {'publicEvent': publicEvent, 'callback': callback});
+        Ti.API.info('[Audio DUMMY] 31 - removeEventListener');
+        addProcess.call(this, 31, {'publicEvent': publicEvent, 'callback': callback});
     };
 
     dummyAudioPlayer.prototype.play = function play() {
