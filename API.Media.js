@@ -190,7 +190,7 @@ var Media = (function() {
             Ti.API.info('[API.Media.playAudioPlayer] Unknown Audio Player id: ' + playerId);
             return false;
         }
-        audioPlayerList[playerId].start();
+        audioPlayerList[playerId].play();
         Ti.API.info('[API.Media.playAudioPlayer]  Play activated in player ' + playerId + ' with URL: ' + audioPlayerList[playerId].url);
         return true;
     };
