@@ -463,6 +463,11 @@
         addProcess.call(this, 4, {'url': url});
     };
 
+    dummyAudioPlayer.prototype.setAudioPlayerVolume = function setAudioPlayerVolume(vol) {
+        Ti.API.info('[Audio DUMMY] 5 - setVolume: ' + vol);
+        addProcess.call(this, 5, {'value': vol});
+    };
+
     // Private
     dummyAudioPlayer.prototype.changeHandler = function changeHandler(event) {
         var i;
@@ -618,6 +623,10 @@
                     // SETURL
                     _genericMethodHandler.call(API, setURLCallback.bind(this), 'API.HW.Media.setAudioPlayerURL', [this.id, newOrder.options.url], null);
                     break;
+                case 5:
+                    // SET VOLUME
+                    _genericMethodHandler.call(API, volumeCallback.bind(this), 'API.HW.Media.setAudioPlayerVolume', [this.id, newOrder.options.value], null);
+                    break;
                 case 13:
                     // AddEventListener
                     Ti.API.info('[Audio DUMMY] addEventListener ' + newOrder.options.publicEvent + ', entityId: ' + this.id);
@@ -678,6 +687,12 @@
 
     var setURLCallback = function setURLCallback() {
         Ti.API.info('[Audio DUMMY] SetURL Callback.');
+        genericCallback.call(this);
+    };
+
+
+    var volumeCallback = function volumeCallback() {
+        Ti.API.info('[Audio DUMMY] volume Callback.');
         genericCallback.call(this);
     };
 
