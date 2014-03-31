@@ -65,6 +65,7 @@ var Media = (function() {
       */
 
     var audioPlayerList = {};
+    var audioPlayerCounters = {};
     var audioPlayerId = 0;
 
     /** Create new AudioPlayer
@@ -352,10 +353,45 @@ var Media = (function() {
         videoPlayerList[playerId].toImage(callback);
     };
 
-
     self.addEventListener = function addEventListener(event, handler, id) {
-        Ti.API.info('addEventListener; event: ' + event + ', id: ' + id +', audioPlayerList: ' + JSON.stringify(audioPlayerList));
-        audioPlayerList[id].addEventListener(event, handler);
+        Ti.API.info('[API.Media.addEventListener] event: ' + event + ', id: ' + id +', audioPlayerList: ' + JSON.stringify(audioPlayerList) + 'event: ' + event);
+        var handler_aux = function(e) {
+            Ti.API.info('*************************************************' + e.type);
+            if (e.type == 'complete') {
+                Ti.API.info('[API.Media.eventHandler false] (stopped), paused: ' + audioPlayerList[id].paused + ', playing: ' + audioPlayerList[id].playing + '---------------REAL e: ' + JSON.stringify(e));
+                var d = {};
+                d['order'] = audioPlayerCounters[id].change;
+                d['description'] = 'stopped';
+                d['state'] = 5;
+                d['type'] = 'change';
+                d['source'] = e.source;
+                Ti.API.info('[API.Media.eventHandler false] change ' + d['order']);
+                audioPlayerCounters[id].change ++;
+                handler(d);
+                return;
+            } else if (e.type == 'change') {
+                if (e.state == 5) {
+                    Ti.API.info('[API.Media.eventHandler] ChangeEvent.stop killed');
+                    return;
+                }
+                Ti.API.info('[API.Media.eventHandler] (' + e.description + '), paused: ' + audioPlayerList[id].paused + ', playing: ' + audioPlayerList[id].playing + '---------------REAL e: ' + JSON.stringify(e));
+                e['order'] = audioPlayerCounters[id].change;
+                Ti.API.info('[API.Media.eventHandler] change ' + e['order']);
+                audioPlayerCounters[id].change ++;
+            } else if (e.type == 'progress') {
+                Ti.API.info('[API.Media.eventHandler] (' + e.progress + '), paused: ' + audioPlayerList[id].paused + ', playing: ' + audioPlayerList[id].playing + '---------------REAL e: ' + JSON.stringify(e));
+                e['order'] = audioPlayerCounters[id].progress;
+                Ti.API.info('[API.Media.eventHandler] progress ' + e['order']);
+                audioPlayerCounters[id].progress ++;
+            }
+            handler(e);
+        };
+        audioPlayerList[id].addEventListener(event, handler_aux);
+        Ti.API.info('[API.Media.eventHandler] event: ' + event + ', isApple: ' + Ti.App.isApple);
+        if (event == 'change') {
+            Ti.API.info('[API.Media.eventHandler] event change and complete!!');
+            audioPlayerList[id].addEventListener('complete', handler_aux);
+        }
     };
 
     self.removeEventListener = function removeEventListener(event, handler, id) {
@@ -377,8 +413,8 @@ var Media = (function() {
         'audioChange': {
             event: 'change',
             listener: null,
-            source: "Ti.Media.AudioPlayer",
-            keylist: ['description', 'state', 'type'],
+            source: "Ti.Media.Sound",
+            keylist: ['description', 'state', 'type', 'order'],
             dummy: true
         },
         /** Fired once per second with the current progress during playback.
@@ -391,8 +427,8 @@ var Media = (function() {
         'audioProgress': {
             event: 'progress',
             listener: null,
-            source: "Ti.Media.AudioPlayer",
-            keylist: ['progress', 'type'],
+            source: "Ti.Media.Sound",
+            keylist: ['progress', 'type', 'order'],
             dummy: true
         }
     };
