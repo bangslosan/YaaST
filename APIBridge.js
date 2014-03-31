@@ -412,54 +412,54 @@
         this.lastProgress = -1;
         this.lastComplete = -1;
         this.busy = true;
-        Ti.API.info('[DUMMY] STATE: creating');
+        Ti.API.info('[Audio DUMMY] STATE: creating');
         this.state = 'creating';
 
         var callback = function(id) {
-            Ti.API.info('[DUMMY].............. available id:' + id);
+            Ti.API.info('[Audio DUMMY].............. available id:' + id);
             this.id = id;
             this.syncAddEventListener('audioChange', this.changeHandler.bind(this));
             this.syncAddEventListener('audioProgress', this.processHandler.bind(this));
             //this.syncAddEventListener('audioComplete', this.completeHandler.bind(this));
             genericCallback.call(this, id);
-            Ti.API.info('[DUMMY] STATE: stoped');
+            Ti.API.info('[Audio DUMMY] STATE: stoped');
             this.state = 'stopped';
         };
         if (!(options instanceof Object)) {
             options = null;
         }
-        Ti.API.info('[DUMMY] waiting for audioPlayer id ..............');
+        Ti.API.info('[Audio DUMMY] waiting for audioPlayer id ..............');
         _genericMethodHandler.call(API, callback.bind(this), 'API.HW.Media.createAudioPlayer', [], options);
     };
 
     // Public
     dummyAudioPlayer.prototype.addEventListener = function addEventListener(publicEvent, callback) {
-        Ti.API.info('[DUMMY] 13 - addEventListener');
+        Ti.API.info('[Audio DUMMY] 13 - addEventListener');
         addProcess.call(this, 13, {'publicEvent': publicEvent, 'callback': callback});
     };
 
     dummyAudioPlayer.prototype.removeEventListener = function removeEventListener(publicEvent, callback) {
-        Ti.API.info('[DUMMY] 13 - removeEventListener');
+        Ti.API.info('[Audio DUMMY] 13 - removeEventListener');
         addProcess.call(this, 13, {'publicEvent': publicEvent, 'callback': callback});
     };
 
     dummyAudioPlayer.prototype.play = function play() {
-        Ti.API.info('[DUMMY] 1 - play');
+        Ti.API.info('[Audio DUMMY] 1 - play');
         addProcess.call(this, 1);
     };
 
     dummyAudioPlayer.prototype.pause = function pause() {
-        Ti.API.info('[DUMMY] 2 - pause');
+        Ti.API.info('[Audio DUMMY] 2 - pause');
         addProcess.call(this, 2);
     };
 
     dummyAudioPlayer.prototype.stop = function stop() {
-        Ti.API.info('[DUMMY] 3 - stop');
+        Ti.API.info('[Audio DUMMY] 3 - stop');
         addProcess.call(this, 3);
     };
 
     dummyAudioPlayer.prototype.setURL = function setURL(url) {
-        Ti.API.info('[DUMMY] 4 - setURL');
+        Ti.API.info('[Audio DUMMY] 4 - setURL');
         addProcess.call(this, 4, {'url': url});
     };
 
@@ -469,10 +469,10 @@
 
         if (this.lastChange + 1 == event.order) {
             // Real Next
-            Ti.API.info('[DUMMY eventHandler] change event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
+            Ti.API.info('[Audio DUMMY eventHandler] change event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
             this.lastChange += 1;
             for (i = 0; i < this.callbacks.audioChange.length; i ++) {
-                Ti.API.info('[DUMMY eventHandler] launching HTML callback... ' + this.callbacks.audioChange[i]);
+                Ti.API.info('[Audio DUMMY eventHandler] launching HTML callback... ' + this.callbacks.audioChange[i]);
                 this.callbacks.audioChange[i](event);
             }
             if (this.pendingEvents.audioChange[event.order + 1] != null) {
@@ -482,11 +482,11 @@
             }
         } else if (this.lastChange + 1 < event.order) {
             // Push this event
-            Ti.API.info('[DUMMY eventHandler] save this change event: ' + event.order);
+            Ti.API.info('[Audio DUMMY eventHandler] save this change event: ' + event.order);
             this.pendingEvents.audioChange[event.order] = event;
         } else {
             // ORDER ERROR
-            Ti.API.info('[DUMMY eventHandler] change event order error ' + event.order + ' < ' + this.lastChange + ', event: ' + JSON.stringify(event));
+            Ti.API.info('[Audio DUMMY eventHandler] change event order error ' + event.order + ' < ' + this.lastChange + ', event: ' + JSON.stringify(event));
             // discard event
         }
     };
@@ -496,7 +496,7 @@
 
         if (this.lastComplete + 1 == event.order) {
             // Real Next
-            Ti.API.info('[DUMMY completeHandler] complete event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
+            Ti.API.info('[Audio DUMMY completeHandler] complete event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
             this.lastComplete += 1;
             for (i = 0; i < this.callbacks.audioComplete.length; i ++) {
                 this.callbacks.audioComplete[i](event);
@@ -508,11 +508,11 @@
             }
         } else if (this.lastComplete + 1 < event.order) {
             // Push this event
-            Ti.API.info('[DUMMY completeHandler] save this progress event: ' + event.order);
+            Ti.API.info('[Audio DUMMY completeHandler] save this progress event: ' + event.order);
             this.pendingEvents.audioComplete[event.order]= event;
         } else {
             // ORDER ERROR
-            Ti.API.info('[DUMMY completeHandler] complete event order error ' + event.order + ' < ' + this.lastChange + ', event: ' + JSON.stringify(event));
+            Ti.API.info('[Audio DUMMY completeHandler] complete event order error ' + event.order + ' < ' + this.lastChange + ', event: ' + JSON.stringify(event));
             // discard event
         }
     };
@@ -522,7 +522,7 @@
 
         if (this.lastProgress + 1 == event.order) {
             // Real Next
-            Ti.API.info('[DUMMY eventHandler] progress event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
+            Ti.API.info('[Audio DUMMY eventHandler] progress event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
             this.lastProgress += 1;
             for (i = 0; i < this.callbacks.audioProgress.length; i ++) {
                 this.callbacks.audioProgress[i](event);
@@ -534,17 +534,17 @@
             }
         } else if (this.lastProgress + 1 < event.order) {
             // Push this event
-            Ti.API.info('[DUMMY eventHandler] save this progress event: ' + event.order);
+            Ti.API.info('[Audio DUMMY eventHandler] save this progress event: ' + event.order);
             this.pendingEvents.audioProgress[event.order]= event;
         } else {
             // ORDER ERROR
-            Ti.API.info('[DUMMY eventHandler] progress event order error ' + event.order + ' < ' + this.lastChange + ', event: ' + JSON.stringify(event));
+            Ti.API.info('[Audio DUMMY eventHandler] progress event order error ' + event.order + ' < ' + this.lastChange + ', event: ' + JSON.stringify(event));
             // discard event
         }
     };
 
     dummyAudioPlayer.prototype.syncAddEventListener = function SyncAddEventListener(publicEvent, callback) {
-        Ti.API.info('[DUMMY] Sync-addEventListener. event: ' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
+        Ti.API.info('[Audio DUMMY] Sync-addEventListener. event: ' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
         if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
             // First event listener for this publicEvent
             eventHandlers[publicEvent] = [];
@@ -552,15 +552,15 @@
             Ti.App.addEventListener(publicEvent, _invokeEventCallbacks);
         }
         eventHandlers[publicEvent].push(callback);
-        Ti.API.info('[DUMMY] Sync-addEventListener pre-fire');
+        Ti.API.info('[Audio DUMMY] Sync-addEventListener pre-fire');
 
         // Subscribe this view to publicEvent
         Ti.App.fireEvent('APIEvent', {'action': 'addEventListener', 'event': publicEvent, 'viewId': id, 'entityId': this.id});
-        Ti.API.info('[DUMMY] Sync-addEventListener post-fire');
+        Ti.API.info('[Audio DUMMY] Sync-addEventListener post-fire');
     };
 
     dummyAudioPlayer.prototype.syncRemoveEventListener = function syncRemoveEventListener(publicEvent, callback) {
-        Ti.API.info('[DUMMY] Sync-removeEventListener. event:' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
+        Ti.API.info('[Audio DUMMY] Sync-removeEventListener. event:' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
         var index;
 
         if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
@@ -577,22 +577,29 @@
     };
 
     /*
-     * play   -> 1
-     * pause  -> 2
-     * stop   -> 3
-     * setURL -> 4
+     * play      -> 1
+     * pause     -> 2
+     * stop      -> 3
+     * setURL    -> 4
+     * setVolume -> 5
+     * release   -> 6
+     * reset     -> 7
+     * addEventListener    -> 13
+     * removeEventListener -> 31
      */
     var addProcess = function addProcess(type, options) {
-        Ti.API.info('[DUMMY] Add new order to AudioPlayer:' + type);
+        Ti.API.info('[Audio DUMMY] Add new order to AudioPlayer:' + type);
         this.pendings.push({'type': type, 'options': options});
         process.call(this);
     };
 
     var process = function process() {
-        Ti.API.info('[DUMMY] trying to process. Busy-> ' + this.busy + '; pendings: ' + this.pendings);
+        var i, isRedund;
+
+        Ti.API.info('[Audio DUMMY] trying to process. Busy-> ' + this.busy + '; pendings: ' + JSON.stringify(this.pendings));
         if (!this.busy && this.pendings.length > 0) {
             var newOrder = this.pendings.shift();
-            Ti.API.info('[DUMMY] processing ' + newOrder);
+            Ti.API.info('[Audio DUMMY] processing ' + newOrder);
             this.busy = true;
             switch(newOrder.type) {
                 case 1:
@@ -613,7 +620,7 @@
                     break;
                 case 13:
                     // AddEventListener
-                    Ti.API.info('[DUMMY] addEventListener ' + newOrder.options.publicEvent + ', entityId: ' + this.id);
+                    Ti.API.info('[Audio DUMMY] addEventListener ' + newOrder.options.publicEvent + ', entityId: ' + this.id);
                     if (newOrder.options.publicEvent == 'audioChange') {
                         this.callbacks.audioChange.push(newOrder.options.callback);
                     } else if (newOrder.options.publicEvent == 'audioProgress') {
@@ -622,13 +629,13 @@
                         this.callbacks.audioComplete.push(newOrder.options.callback);
                     }
                      else {
-                        Ti.API.info('[DUMMY.addEventListener] Error. unknown event: ' + newOrder.options.publicEvent);
+                        Ti.API.info('[Audio DUMMY.addEventListener] Error. unknown event: ' + newOrder.options.publicEvent);
                     }
                     genericCallback.call(this);
                     break;
                 case 31:
                     // RemoveEventListener
-                    Ti.API.info('[DUMMY] removeEventListener: ' + newOrder.options.publicEvent);
+                    Ti.API.info('[Audio DUMMY] removeEventListener: ' + newOrder.options.publicEvent);
                     if (newOrder.options.publicEvent == 'audioChange') {
                         this.callbacks.audioChange.pop(newOrder.options.callback);
                     } else if (newOrder.options.publicEvent == 'audioProgress') {
@@ -636,51 +643,51 @@
                     } else if (newOrder.options.publicEvent == 'audioComplete') {
                         this.callbacks.audioComplete.pop(newOrder.options.callback);
                     } else {
-                        Ti.API.info('[DUMMY.addEventListener] Error. unknown event: ' + newOrder.options.publicEvent);
+                        Ti.API.info('[Audio DUMMY.addEventListener] Error. unknown event: ' + newOrder.options.publicEvent);
                     }
                     genericCallback.call(this);
                     break;
                 default:
                     // ERROR
-                    Ti.API.info('[DUMMY] Error in AudioPlayerDummy');
+                    Ti.API.info('[Audio DUMMY] Error in AudioPlayerDummy');
                     break;
             }
         }
     };
 
     var playCallback = function playCallback() {
-        Ti.API.info('[DUMMY] PLAY Callback');
-        Ti.API.info('[DUMMY] STATE: initializing');
+        Ti.API.info('[Audio DUMMY] PLAY Callback');
+        Ti.API.info('[Audio DUMMY] STATE: initializing');
         this.state = 'initializing';
         genericCallback.call(this);
     };
 
     var pauseCallback = function pauseCallback() {
-        Ti.API.info('[DUMMY] PAUSE Callback');
-        Ti.API.info('[DUMMY] STATE: pausing');
+        Ti.API.info('[Audio DUMMY] PAUSE Callback');
+        Ti.API.info('[Audio DUMMY] STATE: pausing');
         this.state = 'pausing';
         genericCallback.call(this);
     };
 
     var stopCallback = function stopCallback() {
-        Ti.API.info('[DUMMY] STOP Callback');
-        Ti.API.info('[DUMMY] STATE: stopping');
+        Ti.API.info('[Audio DUMMY] STOP Callback');
+        Ti.API.info('[Audio DUMMY] STATE: stopping');
         this.state = 'stopping';
         genericCallback.call(this);
     };
 
     var setURLCallback = function setURLCallback() {
-        Ti.API.info('[DUMMY] SetURL Callback.');
+        Ti.API.info('[Audio DUMMY] SetURL Callback.');
         genericCallback.call(this);
     };
 
     var genericCallback = function genericCallback() {
         this.busy = false;
         if (this.pendings.length > 0) {
-            Ti.API.info('[DUMMY] busy');
+            Ti.API.info('[Audio DUMMY] busy');
             process.call(this);
         } else {
-            Ti.API.info('[DUMMY] free');
+            Ti.API.info('[Audio DUMMY] free');
         }
     };
     // End Audio Dummy
