@@ -609,19 +609,71 @@
             switch(newOrder.type) {
                 case 1:
                     // PLAY
-                    _genericMethodHandler.call(API, playCallback.bind(this), 'API.HW.Media.playAudioPlayer', [this.id], null);
+                    isRedund = false;
+                    for (i = 0; i < this.pendings.length; i ++) {
+                        if (this.pendings[i].type == 1) {
+                            isRedund = true;
+                            break;
+                        }
+                    }
+                    if (!isRedund) {
+                        _genericMethodHandler.call(API, playCallback.bind(this), 'API.HW.Media.playAudioPlayer', [this.id], null);
+                    } else {
+                        // Discard this order.
+                         Ti.API.info('[Audio DUMMY] Discarding PLAY');
+                         genericCallback.call(this);
+                    }
                     break;
                 case 2:
                     // PAUSE
-                    _genericMethodHandler.call(API, pauseCallback.bind(this), 'API.HW.Media.pauseAudioPlayer', [this.id], null);
+                    isRedund = false;
+                    for (i = 0; i < this.pendings.length; i ++) {
+                        if (this.pendings[i].type == 2) {
+                            isRedund = true;
+                            break;
+                        }
+                    }
+                    if (!isRedund) {
+                        _genericMethodHandler.call(API, pauseCallback.bind(this), 'API.HW.Media.pauseAudioPlayer', [this.id], null);
+                    } else {
+                        // Discard this order.
+                         Ti.API.info('[Audio DUMMY] Discarding PAUSE');
+                         genericCallback.call(this);
+                    }
                     break;
                 case 3:
                     // STOP
-                    _genericMethodHandler.call(API, stopCallback.bind(this), 'API.HW.Media.stopAudioPlayer', [this.id], null);
+                    isRedund = false;
+                    for (i = 0; i < this.pendings.length; i ++) {
+                        if (this.pendings[i].type == 3) {
+                            isRedund = true;
+                            break;
+                        }
+                    }
+                    if (!isRedund) {
+                        _genericMethodHandler.call(API, stopCallback.bind(this), 'API.HW.Media.stopAudioPlayer', [this.id], null);
+                    } else {
+                        // Discard this order.
+                         Ti.API.info('[Audio DUMMY] Discarding STOP');
+                         genericCallback.call(this);
+                    }
                     break;
                 case 4:
                     // SETURL
-                    _genericMethodHandler.call(API, setURLCallback.bind(this), 'API.HW.Media.setAudioPlayerURL', [this.id, newOrder.options.url], null);
+                    isRedund = false;
+                    for (i = 0; i < this.pendings.length; i ++) {
+                        if (this.pendings[i].type == 4) {
+                            isRedund = true;
+                            break;
+                        }
+                    }
+                    if (!isRedund) {
+                        _genericMethodHandler.call(API, setURLCallback.bind(this), 'API.HW.Media.setAudioPlayerURL', [this.id, newOrder.options.url], null);
+                    } else {
+                        // Discard this order.
+                         Ti.API.info('[Audio DUMMY] Discarding setURL');
+                         genericCallback.call(this);
+                    }
                     break;
                 case 5:
                     // SET VOLUME
