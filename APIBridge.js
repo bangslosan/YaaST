@@ -458,6 +458,16 @@
         addProcess.call(this, 3);
     };
 
+    dummyAudioPlayer.prototype.release = function release() {
+        Ti.API.info('[Audio DUMMY] 6 - release');
+        addProcess.call(this, 6);
+    };
+
+    dummyAudioPlayer.prototype.reset = function reset() {
+        Ti.API.info('[Audio DUMMY] 7 - reset');
+        addProcess.call(this, 7);
+    };
+
     dummyAudioPlayer.prototype.setURL = function setURL(url) {
         Ti.API.info('[Audio DUMMY] 4 - setURL');
         addProcess.call(this, 4, {'url': url});
@@ -679,6 +689,14 @@
                     // SET VOLUME
                     _genericMethodHandler.call(API, volumeCallback.bind(this), 'API.HW.Media.setAudioPlayerVolume', [this.id, newOrder.options.value], null);
                     break;
+                case 6:
+                    // RELEASE
+                    _genericMethodHandler.call(API, releaseCallback.bind(this), 'API.HW.Media.releaseAudioPlayer', [this.id], null);
+                    break;
+                case 7:
+                    // RESET
+                    _genericMethodHandler.call(API, resetCallback.bind(this), 'API.HW.Media.resetAudioPlayer', [this.id], null);
+                    break;
                 case 13:
                     // AddEventListener
                     Ti.API.info('[Audio DUMMY] addEventListener ' + newOrder.options.publicEvent + ', entityId: ' + this.id);
@@ -739,12 +757,28 @@
 
     var setURLCallback = function setURLCallback() {
         Ti.API.info('[Audio DUMMY] SetURL Callback.');
+        Ti.API.info('[Audio DUMMY] current STATE: ' + this.state);
         genericCallback.call(this);
     };
 
 
     var volumeCallback = function volumeCallback() {
         Ti.API.info('[Audio DUMMY] volume Callback.');
+        Ti.API.info('[Audio DUMMY] current STATE: ' + this.state);
+        genericCallback.call(this);
+    };
+
+    var releaseCallback = function releaseCallback() {
+        Ti.API.info('[Audio DUMMY] release Callback.');
+        Ti.API.info('[Audio DUMMY] STATE: clean');
+        this.state = 'clean';
+        genericCallback.call(this);
+    };
+
+    var resetCallback = function resetCallback() {
+        Ti.API.info('[Audio DUMMY] reset Callback.');
+        Ti.API.info('[Audio DUMMY] STATE: resetting');
+        this.state = 'resetting';
         genericCallback.call(this);
     };
 
