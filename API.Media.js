@@ -75,15 +75,13 @@ var Media = (function() {
         var tiAudioPlayer;
 
         audioPlayerId ++;
-        Ti.API.info('[API.Media]  Creating Audio Player: ' + audioPlayerId);
-        tiAudioPlayer = Ti.Media.createAudioPlayer({
-            //url: options.resource,
-            // allowBackground: true on Android allows the
-            // player to keep playing when the app is in the
-            // background.
-            allowBackground: true
-        });
-
+        Ti.API.info('[API.Media.createAudioPlayer]  ID: ' + audioPlayerId);
+        tiAudioPlayer = Ti.Media.createSound({});
+        audioPlayerCounters[audioPlayerId] = {
+            'progress': 0,
+            'change': 0,
+            'success': 0
+        };
         audioPlayerList[audioPlayerId] = tiAudioPlayer;
         Ti.API.info('[API.Media]  Audio Player created: ' + audioPlayerId);
         return audioPlayerId;
@@ -204,11 +202,56 @@ var Media = (function() {
             //TODO: error. Unknown Audio Player ID
             return false;
         }
-        audioPlayerList[playerId].stop();
-        if (Ti.Platform.name === 'android')
-        {
+        Ti.API.info('[API.Media.stopAudioPlayer] Audio player playing: ' + audioPlayerList[playerId].playing + '. paused: ' + audioPlayerList[playerId].paused);
+        if (!audioPlayerList[playerId].playing && !audioPlayerList[playerId].paused) {
+            Ti.API.info('[API.Media.stopAudioPlayer] Audio player ' + playerId + '. Is stopped yet');
+            /*// Only for AudioPlayer. not for Sound
+            if(Ti.App.isApple){
+                audioPlayerList[playerId].stop();
+            }
+            else {*/
+            //audioPlayerList[playerId].stop();
+            Ti.API.info('[API.Media.stopAudioPlayer] *release()');
             audioPlayerList[playerId].release();
+            //}
+            return false;
         }
+        audioPlayerList[playerId].release();
+        /*// Only for AudioPlayer. not for Sound
+        if (Ti.App.isApple) {
+            audioPlayerList[playerId].stop();
+        } else {
+            Ti.API.info('[API.Media.stopAudioPlayer] release() for Android ');
+            audioPlayerList[playerId].release();
+        }*/
+        Ti.API.info('[API.Media.stopAudioPlayer] Stopping Audio player (release)' + playerId);
+        return true;
+    };
+
+    /** Release Audio Player
+     * @param {Number} playerId, the audio player ID number */
+    self.releaseAudioPlayer = function releaseAudioPlayer(playerId) {
+        if (audioPlayerList[playerId] == null) {
+            //TODO: error. Unknown Audio Player ID
+            Ti.API.info('[API.Media.releaseAudioPlayer] Unknown Audio Player id: ' + playerId);
+            return false;
+        }
+        audioPlayerList[playerId].release();
+        Ti.API.info('[API.Media.releaseAudioPlayer] AudioPlayer ' + playerId + ' Paused!');
+        return true;
+    };
+
+    /** Reset Audio Player
+     * @param {Number} playerId, the audio player ID number */
+    self.resetAudioPlayer = function resetAudioPlayer(playerId) {
+        if (audioPlayerList[playerId] == null) {
+            //TODO: error. Unknown Audio Player ID
+            Ti.API.info('[API.Media.resetAudioPlayer] Unknown Audio Player id: ' + playerId);
+            return false;
+        }
+        audioPlayerList[playerId].reset();
+        Ti.API.info('[API.Media.resetAudioPlayer] AudioPlayer ' + playerId + ' Paused!');
+        return true;
     };
 
     // TODO
