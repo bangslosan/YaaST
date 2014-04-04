@@ -104,7 +104,7 @@
                         },
                          /** Create Contact
                           * @param {function} Callback
-                          * @param {Object}
+                          * @param {Object} options
                           * @return {Object} */
                         createContact: function(callback, options) {
                             if (!(options instanceof Object)) {
@@ -136,7 +136,45 @@
 
                     },
                     FileSystem : {
-
+                        isFile: function isFile(callback, path) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.isFile', [path], {}, false);
+                        },
+                        isDirectory: function isDirectory(callback, path) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.isDirectory', [path], {}, false);
+                        },
+                        isSymbolicLink: function isSymbolicLink(callback, path) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.isSymbolicLink', [path], {}, false);
+                        },
+                        createFile: function createFile(callback, parentPath, fileName) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.createFile', [parentPath, fileName], {}, false);
+                        },
+                        createDirectory: function createDirectory(callback, parentPath, directoryName) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.createDirectory', [parentPath, directoryName], {}, false);
+                        },
+                        deleteFile: function deleteFile(callback, path) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.deleteFile', [path], {}, false);
+                        },
+                        deleteDirectory: function deleteDirectory(callback, path) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.deleteDirectory', [path], {}, false);
+                        },
+                        read: function read(callback, path) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.read', [path], {}, false);
+                        },
+                        append: function append(callback, path, data) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.append', [path, data], {}, false);
+                        },
+                        overwrite: function overwrite(callback, path, data) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.overwrite', [path, data], {}, false);
+                        },
+                        rename: function rename(callback, path, newName) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.rename', [path, newName], {}, false);
+                        },
+                        move: function move(callback, origin, destination) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.move', [origin, destination], {}, false);
+                        },
+                        copy: function copy(callback, origin, destination) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.copy', [origin, destination], {}, false);
+                        }
                     },
                     DataBase : {
 

@@ -113,9 +113,10 @@ var Filesystem = (function() {
      * @param {String} fileName name of the file wants to be created */
     self.createFile = function createFile(parentPath, fileName) {
         var path = buildPath(parentPath, fileName);
+        path = Ti.Filesystem.applicationDataDirectory + path;
         var fileDescriptor = getFileDescriptor.call(this, path);
         throwFileExist(fileDescriptor);
-        if (!fileDescriptor.write("")){
+        if (!fileDescriptor.write("")) {
             throw {
                 name: "WriteError",
                 message: "The file couldn't be created"
