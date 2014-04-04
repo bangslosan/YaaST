@@ -13,7 +13,7 @@
     var eventHandlers = {};
     var methodHandlers = {};
     // TODO: When titanium load, will replace "var id = null" with the correct id value. This line must be unique in this file.
-    var appleOS = ;
+    var appleOS;
     var id = 69;
     var prefs = null;
     var inputs = {};
@@ -165,6 +165,9 @@
                         },
                         overwrite: function overwrite(callback, path, data) {
                             _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.overwrite', [path, data], {}, false);
+                        },
+                        listDirectory: function listDirectory(callback, path) {
+                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.listDirectory', [path], {}, false);
                         },
                         rename: function rename(callback, path, newName) {
                             _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.rename', [path, newName], {}, false);
