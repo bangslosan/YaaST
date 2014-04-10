@@ -71,55 +71,65 @@ var API = (function() {
             if (_self.SW[key].events) {
                 for (eventId in _self.SW[key].events) {
                     eventData = _self.SW[key].events[eventId];
-                    if (eventData.dummy) {
-                        _self.events.availableEvents[eventId] = {
-                            keylist: eventData.keylist,
-                            event: eventData.event,
-                            listener: _self.SW[key],
-                            source: eventData.source,
-                            dummy: true
-                        };
+                    if (typeof eventData.source === 'undefined') {
+                        Ti.API.info('[API._initEvents] Error. event source undefined. self.SW.' + key + '.events.' + eventId + ' = ' + JSON.stringify(eventData));
+                        continue;
                     } else {
-                        _self.events.availableEvents[eventId] = {
-                            keylist: eventData.keylist,
-                            event: eventData.event,
-                            listener: eventData.listener,
-                            source: eventData.source
-                        };
+                        if (eventData.dummy) {
+                            _self.events.availableEvents[eventId] = {
+                                keylist: eventData.keylist,
+                                event: eventData.event,
+                                listener: _self.SW[key],
+                                source: eventData.source,
+                                dummy: true
+                            };
+                        } else {
+                            _self.events.availableEvents[eventId] = {
+                                keylist: eventData.keylist,
+                                event: eventData.event,
+                                listener: eventData.listener,
+                                source: eventData.source
+                            };
+                        }
+                        //_self.events.publicEvents[eventData.event] = eventId;
+                        if (_self.events.publicEvents[eventData.source] == null) {
+                            _self.events.publicEvents[eventData.source] = {};
+                        }
+                        _self.events.publicEvents[eventData.source][eventData.event] = eventId;
                     }
-                    //_self.events.publicEvents[eventData.event] = eventId;
-                    if (_self.events.publicEvents[eventData.source] == null) {
-                        _self.events.publicEvents[eventData.source] = {};
-                    }
-                    _self.events.publicEvents[eventData.source][eventData.event] = eventId;
-                    }
+                }
             }
         }
         for (key in _self.HW) {
             if (_self.HW[key].events) {
                 for (eventId in _self.HW[key].events) {
                     eventData = _self.HW[key].events[eventId];
-                    if (eventData.dummy) {
-                        _self.events.availableEvents[eventId] = {
-                            keylist: eventData.keylist,
-                            event: eventData.event,
-                            listener: _self.HW[key],
-                            source: eventData.source,
-                            dummy: true
-                        };
+                    if (typeof eventData.source === 'undefined') {
+                        Ti.API.info('[API._initEvents] Error. event source undefined. self.HW.' + key + '.events.' + eventId + ' = ' + JSON.stringify(eventData));
+                        continue;
                     } else {
-                        _self.events.availableEvents[eventId] = {
-                            keylist: eventData.keylist,
-                            event: eventData.event,
-                            listener: eventData.listener,
-                            source: eventData.source
-                        };
+                        if (eventData.dummy) {
+                            _self.events.availableEvents[eventId] = {
+                                keylist: eventData.keylist,
+                                event: eventData.event,
+                                listener: _self.HW[key],
+                                source: eventData.source,
+                                dummy: true
+                            };
+                        } else {
+                            _self.events.availableEvents[eventId] = {
+                                keylist: eventData.keylist,
+                                event: eventData.event,
+                                listener: eventData.listener,
+                                source: eventData.source
+                            };
+                        }
+                        //_self.events.publicEvents[eventData.event] = eventId;
+                        if (_self.events.publicEvents[eventData.source] == null) {
+                            _self.events.publicEvents[eventData.source] = {};
+                        }
+                        _self.events.publicEvents[eventData.source][eventData.event] = eventId;
                     }
-                    //_self.events.publicEvents[eventData.event] = eventId;
-                    if (_self.events.publicEvents[eventData.source] == null) {
-                        _self.events.publicEvents[eventData.source] = {};
-                    }
-                    _self.events.publicEvents[eventData.source][eventData.event] = eventId;
                 }
             }
         }
@@ -148,6 +158,7 @@ var API = (function() {
                 // TODO: only for debug
                 console.log('[API]---------> new event: ' + data.publicEvent + ' counter: ' + eventcounter[data.publicEvent] + '; data: ' + JSON.stringify(data));
                 Ti.App.fireEvent(data.publicEvent, data);
+                console.log('[API] event fired');
             }
             result = true;
         } else {
@@ -170,7 +181,7 @@ var API = (function() {
      * @param: {publicEvent} the public html name for the event.
      * @param: {viewId} the id of the interested html view.
      * @return : Bool true if success or false if error*/
-    _self.events.addEventListener = function addEventListener(publicEvent, viewId, entityId) {
+    _self.events.addEventListener = function addEventListener(publicEvent, viewId, entityId, dummy) {
         var eventData;
 
         eventData = _self.events.availableEvents[publicEvent];
@@ -191,15 +202,15 @@ var API = (function() {
                 nlisteners: 1,
                 views: {}
             };
-            Ti.API.info('[API.addEventListener] event: ' + publicEvent + ', privateEvent: ' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId + ', isDummy?: ' + _self.events.availableEvents[publicEvent].dummy);
+            Ti.API.info('[API.addEventListener] event: ' + publicEvent + ', privateEvent: ' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId + ', dummy: ' + dummy + ', isDummy?: ' + _self.events.availableEvents[publicEvent].dummy);
             eventcounter[publicEvent] = 0;
             if (_self.events.availableEvents[publicEvent].listener === 'accelerometer') {
                 // Accelerometer is special.
                 Ti.Accelerometer.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
             } else if (_self.events.availableEvents[publicEvent].dummy) {
                 // Special Dummy events. This events depends of Titnaium Objects
-                Ti.API.info('[API.addEventListener] special event for dummy: ' + publicEvent + ', privateEvent: ' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId);
-                _self.events.availableEvents[publicEvent].listener.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler, entityId);
+                Ti.API.info('[API.addEventListener] special event for dummy: ' + publicEvent + ', privateEvent: ' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId + ', dummy: ' + dummy);
+                _self.events.availableEvents[publicEvent].listener.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler, entityId, dummy);
             } else {
                 _self.events.availableEvents[publicEvent].listener.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
             }
@@ -211,7 +222,7 @@ var API = (function() {
      * @param: {publicEvent} the public html name for the event.
      * @param: {viewId} the id of the interested html view.
      * @return : Bool true if success or false if error*/
-    _self.events.removeEventListener = function removeEventListener(publicEvent, viewId, entityId) {
+    _self.events.removeEventListener = function removeEventListener(publicEvent, viewId, entityId, dummy) {
         var eventData;
 
         eventData = _self.events.availableEvents[publicEvent];
@@ -226,8 +237,8 @@ var API = (function() {
             // Accelerometer is special.
             Ti.Accelerometer.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
         } else {
-            Ti.API.info('[API.removeEventListener] special event: ' + publicEvent + ', privateEvent' + _self.events.availableEvents[publicEvent].event, ', entityId: ' + entityId);
-            _self.events.availableEvents[publicEvent].listener.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler, entityId);
+            Ti.API.info('[API.removeEventListener] special event: ' + publicEvent + ', privateEvent' + _self.events.availableEvents[publicEvent].event + ', entityId: ' + entityId + ', dummy: ' + dummy);
+            _self.events.availableEvents[publicEvent].listener.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler, entityId, dummy);
         }
         if (_self.events.activeHandlers[publicEvent].nlisteners == 0) {
             delete _self.events.activeHandlers[publicEvent];
@@ -239,14 +250,15 @@ var API = (function() {
      *     'action': 'addEventListener'/'removeEventListener',
      *     'viewId': viewId,
      *     'entityId': entityId optional param. the Titanium Object ID.
+     *     'dummy': dummy name optional param.
      * }
      **/
     _self.events.APIEventHandler = function APIEventHandler(data) {
-        Ti.API.info('[API.APIEventHandler]: ' + data + ', entityId: ' + data.entityId, ', viewId: ' + data.viewId + ', event: ' + data.event);
+        Ti.API.info('[API.APIEventHandler]: entityId: ' + data.entityId, ', viewId: ' + data.viewId + ', event: ' + data.event + ', dummy: ' + data.dummy);
         if (data.action === 'addEventListener') {
-            _self.events.addEventListener(data.event, data.viewId, data.entityId);
+            _self.events.addEventListener(data.event, data.viewId, data.entityId, data.dummy);
         } else if (data.action === 'removeEventListener') {
-            _self.events.removeEventListener(data.event, data.viewId, data.entityId);
+            _self.events.removeEventListener(data.event, data.viewId, data.entityId, data.dummy);
         }
     };
 
@@ -284,7 +296,7 @@ var API = (function() {
             // Error. Method doesn't exist
             result = "Error. Unknown API method";
         }
-        Ti.API.info('[API.APIMethodHandler] Setting method event from aPI to Bridge: ' + data.method.eventName + '_' + data.viewId + '_' + data.callId);
+        Ti.API.info('[API.APIMethodHandler] Sending method event from API to Bridge: ' + data.method.eventName + '_' + data.viewId + '_' + data.callId);
         Ti.API.info('[API.APIMethodHandler] data: ' + JSON.stringify(result));
         Ti.App.fireEvent(data.method.eventName + '_' + data.viewId + '_' + data.callId, {'returnedData': result});
     };

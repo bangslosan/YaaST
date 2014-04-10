@@ -67,6 +67,8 @@ var Media = (function() {
     var audioPlayerList = {};
     var audioPlayerCounters = {};
     var audioPlayerId = 0;
+    var APHandlers = {};
+    var APHandlersinfo = {};
 
     /** Create new AudioPlayer
      * @param {audioPlayerOptions} options
@@ -77,6 +79,12 @@ var Media = (function() {
         audioPlayerId ++;
         Ti.API.info('[API.Media.createAudioPlayer]  ID: ' + audioPlayerId);
         tiAudioPlayer = Ti.Media.createSound({});
+
+        // Events
+        APHandlers[audioPlayerId] = {'progress': [], 'change': [], 'complete': []};
+        APHandlersinfo[audioPlayerId] = {'progress': [], 'change': [], 'complete': []};
+
+        // Creation
         audioPlayerCounters[audioPlayerId] = {
             'progress': 0,
             'change': 0,
@@ -189,8 +197,13 @@ var Media = (function() {
             Ti.API.info('[API.Media.playAudioPlayer] Unknown Audio Player id: ' + playerId);
             return false;
         }
-        audioPlayerList[playerId].play();
-        Ti.API.info('[API.Media.playAudioPlayer]  Play activated in player ' + playerId + ' with URL: ' + audioPlayerList[playerId].url);
+        if (audioPlayerList[playerId].paused == true) {
+            audioPlayerList[playerId].start();
+            Ti.API.info('[API.Media.playAudioPlayer]  Resume player ' + playerId + ' with URL: ' + audioPlayerList[playerId].url);
+        } else {
+            audioPlayerList[playerId].play();
+            Ti.API.info('[API.Media.playAudioPlayer]  Play activated in player ' + playerId + ' with URL: ' + audioPlayerList[playerId].url);
+        }
         return true;
     };
 
@@ -310,70 +323,186 @@ var Media = (function() {
       * @property {Number} width
       */
     var videoPlayerList = {};
+    var videoPlayerCounters = {};
     var videoPlayerId = 0;
+    var VPHandlers = {};
+    var VPHandlersinfo = {};
 
     /** Create new VideoPlayer
      * @param {videoPlayerOptions} options
      * @return {Number} videoPlayer ID*/
-    self.createVideoPlayer = function createVideoPlayer(options) {
+    self.createVideoPlayer = function createVideoPlayer(viewId, options) {
         var tiVideoPlayer;
 
-        //TODO: 4test
-        options.resource = 'http://www.youtube.com/watch?v=d6C0bNDqf3Y';
-
         videoPlayerId ++;
+        Ti.API.info('[API.Media.createVideoPlayer]  ID: ' + videoPlayerId + ', viewId: ' + viewId + ', options: ' + JSON.stringify(options));
+        videoPlayerCounters[videoPlayerId] = {
+            'complete': 0
+        };
+
+        // Autoplay
+        if (typeof options.autoplay === 'undefined') {
+            options.autoplay = true;
+        }
+
+        // FullScreen
+        if (typeof options.fullscreen === 'undefined') {
+            options.fullscreen = '#000000';
+        }
+
+        // Size
+        if (typeof options.width === 'undefined' || typeof options.height === 'undefined') {
+            options.width = parseInt(Ti.App.tabView.rect.width * 0.7);
+            options.height = parseInt(Ti.App.tabView.rect.height * 0.5);
+            options.top = parseInt((Ti.App.tabView.rect.height * 0.5) / 2);
+            options.left = parseInt((Ti.App.tabView.rect.width * 0.3) / 2);
+        } else {
+            // Position
+            if (typeof options.top !== 'undefined' || typeof options.bottom !== 'undefined') {
+                if (typeof options.bottom === 'undefined') {
+                    options.top = parseInt(options.top + Ti.App.componentPos[viewId].top);
+                } else {
+                    options.top = parseInt(Ti.App.componentPos[viewId].top + (Ti.App.componentPos[viewId].height - options.bottom));
+                }
+            }
+            if (typeof options.left !== 'undefined' || typeof options.right !== 'undefined') {
+                if (typeof options.right === 'undefined') {
+                    options.left = parseInt(options.left + Ti.App.componentPos[viewId].left);
+                } else {
+                    options.left = parseInt(Ti.App.componentPos[viewId].left + (Ti.App.componentPos[viewId].width - options.right));
+                }
+            }
+        }
+
+        // Events
+        VPHandlers[videoPlayerId] = {'complete': []};
+        VPHandlersinfo[videoPlayerId] = {'complete': {}};
+        Ti.API.info('[API.Media.createVideoPlayer] VPHandlers: ' + JSON.stringify(VPHandlers));
+        Ti.API.info('[API.Media.createVideoPlayer] VPHandlersinfo: ' + JSON.stringify(VPHandlersinfo));
+        // Creation
         tiVideoPlayer = Ti.Media.createVideoPlayer({
-            url: options.resource,
+            url : options.url,
+            fullscreen : options.fullscreen,
+            autoplay : options.autoplay,
+            //backgroundColor : options.background,
+            height: options.height,
+            width: options.width,
+            top: options.top,
+            left: options.left,
+            mediaControlStyle : Titanium.Media.VIDEO_CONTROL_NONE,
+            scalingMode : Titanium.Media.VIDEO_SCALING_ASPECT_FIT
         });
 
+        Ti.App.tabView.add(tiVideoPlayer);
         videoPlayerList[videoPlayerId] = tiVideoPlayer;
-        return audioPlayerId;
+        return videoPlayerId;
     };
 
     // TODO generic get and set methods?
     self.getVideoPlayerAttribute = function getVideoPlayerAttribute(playerId, attr) {
         if (videoPlayerList[playerId] == null) {
             //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.getVideoPlayerAttribute] Unknown Video Player id: ' + playerId);
+            return false;
         }
+        Ti.API.info('[API.Media.getVideoPlayerAttribute] VideoPlayer: ' + playerId + ' getting: ' + attr + ', return: ' + videoPlayerList[playerId][attr]);
         return videoPlayerList[playerId][attr];
     };
+
+
     self.setVideoPlayerAttribute = function setVideoPlayerAttribute(playerId, attr, value) {
         if (videoPlayerList[playerId] == null) {
             //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.setVideoPlayerAttribute] Unknown Video Player id: ' + playerId);
+            return false;
         }
         videoPlayerList[playerId][attr] = value;
+        Ti.API.info('[API.Media.setVideoPlayerAttribute] VideoPlayer: ' + playerId + ', setting: ' + attr + ', value: ' + value);
+        return true;
+    };
+
+    self.setVideoPlayerBound = function setVideoPlayerBound(viewId, playerId, options) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.setVideoPlayerBound] Unknown Video Player id: ' + playerId);
+            return false;
+        }
+        if (typeof options.width === 'undefined' || typeof options.height === 'undefined') {
+            options.width = parseInt(Ti.App.tabView.rect.width * 0.7);
+            options.height = parseInt(Ti.App.tabView.rect.height * 0.5);
+            options.top = 'undefined';
+            options.left = 'undefined';
+        } else {
+            // Position
+            if (typeof options.top !== 'undefined' || typeof options.bottom !== 'undefined') {
+                if (typeof options.bottom === 'undefined') {
+                    options.top = parseInt(options.top + Ti.App.componentPos[viewId].top);
+                } else {
+                    options.top = parseInt(Ti.App.componentPos[viewId].top + (Ti.App.componentPos[viewId].height - options.bottom));
+                }
+            }
+            if (typeof options.left !== 'undefined' || typeof options.right !== 'undefined') {
+                if (typeof options.right === 'undefined') {
+                    options.left = parseInt(options.left + Ti.App.componentPos[viewId].left);
+                } else {
+                    options.left = parseInt(Ti.App.componentPos[viewId].left + (Ti.App.componentPos[viewId].width - options.right));
+                }
+            }
+        }
+        videoPlayerList[playerId].height = options.height;
+        videoPlayerList[playerId].width = options.width;
+        videoPlayerList[playerId].top = options.top;
+        videoPlayerList[playerId].left = options.left;
+        Ti.API.info('[API.Media.setVideoPlayerBound] VideoPlayer: ' + playerId);
+        return true;
     };
 
     /** Hide a VideoPlayer */
     self.hideVideoPlayer = function hideVideoPlayer(playerId) {
         if (videoPlayerList[playerId] == null) {
             //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.hideVideoPlayer] Unknown Video Player id: ' + playerId);
+            return false;
         }
         videoPlayerList[playerId].hide();
+        Ti.API.info('[API.Media.hideVideoPlayer] VideoPlayer: ' + playerId);
+        return true;
     };
 
     /** Show a VideoPlayer */
     self.showVideoPlayer = function showVideoPlayer(playerId) {
         if (videoPlayerList[playerId] == null) {
             //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.showVideoPlayer] Unknown Video Player id: ' + playerId);
+            return false;
         }
         videoPlayerList[playerId].show();
+        Ti.API.info('[API.Media.showVideoPlayer] VideoPlayer: ' + playerId);
+        return true;
     };
 
     /** Pause a VideoPlayer */
     self.pauseVideoPlayer = function pauseVideoPlayer(playerId) {
         if (videoPlayerList[playerId] == null) {
             //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.pauseVideoPlayer] Unknown Video Player id: ' + playerId);
+            return false;
         }
         videoPlayerList[playerId].pause();
+        Ti.API.info('[API.Media.pauseVideoPlayer] VideoPlayer: ' + playerId);
+        return true;
     };
 
     /** Stop a VideoPlayer */
     self.stopVideoPlayer = function stopVideoPlayer(playerId) {
         if (videoPlayerList[playerId] == null) {
             //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.stopVideoPlayer] Unknown Video Player id: ' + playerId);
+            return false;
         }
         videoPlayerList[playerId].stop();
+        Ti.API.info('[API.Media.stopVideoPlayer] VideoPlayer: ' + playerId);
+        return true;
     };
 
     /** Release a VideoPlayer. Releases the internal video resources immediately.
@@ -382,8 +511,12 @@ var Media = (function() {
     self.releaseVideoPlayer = function releaseVideoPlayer(playerId) {
         if (videoPlayerList[playerId] == null) {
             //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.releaseVideoPlayer] Unknown Video Player id: ' + playerId);
+            return false;
         }
         videoPlayerList[playerId].release();
+        Ti.API.info('[API.Media.releaseVideoPlayer] VideoPlayer: ' + playerId);
+        return true;
     };
 
     /** Capture an image of the rendered view, as a Blob.
@@ -392,54 +525,132 @@ var Media = (function() {
     self.captureVideoPlayer = function captureVideoPlayer(playerId, callback) {
         if (videoPlayerList[playerId] == null) {
             //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.captureVideoPlayer] Unknown Video Player id: ' + playerId);
+            return false;
         }
         videoPlayerList[playerId].toImage(callback);
+        Ti.API.info('[API.Media.captureVideoPlayer] VideoPlayer: ' + playerId);
+        return true;
     };
 
-    self.addEventListener = function addEventListener(event, handler, id) {
-        Ti.API.info('[API.Media.addEventListener] event: ' + event + ', id: ' + id +', audioPlayerList: ' + JSON.stringify(audioPlayerList) + 'event: ' + event);
-        var handler_aux = function(e) {
-            Ti.API.info('*************************************************' + e.type);
-            if (e.type == 'complete') {
-                Ti.API.info('[API.Media.eventHandler false] (stopped), paused: ' + audioPlayerList[id].paused + ', playing: ' + audioPlayerList[id].playing + '---------------REAL e: ' + JSON.stringify(e));
-                var d = {};
-                d['order'] = audioPlayerCounters[id].change;
-                d['description'] = 'stopped';
-                d['state'] = 5;
-                d['type'] = 'change';
-                d['source'] = e.source;
-                Ti.API.info('[API.Media.eventHandler false] change ' + d['order']);
-                audioPlayerCounters[id].change ++;
-                handler(d);
-                return;
-            } else if (e.type == 'change') {
-                if (e.state == 5) {
-                    Ti.API.info('[API.Media.eventHandler] ChangeEvent.stop killed');
+    self.destroyVideoPlayer = function destroyVideoPlayer(playerId) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.destroyVideoPlayer] Unknown Video Player id: ' + playerId);
+            return false;
+        }
+        // Remove events
+       /*for (VPHandlers[id][event]) {
+            VPHandlersinfo[id][event][VPHandlers[id][event].indexOf(handler)]
+        }*/
+
+        videoPlayerList[playerId].hide();
+        videoPlayerList[playerId].release();
+        Ti.App.tabView.remove(videoPlayerList[playerId]);
+        videoPlayerList[playerId] = null;
+        Ti.API.info('[API.Media.destroyVideoPlayer] playerId: ' + playerId);
+        return true;
+    };
+
+    self.addEventListener = function addEventListener(event, handler, id, dummy) {
+        Ti.API.info('[API.Media.addEventListener] event: ' + event);
+        if (dummy == 'audio') {
+            Ti.API.info('[API.Media.addEventListener] event: ' + event + ', id: ' + id +', audioPlayerList: ' + JSON.stringify(audioPlayerList) + ', dummy: ' + dummy);
+            var handler_aux = function(e) {
+                Ti.API.info('*******************AUDIO******************************' + e.type);
+                if (e.type == 'complete') {
+                    Ti.API.info('[API.Media.handler_aux false] (stopped), paused: ' + audioPlayerList[id].paused + ', playing: ' + audioPlayerList[id].playing + '---------------REAL e: ' + JSON.stringify(e));
+                    var d = {};
+                    d['order'] = audioPlayerCounters[id].change;
+                    d['description'] = 'stopped';
+                    d['state'] = 5;
+                    d['type'] = 'change';
+                    d['source'] = e.source;
+                    Ti.API.info('[API.Media.handler_aux false] change ' + d['order']);
+                    audioPlayerCounters[id].change ++;
+                    handler(d);
                     return;
+                } else if (e.type == 'change') {
+                    if (e.state == 5) {
+                        Ti.API.info('[API.Media.handler_aux] ChangeEvent.stop killed');
+                        return;
+                    }
+                    Ti.API.info('[API.Media.handler_aux] (' + e.description + '), paused: ' + audioPlayerList[id].paused + ', playing: ' + audioPlayerList[id].playing + '---------------REAL e: ' + JSON.stringify(e));
+                    e['order'] = audioPlayerCounters[id].change;
+                    Ti.API.info('[API.Media.handler_aux] change ' + e['order']);
+                    audioPlayerCounters[id].change ++;
+                } else if (e.type == 'progress') {
+                    Ti.API.info('[API.Media.handler_aux] (' + e.progress + '), paused: ' + audioPlayerList[id].paused + ', playing: ' + audioPlayerList[id].playing + '---------------REAL e: ' + JSON.stringify(e));
+                    e['order'] = audioPlayerCounters[id].progress;
+                    Ti.API.info('[API.Media.handler_aux] progress ' + e['order']);
+                    audioPlayerCounters[id].progress ++;
                 }
-                Ti.API.info('[API.Media.eventHandler] (' + e.description + '), paused: ' + audioPlayerList[id].paused + ', playing: ' + audioPlayerList[id].playing + '---------------REAL e: ' + JSON.stringify(e));
-                e['order'] = audioPlayerCounters[id].change;
-                Ti.API.info('[API.Media.eventHandler] change ' + e['order']);
-                audioPlayerCounters[id].change ++;
-            } else if (e.type == 'progress') {
-                Ti.API.info('[API.Media.eventHandler] (' + e.progress + '), paused: ' + audioPlayerList[id].paused + ', playing: ' + audioPlayerList[id].playing + '---------------REAL e: ' + JSON.stringify(e));
-                e['order'] = audioPlayerCounters[id].progress;
-                Ti.API.info('[API.Media.eventHandler] progress ' + e['order']);
-                audioPlayerCounters[id].progress ++;
+                handler(e);
+            };
+            APHandlers[id][event].push(handler);
+            APHandlersinfo[id][event][APHandlers[id][event].indexOf(handler)] = {'handler_aux': handler_aux};
+            audioPlayerList[id].addEventListener(event, handler_aux);
+            Ti.API.info('[API.Media.addEventListener] event: ' + event + ', isApple: ' + Ti.App.isApple);
+            if (event == 'change') {
+                Ti.API.info('[API.Media.addEventListener] event change and complete!!');
+                APHandlers[id]['complete'].push(handler);
+                APHandlersinfo[id]['complete'][APHandlers[id][event].indexOf(handler)] = {'handler_aux': handler_aux};
+                audioPlayerList[id].addEventListener('complete', handler_aux);
             }
-            handler(e);
-        };
-        audioPlayerList[id].addEventListener(event, handler_aux);
-        Ti.API.info('[API.Media.eventHandler] event: ' + event + ', isApple: ' + Ti.App.isApple);
-        if (event == 'change') {
-            Ti.API.info('[API.Media.eventHandler] event change and complete!!');
-            audioPlayerList[id].addEventListener('complete', handler_aux);
+        } else if (dummy == 'video') {
+            Ti.API.info('[API.Media.addEventListener] event: ' + event + ', id: ' + id +', videoPlayerList: ' + JSON.stringify(videoPlayerList) + ', dummy: ' + dummy);
+            var completeHandler = function completeHandler(e) {
+                Ti.API.info('*************************************************' + e.type);
+                if (e.type == 'complete') {
+                    Ti.API.info('[API.Media.completeHandler] playing: ' + videoPlayerList[id].playing + '---------------REAL e: ' + JSON.stringify(e));
+                    e['order'] = videoPlayerCounters[id].complete;
+                    Ti.API.info('[API.Media.completeHandler] complete ' + e['order']);
+                    videoPlayerCounters[id].complete ++;
+                }
+                handler(e);
+            };
+            Ti.API.info('[API.Media.addEventListener] VIDEO event: ' + event + '; VPHandlers: ' + JSON.stringify(VPHandlers));
+            Ti.API.info('[API.Media.addEventListener] VIDEO event: ' + event + '; VPHandlersinfo: ' + JSON.stringify(VPHandlersinfo));
+            VPHandlers[id][event].push(handler);
+            VPHandlersinfo[id][event][VPHandlers[id][event].indexOf(handler)] = {'handler_aux': completeHandler};
+            Ti.API.info('[API.Media.addEventListener] VIDEO event: ' + event + '; VPHandlers: ' + JSON.stringify(VPHandlers));
+            Ti.API.info('[API.Media.addEventListener] VIDEO event: ' + event + '; VPHandlersinfo: ' + JSON.stringify(VPHandlersinfo));
+            videoPlayerList[id].addEventListener(event, completeHandler);
+            Ti.API.info('[API.Media.addEventListener] end VIDEO addEventListener: ' + event);
+        } else {
+            Ti.API.info('[API.Media.addEventListener] event listener error. Unknown dummy: ' + dummy);
         }
     };
 
-    self.removeEventListener = function removeEventListener(event, handler, id) {
-        Ti.API.info('removeEventListener; event: ' + event + ', id: ' + id +', audioPlayerList: ' + JSON.stringify(audioPlayerList));
-        audioPlayerList[id].removeEventListener(event, handler);
+    self.removeEventListener = function removeEventListener(event, handler, id, dummy) {
+        var theHandler, index;
+
+        Ti.API.info('[API.Media.removeEventListener]removeEventListener; event: ' + event + ', dummy: ' + dummy + ', id: ' + id);
+        if (dummy == 'audio') {
+            Ti.API.info('[API.Media.removeEventListener]AUDIO removeEventListener; event: ' + event + ', dummy: ' + dummy + ', id: ' + id +', audioPlayerList[id]: ' + JSON.stringify(audioPlayerList[id]));
+            audioPlayerList[id].removeEventListener(event, theHandler);
+            if (event == 'change') {
+                Ti.API.info('[API.Media.removeEventListener] removing AUDIO event change and complete!!');
+                index = APHandlers[id]['complete'].indexOf(handler);
+                theHandler = APHandlersinfo[id]['complete'][index].handler_aux;
+                delete APHandlersinfo[id][event][index];
+                APHandlers[id][event].splice(index, 1);
+                audioPlayerList[id].removeEventListener('complete', theHandler);
+            }
+        } else if (dummy == 'video') {
+            Ti.API.info('[API.Media.removeEventListener] removing VIDEO event: ' + event + ', dummy: ' + dummy + ', id: ' + id +', videoPlayerList[id]: ' + JSON.stringify(videoPlayerList[id]));
+            Ti.API.info('[API.Media.removeEventListener] removing VIDEO event: ' + event + '; VPHandlers: ' + JSON.stringify(VPHandlers));
+            Ti.API.info('[API.Media.removeEventListener] removing VIDEO event: ' + event + '; VPHandlersinfo: ' + JSON.stringify(VPHandlersinfo));
+            index = VPHandlers[id][event].indexOf(handler);
+            theHandler = VPHandlersinfo[id][event][index].handler_aux;
+            delete VPHandlersinfo[id][event][index];
+            VPHandlers[id][event].splice(index, 1);
+            videoPlayerList[id].removeEventListener(event, theHandler);
+            Ti.API.info('[API.Media.removeEventListener] removing VIDEO event: ' + event + '; VPHandlers: ' + JSON.stringify(VPHandlers));
+            Ti.API.info('[API.Media.removeEventListener] removing VIDEO event: ' + event + '; VPHandlersinfo: ' + JSON.stringify(VPHandlersinfo));
+        } else {
+            Ti.API.info('[API.Media.removeEventListener] error. Unknown dummy: ' + dummy);
+        }
     };
 
     self.events = {
@@ -472,6 +683,14 @@ var Media = (function() {
             listener: null,
             source: "Ti.Media.Sound",
             keylist: ['progress', 'type', 'order'],
+            dummy: true
+        },
+        /* */
+        'videoComplete': {
+            event: 'complete',
+            listener: null,
+            source: "Ti.Media.VideoPlayer",
+            keylist: ['code', 'error', 'reason', 'success', 'type', 'order'],
             dummy: true
         }
     };

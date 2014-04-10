@@ -30,6 +30,20 @@ var System = (function() {
         return Ti.App.isRetina;
     };
 
+    /** Get Display Platform Width
+     * @method
+     * @return {Number} */
+    _self.getPlatformWidth = function getPlatformWidth() {
+        return Ti.App.platformWidth;
+    };
+
+    /** Get Display Platform Height
+     * @method
+     * @return {Number} */
+    _self.getPlatformHeight = function getPlatformHeight() {
+        return Ti.App.platformHeight;
+    };
+
     /** Get device platform
      * @method
      * @return {String} It should return 'ios' or 'android' */

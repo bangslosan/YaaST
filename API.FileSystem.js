@@ -238,6 +238,17 @@ var Filesystem = (function() {
         }
     };
 
+    self.listDirectory = function listDirectory(origin) {
+        var fileDescriptor = getFileDescriptor(origin);
+        var list = fileDescriptor.getDirectoryListing();
+
+        if (!list) {
+            throw new TypeError("Invalid type for input parameter");
+        }
+
+        return list;
+    };
+
     return self;
 
 }());

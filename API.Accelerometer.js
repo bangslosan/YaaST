@@ -23,7 +23,8 @@ var Accelerometer = (function() {
                     'accelerometerchange': {
                         event: 'update',
                         listener: 'accelerometer',
-                        keylist: ['timestamp', 'x', 'y', 'z']
+                        keylist: ['timestamp', 'x', 'y', 'z'],
+                        source: 'Ti.Accelerometer'
                     }
     };
     return _self;

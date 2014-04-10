@@ -593,7 +593,8 @@ var Network = (function () {
         'networkchange': {
             event: 'change',
             listener: Ti.Network,
-            keylist: ['networkTypeName', 'online', 'reason']
+            keylist: ['networkTypeName', 'online', 'reason'],
+            source: 'Ti.Network',
         }
     };
 

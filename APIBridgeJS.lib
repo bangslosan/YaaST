@@ -14,19 +14,14 @@
     var methodHandlers = {};
     // TODO: When titanium load, will replace "var id = null" with the correct id value. This line must be unique in this file.
     var appleOS = ;
-    var id = 69;
+    // TODO auto. 58 is the id for media audio/video Player in wirecloud
+    var id = ;
     var prefs = null;
     var inputs = {};
     var callCounter = 0;
 
     var _genericMethodHandler = function _genericMethodHandler(callback, methName, params, options, isAsync) {
         var methodInfo, data;
-
-        /*Ti.API.info('[APIBridge] callback: ' + callback);
-        Ti.API.info('[APIBridge] methName: ' + methName);
-        Ti.API.info('[APIBridge] params: ' + JSON.stringify(params));
-        Ti.API.info('[APIBridge] options: ' + JSON.stringify(options));
-        Ti.API.info('[APIBridge] isAsync: ' + isAsync);*/
 
         if (methodHandlers[methName] == null) {
             methodHandlers[methName] = {};
@@ -52,7 +47,6 @@
         'viewId': id,
         'callId': callCounter
         };
-
 
         if (!isAsync) {
             Ti.API.info('[APIBridge] Fire Event "APIMethod". data: ' + JSON.stringify(data));
@@ -104,7 +98,7 @@
                         },
                          /** Create Contact
                           * @param {function} Callback
-                          * @param {Object} options
+                          * @param {Object}
                           * @return {Object} */
                         createContact: function(callback, options) {
                             if (!(options instanceof Object)) {
@@ -136,45 +130,7 @@
 
                     },
                     FileSystem : {
-                        isFile: function isFile(callback, path) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.isFile', [path], {}, false);
-                        },
-                        isDirectory: function isDirectory(callback, path) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.isDirectory', [path], {}, false);
-                        },
-                        isSymbolicLink: function isSymbolicLink(callback, path) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.isSymbolicLink', [path], {}, false);
-                        },
-                        createFile: function createFile(callback, parentPath, fileName) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.createFile', [parentPath, fileName], {}, false);
-                        },
-                        createDirectory: function createDirectory(callback, parentPath, directoryName) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.createDirectory', [parentPath, directoryName], {}, false);
-                        },
-                        deleteFile: function deleteFile(callback, path) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.deleteFile', [path], {}, false);
-                        },
-                        deleteDirectory: function deleteDirectory(callback, path) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.deleteDirectory', [path], {}, false);
-                        },
-                        read: function read(callback, path) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.read', [path], {}, false);
-                        },
-                        append: function append(callback, path, data) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.append', [path, data], {}, false);
-                        },
-                        overwrite: function overwrite(callback, path, data) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.overwrite', [path, data], {}, false);
-                        },
-                        rename: function rename(callback, path, newName) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.rename', [path, newName], {}, false);
-                        },
-                        move: function move(callback, origin, destination) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.move', [origin, destination], {}, false);
-                        },
-                        copy: function copy(callback, origin, destination) {
-                            _genericMethodHandler.call(this, callback, 'API.SW.FileSystem.copy', [origin, destination], {}, false);
-                        }
+
                     },
                     DataBase : {
 
@@ -268,7 +224,13 @@
                              * @param {audioPlayerOptions} options
                              * @return {Object} audioPlayer Dummy*/
                             createAudioPlayer : function createAudioPlayer(options) {
-                                return new dummyAudioPlayer(options, this);
+                                return new dummyAudioPlayer(API, options, this);
+                            },
+                            /** Create new Video
+                             * @param {videoPlayerOptions} options
+                             * @return {Object} videoPlayer Dummy*/
+                            createVideoPlayer : function createVideoPlayer(options) {
+                                return new dummyVideoPlayer(API, options, this);
                             }
                     },
                     Network : {
@@ -351,16 +313,18 @@
             var i;
             var publicEvent = data.publicEvent;
 
-            Ti.API.info('[APIBridge] Invoke HTML callbacks for event: ' + publicEvent + ' with data:' + JSON.stringify(data));
+            Ti.API.info('[APIBridge] Invoking HTML callbacks for event: ' + publicEvent + ' with data:' + JSON.stringify(data));
 
-            if (eventHandlers[publicEvent] !== null || eventHandlers[publicEvent].length > 0) {
-                for (i = 0; i < eventHandlers[publicEvent].length; i ++) {
-                    Ti.API.info('[APIBridge] invocando event callback html ' + publicEvent);
-                    eventHandlers[publicEvent][i](data);
+            if (eventHandlers[publicEvent] != null) { 
+                if (eventHandlers[publicEvent].length > 0) {
+                    for (i = 0; i < eventHandlers[publicEvent].length; i ++) {
+                        Ti.API.info('[APIBridge] invocando event callback html ' + publicEvent);
+                        eventHandlers[publicEvent][i](data);
+                    }
                 }
             } else {
                 // TODO Error. Callback not found
-                Ti.API.info('[APIBridge] error in _invokeEventCallbacks ' + publicEvent);
+                Ti.API.info('[APIBridge] error in _invokeEventCallbacks publicEvent:' + publicEvent + ', eventHandlers: ' + JSON.stringify(eventHandlers));
             }
     };
 
@@ -578,7 +542,7 @@
         Ti.API.info('[Audio DUMMY] Sync-addEventListener pre-fire');
 
         // Subscribe this view to publicEvent
-        Ti.App.fireEvent('APIEvent', {'action': 'addEventListener', 'event': publicEvent, 'viewId': id, 'entityId': this.id});
+        Ti.App.fireEvent('APIEvent', {'action': 'addEventListener', 'event': publicEvent, 'viewId': id, 'entityId': this.id, 'dummy': 'audio'});
         Ti.API.info('[Audio DUMMY] Sync-addEventListener post-fire');
     };
 
@@ -596,7 +560,7 @@
         Ti.App.removeEventListener(publicEvent, _invokeEventCallbacks);
 
         // Unsubscribe this view to publicEvent
-        Ti.App.fireEvent('APIEvent', {'action': 'removeEventListener', 'event': publicEvent, 'viewId': id, 'entityId': this.id});
+        Ti.App.fireEvent('APIEvent', {'action': 'removeEventListener', 'event': publicEvent, 'viewId': id, 'entityId': this.id, 'dummy': 'audio'});
     };
 
     /*
@@ -622,7 +586,7 @@
         Ti.API.info('[Audio DUMMY] trying to process. Busy-> ' + this.busy + '; pendings: ' + JSON.stringify(this.pendings));
         if (!this.busy && this.pendings.length > 0) {
             var newOrder = this.pendings.shift();
-            Ti.API.info('[Audio DUMMY] processing ' + newOrder);
+            Ti.API.info('[Audio DUMMY] ¡¡¡__ processing ' + JSON.stringify(newOrder));
             this.busy = true;
             switch(newOrder.type) {
                 case 1:
@@ -796,4 +760,280 @@
         }
     };
     // End Audio Dummy
+
+    /* Video Dummy */
+    // TODO jsdoc
+    var dummyVideoPlayer = function dummyVideoPlayer(API, options) {
+
+        this.id = null;
+        this.pendings = [];
+        this.callbacks = {
+            'videoComplete': []
+        };
+        this.pendingEvents = {
+            'videoComplete': {}
+        };
+        this.lastComplete = -1;
+        this.busy = true;
+        Ti.API.info('[Video DUMMY] STATE: creating');
+        this.state = 'creating';
+
+        var callback = function(id) {
+            Ti.API.info('[Video DUMMY].............. available id:' + id);
+            this.id = id;
+            this.completeHandler = this.videoCompleteHandler.bind(this);
+            this.syncAddEventListener('videoComplete', this.completeHandler.bind(this));
+            videoGenericCallback.call(this, id);
+            Ti.API.info('[Video DUMMY] STATE: stoped');
+            this.state = 'stopped';
+        };
+        if (!(options instanceof Object)) {
+            options = null;
+        }
+        Ti.API.info('[Video DUMMY] waiting for videoPlayer id ..............');
+        _genericMethodHandler.call(API, callback.bind(this), 'API.HW.Media.createVideoPlayer', [id], options);
+    };
+
+    // Public
+    dummyVideoPlayer.prototype.addEventListener = function addEventListener(publicEvent, callback) {
+        Ti.API.info('[Video DUMMY] 13 - addEventListener');
+        addVideoProcess.call(this, 13, {'publicEvent': publicEvent, 'callback': callback});
+    };
+
+    dummyVideoPlayer.prototype.removeEventListener = function removeEventListener(publicEvent, callback) {
+        Ti.API.info('[Video DUMMY] 13 - removeEventListener');
+        addVideoProcess.call(this, 13, {'publicEvent': publicEvent, 'callback': callback});
+    };
+
+    dummyVideoPlayer.prototype.play = function play() {
+        Ti.API.info('[Video DUMMY] 1 - play');
+        addVideoProcess.call(this, 1);
+    };
+
+    dummyVideoPlayer.prototype.pause = function pause() {
+        Ti.API.info('[Video DUMMY] 2 - pause');
+        addVideoProcess.call(this, 2);
+    };
+
+    dummyVideoPlayer.prototype.stop = function stop() {
+        Ti.API.info('[Video DUMMY] 3 - stop');
+        addVideoProcess.call(this, 3);
+    };
+
+    dummyVideoPlayer.prototype.setURL = function setURL(url) {
+        Ti.API.info('[Video DUMMY] 4 - setVideoURL');
+        addVideoProcess.call(this, 4, {'url': url});
+    };
+
+    dummyVideoPlayer.prototype.setBound = function setBound(options) {
+        Ti.API.info('[Video DUMMY] - 5 setVideoBound');
+        if (options == null) {
+            options = {};
+        }
+        addVideoProcess.call(this, 5, {'pos': options});
+    };
+
+    dummyVideoPlayer.prototype.destroy = function destroy() {
+        Ti.API.info('[Video DUMMY] 6 - destroy');
+        addVideoProcess.call(this, 6);
+        Ti.API.info('[Video DUMMY] 6 - destroy');
+        addVideoProcess.call(this, 6);
+    };
+
+    dummyVideoPlayer.prototype.setFullScreen = function setFullScreen() {
+        Ti.API.info('[Video DUMMY] 7 - setFullScreen');
+        addVideoProcess.call(this, 7);
+    };
+
+    // Private
+    dummyVideoPlayer.prototype.videoCompleteHandler = function videoCompleteHandler(event) {
+        Ti.API.info('[Video DUMMY videoCompleteHandler] complete event: ' + JSON.stringify(event));
+        var i;
+
+        if (this.lastComplete + 1 == event.order) {
+            // Real Next
+            Ti.API.info('[Video DUMMY videoCompleteHandler] complete event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
+            this.lastComplete += 1;
+            for (i = 0; i < this.callbacks.videoComplete.length; i ++) {
+                Ti.API.info('[Video DUMMY videoCompleteHandler] launching HTML callback... ' + this.callbacks.videoComplete[i]);
+                this.callbacks.videoComplete[i](event);
+            }
+            if (this.pendingEvents.videoComplete[event.order + 1] != null) {
+                // Pop waiting event
+                this.videoCompleteHandler(this.pendingEvents.videoComplete[event.order + 1]);
+                delete this.pendingEvents.videoComplete[event.order + 1];
+            }
+        } else if (this.lastComplete + 1 < event.order) {
+            // Push this event
+            Ti.API.info('[Video DUMMY videoCompleteHandler] save this complete event: ' + event.order);
+            this.pendingEvents.videoComplete[event.order] = event;
+        } else {
+            // ORDER ERROR
+            Ti.API.info('[Video DUMMY videoCompleteHandler] complete event order error ' + event.order + ' < ' + this.lastComplete + ', event: ' + JSON.stringify(event));
+            // discard event
+        }
+    };
+
+    dummyVideoPlayer.prototype.syncAddEventListener = function SyncAddEventListener(publicEvent, callback) {
+        Ti.API.info('[Video DUMMY] Sync-addEventListener. event: ' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
+        if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
+            // First event listener for this publicEvent
+            eventHandlers[publicEvent] = [];
+            // Listen the event
+            Ti.App.addEventListener(publicEvent, _invokeEventCallbacks);
+        }
+        eventHandlers[publicEvent].push(callback);
+        Ti.API.info('[Video DUMMY] Sync-addEventListener pre-fire');
+
+        // Subscribe this view to publicEvent
+        Ti.App.fireEvent('APIEvent', {'action': 'addEventListener', 'event': publicEvent, 'viewId': id, 'entityId': this.id, 'dummy': 'video'});
+        Ti.API.info('[Video DUMMY] Sync-addEventListener post-fire');
+    };
+
+    dummyVideoPlayer.prototype.syncRemoveEventListener = function syncRemoveEventListener(publicEvent, callback) {
+        Ti.API.info('[Video DUMMY] Sync-removeEventListener. event:' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
+        var index;
+
+        if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
+            Ti.API.info('[Video DUMMY] Sync-removeEventListener. Error. eventListener not found. eventHandlers[publicEvent]:' + JSON.stringify(eventHandlers[publicEvent]));
+            return false;
+        }
+        Ti.API.info('[Video DUMMY] Sync-removeEventListener. Listener cleaning handler list. eventHandlers[publicEvent]:' + JSON.stringify(eventHandlers[publicEvent]));
+        index = eventHandlers[publicEvent].indexOf(callback);
+        eventHandlers[publicEvent].splice(index, 1);
+
+        // remove listener
+        Ti.API.info('[Video DUMMY] Sync-removeEventListener. Listener Removed. eventHandlers[publicEvent]:' + JSON.stringify(eventHandlers[publicEvent]));
+        Ti.App.removeEventListener(publicEvent, _invokeEventCallbacks);
+
+        // Unsubscribe this view to publicEvent
+        Ti.API.info('[Video DUMMY] Sync-removeEventListener. Unsuscrive this view to event (fireEvent removeEventListener) ' + publicEvent);
+        Ti.App.fireEvent('APIEvent', {'action': 'removeEventListener', 'event': publicEvent, 'viewId': id, 'entityId': this.id, 'dummy': 'video'});
+    };
+
+    /*
+     * play   -> 1
+     * pause  -> 2
+     * stop   -> 3
+     * setURL -> 4
+     */
+    var addVideoProcess = function addVideoProcess(type, options) {
+        Ti.API.info('[Video DUMMY] Add new order to AudioPlayer:' + type);
+        this.pendings.push({'type': type, 'options': options});
+        videoProcess.call(this);
+    };
+
+    var videoProcess = function videoProcess() {
+        Ti.API.info('[Video DUMMY] trying to process. Busy-> ' + this.busy + '; pendings: ' + JSON.stringify(this.pendings));
+        if (!this.busy && this.pendings.length > 0) {
+            var newOrder = this.pendings.shift();
+            Ti.API.info('[Video DUMMY] !!!!!!!!!- processing ' + JSON.stringify(newOrder));
+            this.busy = true;
+            switch(newOrder.type) {
+                case 1:
+                    // PLAY
+                    _genericMethodHandler.call(API, videoPlayCallback.bind(this), 'API.HW.Media.playVideoPlayer', [this.id], null);
+                    break;
+                case 2:
+                    // PAUSE
+                    _genericMethodHandler.call(API, videoPauseCallback.bind(this), 'API.HW.Media.pauseVideoPlayer', [this.id], null);
+                    break;
+                case 3:
+                    // STOP
+                    _genericMethodHandler.call(API, videoStopCallback.bind(this), 'API.HW.Media.stopVideoPlayer', [this.id], null);
+                    break;
+                case 4:
+                    // SETURL
+                    _genericMethodHandler.call(API, videoSetURLCallback.bind(this), 'API.HW.Media.setVideoPlayerURL', [this.id, newOrder.options.url], null);
+                    break;
+                case 5:
+                    // SETBounding
+                    _genericMethodHandler.call(API, videoSetBoundCallback.bind(this), 'API.HW.Media.setVideoPlayerBound', [id, this.id, newOrder.options.pos], null);
+                    break;
+                case 6:
+                    // DESTROY
+                    this.syncRemoveEventListener('videoComplete', this.completeHandler);
+                    _genericMethodHandler.call(API, videoDestroyCallback.bind(this), 'API.HW.Media.destroyVideoPlayer', [this.id], null);
+                    break;
+                case 7:
+                    // FULLSCREEN
+                    _genericMethodHandler.call(API, videoFullScreenCallback.bind(this), 'API.HW.Media.setFullScreen', [this.id], null);
+                    break;
+                case 13:
+                    // AddEventListener
+                    Ti.API.info('[Video DUMMY] addEventListener ' + newOrder.options.publicEvent + ', entityId: ' + this.id);
+                    if (newOrder.options.publicEvent == 'videoComplete') {
+                        this.callbacks.videoComplete.push(newOrder.options.callback);
+                    } else {
+                        Ti.API.info('[Video DUMMY.addEventListener] Error. unknown event: ' + newOrder.options.publicEvent);
+                    }
+                    videoGenericCallback.call(this);
+                    break;
+                case 31:
+                    // RemoveEventListener
+                    Ti.API.info('[Video DUMMY] removeEventListener: ' + newOrder.options.publicEvent);
+                    if (newOrder.options.publicEvent == 'videoComplete') {
+                        this.callbacks.videoComplete.pop(newOrder.options.callback);
+                    } else {
+                        Ti.API.info('[Video DUMMY.addEventListener] Error. unknown event: ' + newOrder.options.publicEvent);
+                    }
+                    videoGenericCallback.call(this);
+                    break;
+                default:
+                    // ERROR
+                    Ti.API.info('[Video DUMMY] Error in AudioPlayerDummy');
+                    break;
+            }
+        }
+    };
+
+    // Video callbacks
+    var videoPlayCallback = function videoPlayCallback() {
+        Ti.API.info('[Video DUMMY] Play Callback');
+        this.state = 'playing';
+        videoGenericCallback.call(this);
+    };
+
+    var videoPauseCallback = function videoPauseCallback() {
+        Ti.API.info('[Video DUMMY] Pause Callback');
+        this.state = 'pausing';
+        videoGenericCallback.call(this);
+    };
+
+    var videoStopCallback = function videoStopCallback() {
+        Ti.API.info('[Video DUMMY] Stop Callback');
+        this.state = 'stopping';
+        videoGenericCallback.call(this);
+    };
+
+    var videoSetBoundCallback = function videoSetBoundCallback() {
+        Ti.API.info('[Video DUMMY] SetBound Callback');
+        videoGenericCallback.call(this);
+    };
+
+    var videoSetURLCallback = function videoSetURLCallback() {
+        Ti.API.info('[Video DUMMY] setURL Callback');
+        videoGenericCallback.call(this);
+    };
+
+    var videoFullScreenCallback = function videoFullScreenCallback() {
+        Ti.API.info('[Video DUMMY] fullScreen Callback');
+        videoGenericCallback.call(this);
+    };
+
+    var videoDestroyCallback = function videoDestroyCallback() {
+        Ti.API.info('[Video DUMMY] ************destroy this VideoPlayer Dummy: ' + this.id + '**********');
+        //delete this;
+    };
+
+    var videoGenericCallback = function videoGenericCallback() {
+        this.busy = false;
+        if (this.pendings.length > 0) {
+            Ti.API.info('[Video DUMMY] busy');
+            videoProcess.call(this);
+        } else {
+            Ti.API.info('[Video DUMMY] free');
+        }
+    };
+    // End Video Dummy
 }());
