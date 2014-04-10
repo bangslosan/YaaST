@@ -12,10 +12,8 @@
 
     var eventHandlers = {};
     var methodHandlers = {};
-    // TODO: When titanium load, will replace "var id = null" with the correct id value. This line must be unique in this file.
-    var appleOS = ;
-    // TODO auto. 58 is the id for media audio/video Player in wirecloud
-    var id = ;
+    var appleOS;
+    var id;
     var prefs = null;
     var inputs = {};
     var callCounter = 0;
