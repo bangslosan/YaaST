@@ -100,14 +100,22 @@ var Map = (function() {
 	_self.PRIORITY_LOW_POWER = _self.Map.PRIORITY_LOW_POWER;
 	_self.PRIORITY_NO_POWER = _self.Map.PRIORITY_NO_POWER;
 	_self.PRIORITY_UNDEFINED = -1;
+	
+	_self.NORMAL_TYPE = _self.Map.NORMAL_TYPE;
+	_self.TERRAIN_TYPE = _self.Map.TERRAIN_TYPE;
+	_self.SATELLITE_TYPE = _self.Map.SATELLITE_TYPE;
+	_self.HYBRID_TYPE = _self.Map.HYBRID_TYPE;
+
 
     _self.createMap = function createMap(options){
         mapsId++;
-        mapsList[mapsId] = _self.Map.createView({
-            width: options.width,
-            height: options.height
-        });
+        mapsList[mapsId] = _self.Map.createView(options);
         return mapsId;
+    };
+    
+    
+    _self.createVectorialParser = function createVectorialParser(){
+        return _self.Map.createVectorialParser();
     };
     
     
@@ -167,7 +175,7 @@ var Map = (function() {
     _self.getMapProperty = function(mapId, propertyName){
 		
 		var validProperties = ["baseLayer", "userLocation", "userLocationButton", "mapType", "region", 
-								"animate", "traffic", "enableZoomControls"];
+								"animate", "traffic", "enableZoomControls", "rect", "region"];
 		var onlyIdProperties = ["annotations", "polygons", "layers", "routes"];
     							
 		if(validProperties.indexOf(propertyName) >= 0){
@@ -191,8 +199,7 @@ var Map = (function() {
 	_self.setMapProperty = function(mapId, propertyName, propertyValue){
 		
 		var validProperties = ["baseLayer", "userLocation", "userLocationButton", "mapType", "region", 
-								"animate", "traffic", "enableZoomControls", "annotation", "polygons", 
-								"layers", "routes"];
+								"animate", "traffic", "enableZoomControls", "rect", "region"];
     							
 		if(validProperties.indexOf(propertyName) >= 0){
 			return getSetProperty(mapId, "map", mapId, propertyName, propertyValue);
@@ -200,6 +207,65 @@ var Map = (function() {
 			//TODO: Error Setter method not found
 			return;
 		}
+	};
+	
+	_self.add = function(mapId, view){
+		if(typeof mapsList[mapId] === 'undefined'){
+            //TODO: Error Unknown Map Id
+            return;
+        }
+
+        mapsList[mapId].add(view);
+	};
+	
+	
+	_self.remove = function(mapId, view){
+		if(typeof mapsList[mapId] === 'undefined'){
+            //TODO: Error Unknown Map Id
+            return;
+        }
+
+        mapsList[mapId].remove(view);
+	};
+	
+	
+	_self.addToView = function(mapId, view){
+		if(typeof mapsList[mapId] === 'undefined'){
+            //TODO: Error Unknown Map Id
+            return;
+        }
+
+        view.add(mapsList[mapId]);
+	};
+	
+	
+	_self.removeFromView = function(mapId, view){
+		if(typeof mapsList[mapId] === 'undefined'){
+            //TODO: Error Unknown Map Id
+            return;
+        }
+
+        view.remove(mapsList[mapId]);
+	};
+	
+	
+	_self.addEventListener = function(mapId, event, func){
+		if(typeof mapsList[mapId] === 'undefined'){
+            //TODO: Error Unknown Map Id
+            return;
+        }
+
+        mapsList[mapId].addEventListener(event, func);
+	};
+	
+	
+	_self.removeEventListener = function(mapId, event, func){
+		if(typeof mapsList[mapId] === 'undefined'){
+            //TODO: Error Unknown Map Id
+            return;
+        }
+
+        mapsList[mapId].removeEventListener(event, func);
 	};
 
 	/*
@@ -224,13 +290,13 @@ var Map = (function() {
         }
     };
 
-    _self.selectAnnotation = function selectAnnotation(mapId, options){
+    _self.selectAnnotation = function selectAnnotation(mapId, annoId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
         var annon = mapsList[mapId].getAnnotations(), i;
-        var annotation = annon[options.id];
+        var annotation = annon[annoId];
         
         if(annotation == null){
             //TODO: Error Unknown Annotation Id on Map Id
@@ -242,13 +308,13 @@ var Map = (function() {
         }
     };
 
-    _self.deselectAnnotation = function deselectAnnotation(mapId, options){
+    _self.deselectAnnotation = function deselectAnnotation(mapId, annoId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
         var annon = mapsList[mapId].getAnnotations(), i;
-        var annotation = annon[options.id];
+        var annotation = annon[annoId];
         
         if(annotation == null){
             //TODO: Error Unknown Annotation Id on Map Id
@@ -260,13 +326,13 @@ var Map = (function() {
         }
     };
 
-    _self.removeAnnotation = function removeAnnotation(mapId, options){
+    _self.removeAnnotation = function removeAnnotation(mapId, annoId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
-        var annon = mapsList[mapId].getAnnotations(), i;
-        var annotation = annon[options.id];
+        
+        var annotation = mapsList[mapId].getAnnotations()[annoId];
         
         if(annotation == null){
             //TODO: Error Unknown Annotation Id on Map Id
@@ -278,15 +344,15 @@ var Map = (function() {
         }
     };
 
-    _self.removeAnnotations = function removeAnnotations(mapId, options){
+    _self.removeAnnotations = function removeAnnotations(mapId, annotations){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
         var annonToRemove = [], i, j;
         var annon = mapsList[mapId].getAnnotations();
-        while(options.annotations.length > 0){
-            var annId = options.annotations.pop();
+        while(annotations.length > 0){
+            var annId = annotations.pop();
             if(annon[annId] != null){
             	annonToRemove.push(annon[annId]);
             } else {
@@ -359,13 +425,23 @@ var Map = (function() {
         }
     };
     
-    _self.removeRoute = function removeRoute(mapId, options){
+    _self.addRoute = function addRoute(mapId, route){
+    	if(typeof mapsList[mapId] === 'undefined'){
+            //TODO: Error Unknown Map Id
+            return;
+        }
+        
+        mapsList[mapId].addRoute(route);
+    };
+    
+    
+    _self.removeRoute = function removeRoute(mapId, routeId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
-        var routes = mapsList[mapId].getRoutes(), i;
-        var route = routes[options.id];
+        
+        var route = mapsList[mapId].getRoutes()[routeId];
 
         if(route == null){
             //TODO: Error Unknown Annotation Id on Map Id
@@ -433,13 +509,24 @@ var Map = (function() {
         }
     };
     
-    _self.removePolygon = function removePolygon(mapId, options){
+    
+    _self.addPolygon = function addPolygon(mapId, polygon){
+    	if(typeof mapsList[mapId] === 'undefined'){
+            //TODO: Error Unknown Map Id
+            return;
+        }
+        
+        mapsList[mapId].addPolygon(polygon);
+        
+    };
+    
+    _self.removePolygon = function removePolygon(mapId, polygonId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
-        var polygons = mapsList[mapId].getPolygons(), i;
-        var polygon = polygons[options.id];
+        
+        var polygon = mapsList[mapId].getPolygons()[polygonId];
         
         if(polygon == null){
             //TODO: Error Unknown Annotation Id on Map Id
@@ -520,13 +607,22 @@ var Map = (function() {
         }
     };
     
-    _self.removeLayer = function removeLayer(mapId, options){
+    _self.addLayer = function addLayer(mapId, layer){
+    	if(typeof mapsList[mapId] === 'undefined'){
+            //TODO: Error Unknown Map Id
+            return;
+        }
+        
+        mapsList[mapId].addLayer(layer);
+    };
+    
+    _self.removeLayer = function removeLayer(mapId, layerId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
-        var layers = mapsList[mapId].getLayers(), i;
-        var layer = layers[options.id];
+
+        var layer = mapsList[mapId].getLayers()[layerId];
         
         if(layer == null){
             //TODO: Error Unknown Annotation Id on Map Id
