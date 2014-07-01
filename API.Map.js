@@ -7,41 +7,104 @@
 
 "use strict";
 
+
+var Cache = function Cache(size){
+	
+	this._data = {};
+	this._maxSize = size;
+	this._nextElement = 0;
+	
+	this.get = function(key){
+
+		if(this._data[key] != null)
+			return this._data[key].value;
+
+	};
+	
+	this.add = function(key, value){
+		
+		//If is full, remove the oldest
+		if(this._nextElement >= this._maxSize){
+			var toBeRemoved = this._nextElement - this._maxSize;
+			for(var key in this._data){
+				if(this._data[key].order == toBeRemoved){
+					delete this._data[key];
+					break;
+				}
+			}
+
+			this._nextElement++;
+		}
+			
+		this._data[key] = {
+			value: value,
+			order: this._nextElement
+		};
+	};
+	
+};
+
+var VectorialParser = function(freeElements){
+	
+	this._vectorialParser = require('ti.map').createVectorialParser();
+	this._freeElements = freeElements;
+	this.getShapesFromKml = function(data){
+		return handleResult(this._vectorialParser.getShapesFromKml(data));
+	};
+	
+	this.getShapesFromWkt = function(data){
+		return handleResult(this._vectorialParser.getShapesFromWkt(data));
+	};
+	
+	this.getShapesFromGeoJson = function(data){
+		return handleResult(this._vectorialParser.getShapesFromGeoJson(data));
+	};
+	
+	var handleResult = function(obj){
+		
+		if(obj == null)
+			return obj;
+		
+		var result = { "polygons" : [], "routes":  [] };
+		
+		for(var x in obj.polygons){
+			var id = obj.polygons[x].getId();
+			freeElements["polygons"][id] = obj.polygons[x];
+			result.polygons.push(id);
+		}
+		for(var x in obj.routes){
+			var id = obj.routes[x].getId();
+			freeElements["routes"][id] = obj.routes[x];
+			result.routes.push(id);
+		}
+		
+		return result;
+			
+	};
+	
+};
+
 var Map = (function() {
 
     var _self = {
         Map: require('ti.map')
-    }, mapsId = 0, mapsList = {};
+    }, mapsId = 0, mapsList = {}, cache = new Cache(20);
+    
+    var freeElements = {
+    	"polygons": {},
+    	"layers": {},
+    	"routes": {},
+    	"annotations": {}
+    };
 
 
 	/*
 	 * ------------------------ PRIVATE UTILS -------------------------------
 	 */
 
-	var getSetProperty = function(mapId, elementType, elementId, propertyName, propertyValue){
+	var getSetProperty = function(elementType, elementId, propertyName, propertyValue){
 		
-		var elements = null;
-		if(elementType === "annotation"){
-			elements = mapsList[mapId].getAnnotations();
-		}else if(elementType === "layer"){
-			elements = mapsList[mapId].getLayers();
-		}else if(elementType === "polygon"){
-			elements = mapsList[mapId].getPolygons();
-		}else if(elementType === "route"){
-			elements = mapsList[mapId].getRoutes();
-		}else if(elementType === "map"){
-			elements = mapsList;
-			elementId = mapId;
-		}else{
-			//TODO: Error Unknown element type
-			return;
-		}
-		
-		var element = elements[elementId];
-		
-		if(element == null && elementType === "annotation"){
-			element = getAnnotationFromPolygons(mapId, elementId);
-		}
+		var element = getElement(elementType, elementId);
 		
 		// Check if the element was found
 		if(element != null){
@@ -84,26 +147,92 @@ var Map = (function() {
 		
 	};
 	
-	var getProperty = function(mapId, elementType, elementId, propertyName){
-		getSetProperty(mapId, elementType, elementId, propertyName);
+	var getElement = function(elementType, elementId){
+		
+		//If it is a map, it does not need search, just return it
+		if(elementType === "map")
+			return mapsList[elementId];
+		
+		
+		var element = null;
+		
+		//First search in the cache
+		element = cache.get(elementId);
+		
+		//If found, return it;  otherwise, find it and add it to the cache
+		if(element != null)
+			return element;
+		
+		// Search in the maps
+		for(var mapId in mapsList){
+			if(elementType === "annotation"){
+				element = mapsList[mapId].getAnnotations()[elementId];
+			}else if(elementType === "layer"){
+				element = mapsList[mapId].getLayers()[elementId];
+			}else if(elementType === "polygon"){
+				element = mapsList[mapId].getPolygons()[elementId];
+			}else if(elementType === "route"){
+				element = mapsList[mapId].getRoutes()[elementId];
+			}else{
+				//TODO: Error Unknown element type
+				return;
+			}
+			
+			if(element != null)
+				break;
+		}
+		
+		// If not found, get it from the not added elements
+		if(element == null){
+			if(elementType === "annotation"){
+				element = freeElements["annotations"][elementId];
+			}else if(elementType === "layer"){
+				element = freeElements["layers"][elementId];
+			}else if(elementType === "polygon"){
+				element = freeElements["polygons"][elementId];
+			}else if(elementType === "route"){
+				element = freeElements["routes"][elementId];
+			}
+		}
+		
+		// If not found and is an annotation, search between the polygon annotations
+		if(element == null && elementType === "annotation"){
+			element = getAnnotationFromPolygons(elementId);
+		}
+		
+		// Add it to the cache
+		if(element != null)
+			cache.add(elementId, element);
+			
+		return element;
+		
+		
 	};
 	
-	var setProperty = function(mapId, elementType, elementId, propertyName, propertyValue){
-		getSetProperty(mapId, elementType, elementId, propertyName, propertyValue);
+	var getProperty = function(elementType, elementId, propertyName){
+		getSetProperty(elementType, elementId, propertyName);
+	};
+	
+	var setProperty = function(elementType, elementId, propertyName, propertyValue){
+		getSetProperty(elementType, elementId, propertyName, propertyValue);
 	};
 	
 	
-	var getAnnotationFromPolygons = function(mapId, annoId){
+	var getAnnotationFromPolygons = function(annoId){
 		
 		var annotation = null;
-		//Search now between the polygon annotations
-    	var polygons = mapsList[mapId].getPolygons();
-    	for(var polyId in polygons){
-    		var poly = polygons[polyId];
-    		if(poly.annotation != null && poly.annotation.getId() == annoId){
-    			return poly.annotation;
-    		}
-    	}
+		
+		for(var mapId in mapsList){
+			
+			//Search now between the polygon annotations
+	    	var polygons = mapsList[mapId].getPolygons();
+	    	for(var polyId in polygons){
+	    		var poly = polygons[polyId];
+	    		if(poly.annotation != null && poly.annotation.getId() == annoId){
+	    			return poly.annotation;
+	    		}
+	    	}
+	    }
     	
     	return annotation;
 	};
@@ -132,7 +261,11 @@ var Map = (function() {
 	_self.FORMAT_PNG = _self.Map.FORMAT_PNG;
 	_self.FORMAT_JPEG = _self.Map.FORMAT_JPEG;
 
-
+	/**
+	 * Creates a new map view.
+	 * @param {options} See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.View
+	 * @return {String} Id of the Map to be used in the methods of this API.
+	 */
     _self.createMap = function createMap(options){
         mapsId++;
         mapsList[mapsId] = _self.Map.createView(options);
@@ -140,11 +273,21 @@ var Map = (function() {
     };
     
     
+    /**
+     * Creates a parser for different file formats which has the following interface:
+     * 	- getShapesFromKml(string/file)
+     *  - getShapesFromWkt(string/file)
+     *  - getShapesFromGeoJson(string/file)
+     */
     _self.createVectorialParser = function createVectorialParser(){
-        return _self.Map.createVectorialParser();
+        return new VectorialParser(freeElements);
     };
     
-    
+  	/**
+  	 * Zooms in or out by specifying a relative zoom level. 
+  	 * @param {mapId} Map in which execute the action. 
+  	 * @param {delta} A positive value increases the current zoom level and a negative value decreases the zoom level. 
+  	 */
     _self.zoom = function zoom(mapId, delta){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -155,7 +298,11 @@ var Map = (function() {
 
     };
     
-    
+    /**
+  	 * Returns the zoom level of the map.
+  	 * @param {mapId} Map whose zoom is requested. 
+  	 * @return {Number} The zoom level.
+  	 */
     _self.getZoom = function getZoom(mapId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -166,20 +313,29 @@ var Map = (function() {
 
     };
     
-    
-    _self.setLocation = function setLocation(mapId, longitude, latitude){
+    /**
+     * Changes the location of the map.
+     * @param {mapId} Map 
+     * @param {location} See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.View-method-setLocation
+     */
+    _self.setLocation = function setLocation(mapId, location){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
 
-        mapsList[mapId].setLocation({
-        	longitude: longitude, 
-        	latitude: latitude
-    	});
+        mapsList[mapId].setLocation(location);
 
     };
     
+    /**
+	 * Set how the map should follow the location of the device.
+	 * @param {interval} LocationRequest desired interval in milliseconds. Must be > 0; otherwise, default value is 1000.
+	 * @param {priority} LocationRequest priority (PRIORITY_BALANCED_POWER_ACCURACY, PRIORITY_HIGH_ACCURACY, PRIORITY_LOW_POWER, PRIORITY_NO_POWER,
+	 *  PRIORITY_UNDEFINED).
+	 * @param {followLocation} True if the map camera must follow the location of the device. 
+	 * @param {followBearing} True if the map camera must follow the bearing of the device.
+	 */
     _self.followLocation = function followLocation(mapId, followLocation, followBearing, options){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -196,6 +352,12 @@ var Map = (function() {
 
     };
     
+    /**
+     * Gets the value of a property of the map.
+     * @param {mapId} The map.
+     * @param {propertyName} String with the name of the property.
+     * @return {Object} The value of the property.
+     */
     _self.getMapProperty = function(mapId, propertyName){
 		
 		var validProperties = ["userLocation", "userLocationButton", "mapType", "region", 
@@ -203,10 +365,10 @@ var Map = (function() {
 		var onlyIdProperties = ["annotations", "polygons", "layers", "routes"];
     							
 		if(validProperties.indexOf(propertyName) >= 0){
-			return getSetProperty(mapId, "map", mapId, propertyName);
+			return getSetProperty("map", mapId, propertyName);
 			
 		} else if(onlyIdProperties.indexOf(propertyName) >= 0){
-			var values = getSetProperty(mapId, "map", mapId, propertyName);
+			var values = getSetProperty("map", mapId, propertyName);
 			var ids = [];
 			for(var id in values)
 				ids.push(id);
@@ -219,20 +381,30 @@ var Map = (function() {
 		
 	};
 	
-	
+	/**
+     * Sets the value of a property of the map.
+     * @param {mapId} The map id.
+     * @param {propertyName} String with the name of the property.
+     * @param {propertyValue} The value to be set for the property.
+     */
 	_self.setMapProperty = function(mapId, propertyName, propertyValue){
 		
 		var validProperties = ["userLocation", "userLocationButton", "mapType", "region", 
 								"animate", "traffic", "enableZoomControls", "rect", "region"];
     							
 		if(validProperties.indexOf(propertyName) >= 0){
-			return getSetProperty(mapId, "map", mapId, propertyName, propertyValue);
+			return getSetProperty("map", mapId, propertyName, propertyValue);
 		} else {
 			//TODO: Error Setter method not found
 			return;
 		}
 	};
 	
+	/**
+	 * Adds a view to the map view.
+	 * @param {mapId} The map id where the view should be added.
+	 * @param {view} View to be added.
+	 */
 	_self.add = function(mapId, view){
 		if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -242,7 +414,11 @@ var Map = (function() {
         mapsList[mapId].add(view);
 	};
 	
-	
+	/**
+	 * Removes a view from the map view.
+	 * @param {mapId} The map id where the view should be remove.
+	 * @param {view} View to be removed.
+	 */
 	_self.remove = function(mapId, view){
 		if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -252,7 +428,11 @@ var Map = (function() {
         mapsList[mapId].remove(view);
 	};
 	
-	
+	/**
+	 * Adds the map view into another view.
+	 * @param {mapId} The map id whose view should be added to another.
+	 * @param {view} View to be added to.
+	 */
 	_self.addToView = function(mapId, view){
 		if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -262,7 +442,11 @@ var Map = (function() {
         view.add(mapsList[mapId]);
 	};
 	
-	
+	/**
+	 * Removes the map view from another view.
+	 * @param {mapId} The map id whose view should be removed from another one.
+	 * @param {view} View to be removed from.
+	 */
 	_self.removeFromView = function(mapId, view){
 		if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -272,7 +456,12 @@ var Map = (function() {
         view.remove(mapsList[mapId]);
 	};
 	
-	
+	/**
+	 * Adds the specified callback as an event listener for the named event.
+	 * @param {mapId} The map id.
+	 * @param {event} Name of the event.
+	 * @param {func} Callback function to invoke when the event is fired.
+	 */
 	_self.addEventListener = function(mapId, event, func){
 		if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -282,7 +471,13 @@ var Map = (function() {
         mapsList[mapId].addEventListener(event, func);
 	};
 	
-	
+	/**
+	 * Removes the specified callback as an event listener for the named event.
+	 * Multiple listeners can be registered for the same event, so the callback parameter is used to determine which listener to remove. 
+	 * @param {mapId} The map id.
+	 * @param {event} Name of the event.
+	 * @param {func} Callback function to invoke when the event is fired.
+	 */
 	_self.removeEventListener = function(mapId, event, func){
 		if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -292,24 +487,52 @@ var Map = (function() {
         mapsList[mapId].removeEventListener(event, func);
 	};
 
+
+
 	/*
 	 * -------------------- ANNOTATIONS -------------------------------
 	 */
 	
-    _self.createAnnotation = function createAnnotation(mapId, options){
+	/**
+	 * Creates an Annotation. 
+	 * @param {options} See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.Annotation
+	 * @return {String} Id of the annotation to be used in the methods of this API.
+	 */
+    _self.createAnnotation = function createAnnotation(options){
+
+        var anon = _self.Map.createAnnotation(options);
+        var id = anon.getId();
+        freeElements["annotations"][id] = anon;
+        return id;
+
+    };
+    
+    /**
+	 * Add an annotation to a map.
+	 * @param {mapId} The id of the map.
+	 * @param {annonId} The id of the annotation.
+	 */
+    _self.addAnnotation = function addAnnotation(mapId, annonId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
+        
+        if(freeElements["annotations"][annonId] === 'undefined'){
+        	//TODO: Error Unknown annotation or already added
+            return;
+        }
 
-        var anon = _self.Map.createAnnotation(options);
-        var id = anon.getId();
-        mapsList[mapId].addAnnotation(anon);
-        anon = null;
-        return id;
+        mapsList[mapId].addAnnotation(freeElements["annotations"][annonId]);
+        delete freeElements["annotations"][annonId];
 
     };
-
+	
+	/**
+	 * Selects an annotation in a map.
+	 * @param {mapId} The id of the map.
+	 * @param {annonId} The id of the annotation.
+	 */
     _self.selectAnnotation = function selectAnnotation(mapId, annoId){
 
         if(typeof mapsList[mapId] === 'undefined'){
@@ -317,41 +540,35 @@ var Map = (function() {
             return;
         }
 
-        var annotation = mapsList[mapId].getAnnotations()[annoId];
-
+        var annotation = getElement("annotation", annoId);
+        
         if(annotation == null){
-
-        	//Search it between the polygon annotations
-        	annotation = getAnnotationFromPolygons(mapId, annoId);
-        	if(annotation == null){
-	            Ti.API.info("Error: Unknown Annotation Id on Map Id");
-	            return;
-			}
-        }
+            Ti.API.info("Error: Unknown Annotation Id on Map Id");
+            return;
+		}
         
         mapsList[mapId].selectAnnotation(annotation);
         annotation = null;
         
     };
 
+	/**
+	 * Deselects an annotation in a map.
+	 * @param {mapId} The id of the map.
+	 * @param {annonId} The id of the annotation.
+	 */
     _self.deselectAnnotation = function deselectAnnotation(mapId, annoId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
-        var annon = mapsList[mapId].getAnnotations(), i;
-        var annotation = annon[annoId];
+        
+        var annotation = getElement("annotation", annoId);
         
         if(annotation == null){
-        	
-        	//Search it between the polygon annotations
-        	annotation = getAnnotationFromPolygons(mapId, annoId);
-        	
-        	if(annotation == null){
-	            Ti.API.info("Error: Unknown Annotation Id on Map Id");
-	            return;
-			}
-        }
+            Ti.API.info("Error: Unknown Annotation Id on Map Id");
+            return;
+		}
         
         mapsList[mapId].deselectAnnotation(annotation);
         annotation = null;
@@ -359,35 +576,46 @@ var Map = (function() {
     };
 
 	//TODO: allow to remove annotations from polygons?
+	/**
+	 * Removes an annotation from a map.
+	 * @param {mapId} The id of the map.
+	 * @param {annonId} The id of the annotation.
+	 */
     _self.removeAnnotation = function removeAnnotation(mapId, annoId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
         
-        var annotation = mapsList[mapId].getAnnotations()[annoId];
+        var annotation = getElement("annotation", annoId);
         
         if(annotation == null){
-            //TODO: Error Unknown Annotation Id on Map Id
+            Ti.API.info("Error: Unknown Annotation Id on Map Id");
             return;
-        }
+		}
         else{
             mapsList[mapId].removeAnnotation(annotation);
             annotation = null;
         }
     };
 
+	/**
+	 * Removes multiple annotations from a map.
+	 * @param {mapId} The id of the map.
+	 * @param {annonId} Array with the ids of the annotations.
+	 */
     _self.removeAnnotations = function removeAnnotations(mapId, annotations){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
         var annonToRemove = [], i, j;
-        var annon = mapsList[mapId].getAnnotations();
+
         while(annotations.length > 0){
             var annId = annotations.pop();
-            if(annon[annId] != null){
-            	annonToRemove.push(annon[annId]);
+            var annotation = getElement("annotation", annId);
+            if(annotation != null){
+            	annonToRemove.push(annotation);
             } else {
             	 //TODO: Warning Unknown Annotation Id
             }
@@ -396,7 +624,11 @@ var Map = (function() {
         annon = null;
         annonToRemove = null;
     };
-
+	
+	/**
+	 * Removes all the annotations from a map.
+	 * @param {mapId} The id of the map.
+	 */
     _self.removeAllAnnotations = function removeAllAnnotations(mapId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -405,7 +637,13 @@ var Map = (function() {
         mapsList[mapId].removeAllAnnotations();
     };
     
-    _self.getAnnotationProperty = function(mapId, annotationId, propertyName){
+    /**
+     * Gets the value of a property of an annotation.
+     * @param {annotationId} The annotation id.
+     * @param {propertyName} String with the name of the property.
+     * @return {Object} The value of the property.
+     */
+    _self.getAnnotationProperty = function(annotationId, propertyName){
 		
 		var validProperties = ["id", "subtitle", "subtitleid", "title", "titleid", 
 								"latitude","longitude", "draggable", "image","pincolor", 
@@ -413,14 +651,20 @@ var Map = (function() {
 								"rightView", "showInfoWindow", "visible"];
     							
 		if(validProperties.indexOf(propertyName) >= 0){
-			return getSetProperty(mapId, "annotation", annotationId, propertyName);
+			return getSetProperty("annotation", annotationId, propertyName);
 		} else {
 			//TODO: Error Getter method not found
 			return;
 		}
 	};
 	
-	_self.setAnnotationProperty = function(mapId, annotationId, propertyName, propertyValue){
+	/**
+     * Sets the value of a property of an annotation.
+     * @param {annotationId} The annotation id.
+     * @param {propertyName} String with the name of the property.
+     * @param {propertyValue} The value to be set for the property.
+     */
+	_self.setAnnotationProperty = function(annotationId, propertyName, propertyValue){
 		
 		var validProperties = ["subtitle", "subtitleid", "title", "titleid", 
 								"latitude","longitude", "draggable", "image","pincolor", 
@@ -428,7 +672,7 @@ var Map = (function() {
 								"rightView", "showInfoWindow", "visible"];
     							
 		if(validProperties.indexOf(propertyName) >= 0){
-			return getSetProperty(mapId, "annotation", annotationId, propertyName, propertyValue);
+			return getSetProperty("annotation", annotationId, propertyName, propertyValue);
 		} else {
 			//TODO: Error Setter method not found
 			return;
@@ -440,37 +684,54 @@ var Map = (function() {
 	 * -------------------- ROUTES -------------------------------
 	 */
 
-    _self.createRoute = function createRoute(mapId, options){
-        if(typeof mapsList[mapId] === 'undefined'){
-            //TODO: Error Unknown Map Id
-            return;
-        }
+	/**
+	 * Creates a Route. 
+	 * @param {options} See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.Route
+	 * @return {String} Id of the route to be used in the methods of this API.
+	 */
+    _self.createRoute = function createRoute(options){
 
         var route = _self.Map.createRoute(options);
         var id = route.getId();
-        mapsList[mapId].addRoute(route);
-        route = null;
+        freeElements["routes"][id] = route;
+        
         return id;
 
     };
     
-    _self.addRoute = function addRoute(mapId, route){
-    	if(typeof mapsList[mapId] === 'undefined'){
+    /**
+	 * Add a route to a map.
+	 * @param {mapId} The id of the map.
+	 * @param {routeId} The id of the route.
+	 */
+    _self.addRoute = function addRoute(mapId, routeId){
+        if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
         
-        mapsList[mapId].addRoute(route);
+        if(freeElements["routes"][routeId] === 'undefined'){
+        	//TODO: Error Unknown annotation or already added
+            return;
+        }
+
+        mapsList[mapId].addRoute(freeElements["routes"][routeId]);
+        delete freeElements["routes"][routeId];
+
     };
     
-    
+    /**
+	 * Removes a route from a map.
+	 * @param {mapId} The id of the map.
+	 * @param {routeId} The id of the route.
+	 */
     _self.removeRoute = function removeRoute(mapId, routeId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
         
-        var route = mapsList[mapId].getRoutes()[routeId];
+        var route = getElement("routes", routeId);
 
         if(route == null){
             //TODO: Error Unknown Annotation Id on Map Id
@@ -482,6 +743,10 @@ var Map = (function() {
         }
     };
     
+    /**
+	 * Removes all the routes from a map.
+	 * @param {mapId} The id of the map.
+	 */
     _self.removeAllRoutes = function removeAllRoutes(mapId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -490,12 +755,18 @@ var Map = (function() {
         mapsList[mapId].removeAllRoutes();
     };
     
-    _self.getRouteProperty = function(mapId, routeId, propertyName){
+    /**
+     * Gets the value of a property of a route.
+     * @param {routeId} The route id.
+     * @param {propertyName} String with the name of the property.
+     * @return {Object} The value of the property.
+     */
+    _self.getRouteProperty = function(routeId, propertyName){
     	
     	var validProperties = ["id", "points", "width", "color"];
     							
 		if(validProperties.indexOf(propertyName) >= 0){
-			return getSetProperty(mapId, "route", routeId, propertyName);
+			return getSetProperty("route", routeId, propertyName);
 		} else {
 			//TODO: Error Getter method not found
 			return;
@@ -503,12 +774,18 @@ var Map = (function() {
 		
 	};
 	
-	_self.setRouteProperty = function(mapId, routeId, propertyName, propertyValue){
+	/**
+     * Sets the value of a property of a route.
+     * @param {routeId} The route id.
+     * @param {propertyName} String with the name of the property.
+     * @param {propertyValue} The value to be set for the property.
+     */
+	_self.setRouteProperty = function(routeId, propertyName, propertyValue){
 		
 		var validProperties = ["points", "width", "color"];
     							
     	if(validProperties.indexOf(propertyName) >= 0){
-			getSetProperty(mapId, "route", routeId, propertyName, propertyValue);
+			getSetProperty("route", routeId, propertyName, propertyValue);
 		} else {
 			//TODO: Error Setter method not found
 			return;
@@ -520,21 +797,18 @@ var Map = (function() {
 	 * -------------------- POLYGONS -------------------------------
 	 */
 
-    _self.createPolygon = function createPolygon(mapId, options){
-        if(typeof mapsList[mapId] === 'undefined'){
-            //TODO: Error Unknown Map Id
-            return;
-        }
+    _self.createPolygon = function createPolygon(options){
 
         var polygon = _self.Map.createPolygon(options);
         var id = polygon.getId();
-        mapsList[mapId].addPolygon(polygon);
-        polygon = null;
+        freeElements["polygons"][id] = polygon;
+        
         return id;
         
     };
     
     
+    //TODO: remove this method (ya que ya no va a ser necesario porque el parser solo deberia devolver IDs)
     _self.addPolygon = function addPolygon(mapId, polygon){
     	if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -545,13 +819,29 @@ var Map = (function() {
         
     };
     
+    _self.addPolygon = function addPolygon(mapId, polygonId){
+        if(typeof mapsList[mapId] === 'undefined'){
+            //TODO: Error Unknown Map Id
+            return;
+        }
+        
+        if(freeElements["polygons"][polygonId] === 'undefined'){
+        	//TODO: Error Unknown annotation or already added
+            return;
+        }
+
+        mapsList[mapId].addPolygon(freeElements["polygons"][polygonId]);
+        delete freeElements["polygons"][polygonId];
+
+    };
+    
     _self.removePolygon = function removePolygon(mapId, polygonId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
         
-        var polygon = mapsList[mapId].getPolygons()[polygonId];
+        var polygon = getElement("polygons", polygonId);
         
         if(polygon == null){
             //TODO: Error Unknown Annotation Id on Map Id
@@ -571,7 +861,7 @@ var Map = (function() {
         mapsList[mapId].removeAllPolygons();
     };
     
-    _self.getPolygonProperty = function(mapId, polygonId, propertyName){
+    _self.getPolygonProperty = function(polygonId, propertyName){
     	
     	var validProperties = ["id", "points", "holePoints", "strokeWidth", "strokeColor", 
     							"fillColor", "annotationId", "zIndex"];
@@ -579,14 +869,14 @@ var Map = (function() {
 		if(validProperties.indexOf(propertyName) >= 0){
 			
 			if(propertyName === "annotationId"){ //Special case, this is a "virtual" method
-				var annotation = getSetProperty(mapId, "polygon", polygonId, "annotation");
+				var annotation = getSetProperty("polygon", polygonId, "annotation");
 				if(annotation != null){
 					return annotation.getId();
 				} else {
 					return null;
 				}
 			} else {
-				return getSetProperty(mapId, "polygon", polygonId, propertyName);
+				return getSetProperty("polygon", polygonId, propertyName);
 			}
 			
 		} else {
@@ -596,26 +886,22 @@ var Map = (function() {
 		
 	};
 	
-	_self.setPolygonProperty = function(mapId, polygonId, propertyName, propertyValue){
+	_self.setPolygonProperty = function(polygonId, propertyName, propertyValue){
 		
 		var validProperties = ["points", "holePoints", "strokeWidth", "strokeColor", 
     							"fillColor", "annotation", "zIndex"];
     							
     	if(validProperties.indexOf(propertyName) >= 0){
-			getSetProperty(mapId, "polygon", polygonId, propertyName, propertyValue);
+			getSetProperty("polygon", polygonId, propertyName, propertyValue);
 		} else {
 			//TODO: Error Setter method not found
 			return;
 		}
 	};
 	
-	_self.addPolygonEventListener = function(mapId, polygonId, event, func){
-		if(typeof mapsList[mapId] === 'undefined'){
-            //TODO: Error Unknown Map Id
-            return;
-        }
+	_self.addPolygonEventListener = function(polygonId, event, func){
         
-        var polygon = mapsList[mapId].getPolygons()[polygonId];
+        var polygon = getElement("polygons", polygonId);
         
         if(polygon == null){
             //TODO: Error Unknown Polygon Id on Map Id
@@ -629,13 +915,9 @@ var Map = (function() {
 	};
 	
 	
-	_self.removePolygonEventListener = function(mapId, event, func){
-		if(typeof mapsList[mapId] === 'undefined'){
-            //TODO: Error Unknown Map Id
-            return;
-        }
+	_self.removePolygonEventListener = function(event, func){
         
-        var polygon = mapsList[mapId].getPolygons()[polygonId];
+        var polygon = getElement("polygons", polygonId);
         
         if(polygon == null){
             //TODO: Error Unknown Polygon Id on Map Id
@@ -652,20 +934,17 @@ var Map = (function() {
 	 * -------------------- LAYERS -------------------------------
 	 */
 
-    _self.createLayer = function createLayer(mapId, options){
-        if(typeof mapsList[mapId] === 'undefined'){
-            Ti.API.info("Error: Unknown Map Id");
-            return;
-        }
+    _self.createLayer = function createLayer(options){
 
         var layer = _self.Map.createLayer(options);
         var id = layer.getId();
-        mapsList[mapId].addLayer(layer);
-        layer = null;
+        freeElements["layers"][id] = layer;
+        
         return id;
 
     };
     
+    //TODO: remove this method (ya que ya no va a ser necesario porque el parser solo deberia devolver IDs)
     _self.addLayer = function addLayer(mapId, layer){
     	if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -675,13 +954,29 @@ var Map = (function() {
         mapsList[mapId].addLayer(layer);
     };
     
+    _self.addLayer = function addLayer(mapId, layerId){
+        if(typeof mapsList[mapId] === 'undefined'){
+            //TODO: Error Unknown Map Id
+            return;
+        }
+        
+        if(freeElements["layers"][layerId] === 'undefined'){
+        	//TODO: Error Unknown layer or already added
+            return;
+        }
+
+        mapsList[mapId].addLayer(freeElements["layers"][layerId]);
+        delete freeElements["layers"][layerId];
+
+    };
+    
     _self.removeLayer = function removeLayer(mapId, layerId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
         }
 
-        var layer = mapsList[mapId].getLayers()[layerId];
+ 		var layer = getElement("layers", layerId);
         
         if(layer == null){
             //TODO: Error Unknown Annotation Id on Map Id
@@ -719,7 +1014,7 @@ var Map = (function() {
 
 		if((layerId + "").indexOf("-") != -1){ //It is a layer id
 			
-        	var layer = mapsList[mapId].getLayers()[layerId];
+        	var layer = getElement("layers", layerId);
 	        
 	        if(layer == null){
 	            //TODO: Error Unknown Annotation Id on Map Id
@@ -737,26 +1032,26 @@ var Map = (function() {
 
     };
     
-    _self.getLayerProperty = function(mapId, layerId, propertyName){
+    _self.getLayerProperty = function(layerId, propertyName){
     	
     	var validProperties = ["id", "baseUrl", "type", "name", "srs", "visible", "zIndex", 
     							"opacity", "format", "style", "tyleMatrixSet"];
     							
 		if(validProperties.indexOf(propertyName) >= 0){
-			return getSetProperty(mapId, "layer", layerId, propertyName);
+			return getSetProperty("layer", layerId, propertyName);
 		} else {
 			//TODO: Error Getter method not found
 			return;
 		}
 	};
 	
-	_self.setLayerProperty = function(mapId, layerId, propertyName, propertyValue){
+	_self.setLayerProperty = function(layerId, propertyName, propertyValue){
 		
 		var validProperties = ["baseUrl", "type", "name", "srs", "visible", "zIndex", 
     							"opacity", "format", "style", "tyleMatrixSet"];
     							
     	if(validProperties.indexOf(propertyName) >= 0){
-			getSetProperty(mapId, "layer", layerId, propertyName, propertyValue);
+			getSetProperty("layer", layerId, propertyName, propertyValue);
 		} else {
 			//TODO: Error Setter method not found
 			return;
