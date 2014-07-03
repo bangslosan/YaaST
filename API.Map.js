@@ -43,46 +43,8 @@ var Cache = function Cache(size){
 	};
 	
 };
+	
 
-var VectorialParser = function(freeElements){
-	
-	this._vectorialParser = require('ti.map').createVectorialParser();
-	this._freeElements = freeElements;
-	this.getShapesFromKml = function(data){
-		return handleResult(this._vectorialParser.getShapesFromKml(data));
-	};
-	
-	this.getShapesFromWkt = function(data){
-		return handleResult(this._vectorialParser.getShapesFromWkt(data));
-	};
-	
-	this.getShapesFromGeoJson = function(data){
-		return handleResult(this._vectorialParser.getShapesFromGeoJson(data));
-	};
-	
-	var handleResult = function(obj){
-		
-		if(obj == null)
-			return obj;
-		
-		var result = { "polygons" : [], "routes":  [] };
-		
-		for(var x in obj.polygons){
-			var id = obj.polygons[x].getId();
-			freeElements["polygons"][id] = obj.polygons[x];
-			result.polygons.push(id);
-		}
-		for(var x in obj.routes){
-			var id = obj.routes[x].getId();
-			freeElements["routes"][id] = obj.routes[x];
-			result.routes.push(id);
-		}
-		
-		return result;
-			
-	};
-	
-};
 
 var Map = (function() {
 
@@ -237,6 +199,27 @@ var Map = (function() {
     	return annotation;
 	};
 	
+	var handleParserResult = function(obj){
+		
+		if(obj == null)
+			return obj;
+		
+		var result = { "polygons" : [], "routes":  [] };
+		
+		for(var x in obj.polygons){
+			var id = obj.polygons[x].getId();
+			freeElements["polygons"][id] = obj.polygons[x];
+			result.polygons.push(id);
+		}
+		for(var x in obj.routes){
+			var id = obj.routes[x].getId();
+			freeElements["routes"][id] = obj.routes[x];
+			result.routes.push(id);
+		}
+		
+		return result;
+			
+	};
 	
 
 	/*
@@ -244,6 +227,9 @@ var Map = (function() {
 	 */
 	
 	// Constants
+	/**
+	 * 
+	 */
 	_self.PRIORITY_BALANCED_POWER_ACCURACY = _self.Map.PRIORITY_BALANCED_POWER_ACCURACY;
 	_self.PRIORITY_HIGH_ACCURACY = _self.Map.PRIORITY_HIGH_ACCURACY;
 	_self.PRIORITY_LOW_POWER = _self.Map.PRIORITY_LOW_POWER;
@@ -273,16 +259,119 @@ var Map = (function() {
     };
     
     
-    /**
-     * Creates a parser for different file formats which has the following interface:
-     * 	- getShapesFromKml(string/file)
-     *  - getShapesFromWkt(string/file)
-     *  - getShapesFromGeoJson(string/file)
-     */
-    _self.createVectorialParser = function createVectorialParser(){
-        return new VectorialParser(freeElements);
+	/**
+	 * Creates an Annotation. 
+	 * @param {options} See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.Annotation
+	 * @return {String} Id of the annotation to be used in the methods of this API.
+	 */
+    _self.createAnnotation = function createAnnotation(options){
+
+        var anon = _self.Map.createAnnotation(options);
+        var id = anon.getId();
+        freeElements["annotations"][id] = anon;
+        return id;
+
     };
     
+    
+	/**
+	 * Creates a Route. 
+	 * @param {options} See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.Route
+	 * @return {String} Id of the route to be used in the methods of this API.
+	 */
+    _self.createRoute = function createRoute(options){
+
+        var route = _self.Map.createRoute(options);
+        var id = route.getId();
+        freeElements["routes"][id] = route;
+        
+        return id;
+
+    };
+    
+    
+	/**
+	 * Creates a Polygon. 
+	 * @param {options} 
+	 * 		- points: Array of points ({latitude: Number, longitude: Number})
+	 * 		- holePoints: Array with holes. A hole is an array of points.
+	 * 		- fillColor: Color
+	 * 		- strokeColor: Color
+	 * 		- strokeWidth: Number
+	 * 		- annotation: Object (same properties of the createAnnotation method)
+	 * 		
+	 * @return {String} Id of the route to be used in the methods of this API.
+	 */
+    _self.createPolygon = function createPolygon(options){
+
+        var polygon = _self.Map.createPolygon(options);
+        var id = polygon.getId();
+        freeElements["polygons"][id] = polygon;
+        
+        return id;
+        
+    };
+    
+    
+	/**
+	 * Creates a Layer.
+	 * @param {options} 
+	 * 		- baseUrl: String with the url of the service
+	 * 		- type: Type of service (Map.LAYER_TYPE_WMS_1_1_1 | Map.LAYER_TYPE_WMS_1_3_0)
+	 * 		- name: String with the name of the layer.
+	 * 		- srs: String with the srs of the layer.
+	 * 		- visible: Boolean 
+	 * 		- zIndex: Number ZIndex of the layer.
+	 * 		- opacity: Number Percentage of opacity [0 - 100].
+	 * 		- format: Tipe of image of the tiles (Map.FORMAT_PNG | Map.FORMAT_JPEG)
+	 * 		
+	 * @return {String} Id of the route to be used in the methods of this API.
+	 */
+    _self.createLayer = function createLayer(options){
+
+        var layer = _self.Map.createLayer(options);
+        var id = layer.getId();
+        freeElements["layers"][id] = layer;
+        
+        return id;
+
+    };
+    
+    
+    /**
+	 * Parses a given KML file or string  and returns an object with the polygons and routes of the file.
+	 * @param fileObj The KML file or string to parse
+	 * @return An object {polygons: array, routes: array}. Null if there was an exception while parsing the KML file or string .
+	 */
+    _self.getShapesFromKml = function getShapesFromKml(data){
+        return handleParserResult(_self.Map.getShapesFromKml(data));
+    };
+    
+    
+    /**
+	 * Parses a given GeoJson file or string and returns an object with the polygons and routes of the file.
+	 * @param fileObj The GeoJson file or string to parse
+	 * @return An object {polygons: array, routes: array}. Null if there was an exception while parsing the GeoJson file or string .
+	 */
+    _self.getShapesFromGeoJson = function getShapesFromGeoJson(data){
+        return handleParserResult(_self.Map.getShapesFromGeoJson(data));
+    };
+    
+    
+    /**
+	 * Parses a given WKT file or string and returns an object with the polygons and routes of the file.
+	 * @param fileObj The WKT file or string to parse
+	 * @return An object {polygons: array, routes: array}. Null if there was an exception while parsing the WKT file or string .
+	 */
+    _self.getShapesFromWkt = function getShapesFromWkt(data){
+        return handleParserResult(_self.Map.getShapesFromWkt(data));
+    };
+    
+    
+    /*
+	 * ----------------------------------- MAP VIEW -----------------------------------------------------------------
+	 */
+	
   	/**
   	 * Zooms in or out by specifying a relative zoom level. 
   	 * @param {mapId} Map in which execute the action. 
@@ -298,27 +387,13 @@ var Map = (function() {
 
     };
     
-    /**
-  	 * Returns the zoom level of the map.
-  	 * @param {mapId} Map whose zoom is requested. 
-  	 * @return {Number} The zoom level.
-  	 */
-    _self.getZoom = function getZoom(mapId){
-        if(typeof mapsList[mapId] === 'undefined'){
-            //TODO: Error Unknown Map Id
-            return;
-        }
-
-        return mapsList[mapId].getZoom();
-
-    };
     
     /**
      * Changes the location of the map.
      * @param {mapId} Map 
      * @param {location} See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.View-method-setLocation
      */
-    _self.setLocation = function setLocation(mapId, location){
+    _self.setLocation = function setLocation(mapId, location){ //TODO: move to setProperty??
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
             return;
@@ -330,11 +405,11 @@ var Map = (function() {
     
     /**
 	 * Set how the map should follow the location of the device.
-	 * @param {interval} LocationRequest desired interval in milliseconds. Must be > 0; otherwise, default value is 1000.
-	 * @param {priority} LocationRequest priority (PRIORITY_BALANCED_POWER_ACCURACY, PRIORITY_HIGH_ACCURACY, PRIORITY_LOW_POWER, PRIORITY_NO_POWER,
-	 *  PRIORITY_UNDEFINED).
 	 * @param {followLocation} True if the map camera must follow the location of the device. 
 	 * @param {followBearing} True if the map camera must follow the bearing of the device.
+	 * @param {options}:
+	 * 		- {interval} LocationRequest desired interval in milliseconds. Must be > 0; otherwise, default value is 1000.
+	 * 		- {priority} LocationRequest priority (PRIORITY_BALANCED_POWER_ACCURACY, PRIORITY_HIGH_ACCURACY, PRIORITY_LOW_POWER, PRIORITY_NO_POWER, PRIORITY_UNDEFINED).
 	 */
     _self.followLocation = function followLocation(mapId, followLocation, followBearing, options){
         if(typeof mapsList[mapId] === 'undefined'){
@@ -343,11 +418,17 @@ var Map = (function() {
         }
         
         var interval, priority;
-        if(options == null){
-        	interval = 1000;
-        	priority = _self.PRIORITY_UNDEFINED;
+        if(options != null){
+        	interval = options.interval;
+        	priority = options.priority;
+        	
         }
-
+        if(interval == null)
+        	interval = 1000;
+        	
+    	if(priority == null)
+        	priority = _self.PRIORITY_UNDEFINED;
+        
         mapsList[mapId].followLocation(interval, priority, followLocation, followBearing);
 
     };
@@ -361,7 +442,7 @@ var Map = (function() {
     _self.getMapProperty = function(mapId, propertyName){
 		
 		var validProperties = ["userLocation", "userLocationButton", "mapType", "region", 
-								"animate", "traffic", "enableZoomControls", "rect", "region"];
+								"animate", "traffic", "enableZoomControls", "rect", "region", "zoom"];
 		var onlyIdProperties = ["annotations", "polygons", "layers", "routes"];
     							
 		if(validProperties.indexOf(propertyName) >= 0){
@@ -492,20 +573,6 @@ var Map = (function() {
 	/*
 	 * -------------------- ANNOTATIONS -------------------------------
 	 */
-	
-	/**
-	 * Creates an Annotation. 
-	 * @param {options} See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.Annotation
-	 * @return {String} Id of the annotation to be used in the methods of this API.
-	 */
-    _self.createAnnotation = function createAnnotation(options){
-
-        var anon = _self.Map.createAnnotation(options);
-        var id = anon.getId();
-        freeElements["annotations"][id] = anon;
-        return id;
-
-    };
     
     /**
 	 * Add an annotation to a map.
@@ -684,21 +751,7 @@ var Map = (function() {
 	 * -------------------- ROUTES -------------------------------
 	 */
 
-	/**
-	 * Creates a Route. 
-	 * @param {options} See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.Route
-	 * @return {String} Id of the route to be used in the methods of this API.
-	 */
-    _self.createRoute = function createRoute(options){
 
-        var route = _self.Map.createRoute(options);
-        var id = route.getId();
-        freeElements["routes"][id] = route;
-        
-        return id;
-
-    };
-    
     /**
 	 * Add a route to a map.
 	 * @param {mapId} The id of the map.
@@ -796,29 +849,12 @@ var Map = (function() {
 	/*
 	 * -------------------- POLYGONS -------------------------------
 	 */
-
-    _self.createPolygon = function createPolygon(options){
-
-        var polygon = _self.Map.createPolygon(options);
-        var id = polygon.getId();
-        freeElements["polygons"][id] = polygon;
-        
-        return id;
-        
-    };
     
-    
-    //TODO: remove this method (ya que ya no va a ser necesario porque el parser solo deberia devolver IDs)
-    _self.addPolygon = function addPolygon(mapId, polygon){
-    	if(typeof mapsList[mapId] === 'undefined'){
-            //TODO: Error Unknown Map Id
-            return;
-        }
-        
-        mapsList[mapId].addPolygon(polygon);
-        
-    };
-    
+    /**
+	 * Add a polygon to a map.
+	 * @param {mapId} The id of the map.
+	 * @param {polygonId} The id of the polygon.
+	 */
     _self.addPolygon = function addPolygon(mapId, polygonId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -835,6 +871,11 @@ var Map = (function() {
 
     };
     
+    /**
+	 * Removes a polygon from a map.
+	 * @param {mapId} The id of the map.
+	 * @param {polygonId} The id of the polygon.
+	 */
     _self.removePolygon = function removePolygon(mapId, polygonId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -853,6 +894,10 @@ var Map = (function() {
         }
     };
     
+    /**
+	 * Removes all the polygons from a map.
+	 * @param {mapId} The id of the map.
+	 */
     _self.removeAllPolygons = function removeAllPolygons(mapId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -861,6 +906,12 @@ var Map = (function() {
         mapsList[mapId].removeAllPolygons();
     };
     
+    /**
+     * Gets the value of a property of a polygon.
+     * @param {polygonId} The polygon id.
+     * @param {propertyName} String with the name of the property.
+     * @return {Object} The value of the property.
+     */
     _self.getPolygonProperty = function(polygonId, propertyName){
     	
     	var validProperties = ["id", "points", "holePoints", "strokeWidth", "strokeColor", 
@@ -886,6 +937,12 @@ var Map = (function() {
 		
 	};
 	
+	/**
+     * Sets the value of a property of a polygon.
+     * @param {polygonId} The polygon id.
+     * @param {propertyName} String with the name of the property.
+     * @param {propertyValue} The value to be set for the property.
+     */
 	_self.setPolygonProperty = function(polygonId, propertyName, propertyValue){
 		
 		var validProperties = ["points", "holePoints", "strokeWidth", "strokeColor", 
@@ -899,6 +956,12 @@ var Map = (function() {
 		}
 	};
 	
+	/**
+	 * Adds the specified callback as an event listener for the named event.
+	 * @param {polygonId} The polygon id.
+	 * @param {event} Name of the event.
+	 * @param {func} Callback function to invoke when the event is fired.
+	 */
 	_self.addPolygonEventListener = function(polygonId, event, func){
         
         var polygon = getElement("polygons", polygonId);
@@ -914,8 +977,14 @@ var Map = (function() {
         
 	};
 	
-	
-	_self.removePolygonEventListener = function(event, func){
+	/**
+	 * Removes the specified callback as an event listener for the named event.
+	 * Multiple listeners can be registered for the same event, so the callback parameter is used to determine which listener to remove. 
+	 * @param {polygonId} The polygon id.
+	 * @param {event} Name of the event.
+	 * @param {func} Callback function to invoke when the event is fired.
+	 */
+	_self.removePolygonEventListener = function(polygonId, event, func){
         
         var polygon = getElement("polygons", polygonId);
         
@@ -933,27 +1002,12 @@ var Map = (function() {
     /*
 	 * -------------------- LAYERS -------------------------------
 	 */
-
-    _self.createLayer = function createLayer(options){
-
-        var layer = _self.Map.createLayer(options);
-        var id = layer.getId();
-        freeElements["layers"][id] = layer;
-        
-        return id;
-
-    };
-    
-    //TODO: remove this method (ya que ya no va a ser necesario porque el parser solo deberia devolver IDs)
-    _self.addLayer = function addLayer(mapId, layer){
-    	if(typeof mapsList[mapId] === 'undefined'){
-            //TODO: Error Unknown Map Id
-            return;
-        }
-        
-        mapsList[mapId].addLayer(layer);
-    };
-    
+  
+    /**
+	 * Add a layer to a map.
+	 * @param {mapId} The id of the map.
+	 * @param {layerId} The id of the layer.
+	 */
     _self.addLayer = function addLayer(mapId, layerId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -970,6 +1024,11 @@ var Map = (function() {
 
     };
     
+    /**
+	 * Removes a layer from a map.
+	 * @param {mapId} The id of the map.
+	 * @param {layerId} The id of the layer.
+	 */
     _self.removeLayer = function removeLayer(mapId, layerId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -988,6 +1047,10 @@ var Map = (function() {
         }
     };
     
+    /**
+	 * Removes all the layers from a map.
+	 * @param {mapId} The id of the map.
+	 */
     _self.removeAllLayers = function removeAllLayers(mapId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -996,6 +1059,11 @@ var Map = (function() {
         mapsList[mapId].removeAllLayers();
     };
     
+    
+    /**
+     * Gets the base layer 
+	 * @param {Object} mapId Can be a layer id (String) or a google layer id (Integer).
+     */
     _self.getBaseLayer = function getBaseLayer(mapId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -1006,6 +1074,11 @@ var Map = (function() {
 
     };
     
+    /**
+     * Set the base layer of the map.
+ 	 * @param {Object} mapId The id of the map.
+ 	 * @param {Object} layerId  The id of the layer or the constant of the Google Layer.
+     */
     _self.setBaseLayer = function setBaseLayer(mapId, layerId){
         if(typeof mapsList[mapId] === 'undefined'){
             //TODO: Error Unknown Map Id
@@ -1032,6 +1105,12 @@ var Map = (function() {
 
     };
     
+    /**
+     * Gets the value of a property of a layer.
+     * @param {layerId} The layer id.
+     * @param {propertyName} String with the name of the property.
+     * @return {Object} The value of the property.
+     */
     _self.getLayerProperty = function(layerId, propertyName){
     	
     	var validProperties = ["id", "baseUrl", "type", "name", "srs", "visible", "zIndex", 
@@ -1045,6 +1124,12 @@ var Map = (function() {
 		}
 	};
 	
+	/**
+     * Sets the value of a property of a layer.
+     * @param {layerId} The layer id.
+     * @param {propertyName} String with the name of the property.
+     * @param {propertyValue} The value to be set for the property.
+     */
 	_self.setLayerProperty = function(layerId, propertyName, propertyValue){
 		
 		var validProperties = ["baseUrl", "type", "name", "srs", "visible", "zIndex", 

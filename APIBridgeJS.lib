@@ -136,9 +136,238 @@
                     Log : {
 
                     },
-                    Map : {
-
-                    },
+                    Map : (function () {
+	
+							"use strict";
+							
+							var Map = function Map(){
+								
+								this.createMap = function(options, callback){
+									var handleCreateMap = function(callback, mapId){
+										callback(new MapView(mapId));
+									}.bind(null, callback);
+									_genericMethodHandler.call(this, handleCreateMap, 'API.SW.Map.createMap', [], options);
+								};
+								
+								
+								this.createAnnotation = function(options, callback){
+									var handleCreateAnnotation = function(callback, annotationId){
+										callback(new Annotation(annotationId));
+									}.bind(null, callback);
+									_genericMethodHandler.call(this, handleCreateAnnotation, 'API.SW.Map.createAnnotation', [], options);
+								};
+								
+								this.createRoute = function(options, callback){
+									var handleCreateRoute = function(callback, routeId){
+										callback(new Route(routeId));
+									}.bind(null, callback);
+									_genericMethodHandler.call(this, handleCreateRoute, 'API.SW.Map.createRoute', [], options);
+								};
+								
+								this.createLayer = function(options, callback){
+									var handleCreateLayer = function(callback, layerId){
+										callback(new Layer(layerId));
+									}.bind(null, callback);
+									_genericMethodHandler.call(this, handleCreateLayer, 'API.SW.Map.createLayer', [], options);
+								};
+								
+								this.createPolygon = function(options, callback){
+									var handleCreatePolygon = function(callback, polygonId){
+										callback(new Polygon(polygonId));
+									}.bind(null, callback);
+									_genericMethodHandler.call(this, handleCreatePolygon, 'API.SW.Map.createPolygon', [], options);
+								};
+								
+								this.getShapesFromKml = function(data, callback){
+									var handleGetShapes = function(callback, shapes){
+										callback(shapes);
+									}.bind(null, callback);
+									_genericMethodHandler.call(this, handleGetShapes, 'API.SW.Map.getShapesFromKml', [data], null);
+								};
+								
+								this.getShapesFromWkt = function(data, callback){
+									var handleGetShapes = function(callback, shapes){
+										callback(shapes);
+									}.bind(null, callback);
+									_genericMethodHandler.call(this, handleGetShapes, 'API.SW.Map.getShapesFromWkt', [data], null);
+								};
+								
+								this.getShapesFromGeoJson = function(data, callback){
+									var handleGetShapes = function(callback, shapes){
+										callback(shapes);
+									}.bind(null, callback);
+									_genericMethodHandler.call(this, handleGetShapes, 'API.SW.Map.getShapesFromGeoJson', [data], null);
+								};
+								
+								
+								var voidCallback = function(){ /*This callback is void*/};
+								
+								var MapView = function MapView(id){
+								
+									this.id = id;
+									
+									this.zoom = function(delta){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.getShapesFromGeoJson', [this.id, delta]);
+									};
+									
+									this.setLocation = function(location){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setLocation', [this.id, location]);
+									};
+									
+									this.followLocation = function(followLocation, followBearing, options){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.followLocation', [this.id, followLocation, followBearing], options);
+									};
+									
+									this.getMapProperty = function(propertyName, callback){
+										_genericMethodHandler.call(this, callback, 'API.SW.Map.getMapProperty', [this.id, propertyName]);
+									};
+									
+									this.setMapProperty = function(propertyName, propertyValue){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setMapProperty', [this.id, propertyName, propertyValue]);
+									};
+									
+									this.addAnnotation = function(annotation){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.addAnnotation', [this.id, annotation.id]);
+									};
+									
+									this.selectAnnotation = function(annotation){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.selectAnnotation', [this.id, annotation.id]);
+									};
+									
+									this.deselectAnnotation = function(annotation){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.deselectAnnotation', [this.id, annotation.id]);
+									};
+									
+									this.removeAnnotation = function(annotation){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.removeAnnotation', [this.id, annotation.id]);
+									};
+									
+									this.removeAnnotations = function(annotations){
+										var ids = [];
+										for(var i in annotations){
+											if(annotations[i].id != null)
+												ids.push(annotations[i].id);
+										}
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.removeAnnotations', [this.id, ids]);
+									};
+									
+									this.removeAllAnnotations = function(){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.removeAllAnnotations', [this.id]);
+									};
+									
+									
+									this.addRoute = function(route){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.addRoute', [this.id, route.id]);
+									};
+									
+									this.removeRoute = function(route){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.removeRoute', [this.id, route.id]);
+									};
+									
+									this.removeAllRoutes = function(){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.removeAllRoutes', [this.id]);
+									};
+									
+									
+									this.addPolygon = function(polygon){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.addPolygon', [this.id, polygon.id]);
+									};
+									
+									this.removePolygon = function(polygon){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.removePolygon', [this.id, polygon.id]);
+									};
+									
+									this.removeAllPolygons = function(){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.removeAllPolygons', [this.id]);
+									};
+									
+									
+									this.addLayer = function(layer){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.addLayer', [this.id, layer.id]);
+									};
+									
+									this.removeLayer = function(layer){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.removeLayer', [this.id, layer.id]);
+									};
+									
+									this.removeAllLayers = function(){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.removeAllLayers', [this.id]);
+									};
+									
+									this.getBaseLayer = function(callback){
+										_genericMethodHandler.call(this, callback, 'API.SW.Map.getBaseLayer', [this.id]);
+									};
+									
+									this.setBaseLayer = function(layer){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setBaseLayer', [this.id, layer.id]);
+									};
+									
+									
+									//TODO: addEventListener
+									//TODO: removeEventListener
+									//TODO: display in DOM		
+									
+								};
+								
+								var Annotation = function Annotation(id){
+									this.id = id;
+									
+									this.getProperty = function(propertyName, callback){
+										_genericMethodHandler.call(this, callback, 'API.SW.Map.getAnnotationProperty', [this.id, propertyName]);
+									};
+									
+									this.setProperty = function(propertyName, propertyValue){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setAnnotationProperty', [this.id, propertyName, propertyValue]);
+									};
+								};
+								
+								var Polygon = function Polygon(id){
+									this.id = id;
+									
+									this.getProperty = function(propertyName, callback){
+										_genericMethodHandler.call(this, callback, 'API.SW.Map.getPolygonProperty', [this.id, propertyName]);
+									};
+									
+									this.setProperty = function(propertyName, propertyValue){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setPolygonProperty', [this.id, propertyName, propertyValue]);
+									};
+									
+									//TODO: addEventListener
+									//TODO: removeEventListener
+								};
+								
+								
+								var Route = function Route(id){
+									this.id = id;
+									
+									this.getProperty = function(propertyName, callback){
+										_genericMethodHandler.call(this, callback, 'API.SW.Map.getRouteProperty', [this.id, propertyName]);
+									};
+									
+									this.setProperty = function(propertyName, propertyValue){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setRouteProperty', [this.id, propertyName, propertyValue]);
+									};
+									
+								};
+								
+								var Layer = function Layer(id){
+									this.id = id;
+									
+									this.getProperty = function(propertyName, callback){
+										_genericMethodHandler.call(this, callback, 'API.SW.Map.getLayerProperty', [this.id, propertyName]);
+									};
+									
+									this.setProperty = function(propertyName, propertyValue){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setLayerProperty', [this.id, propertyName, propertyValue]);
+									};
+									
+								};
+								
+							};
+							
+							return new Map();
+						}()),
+                    
                     Notification : {
                         /** Create Toast Notification
                          * @param {function} Callback
@@ -1034,4 +1263,6 @@
         }
     };
     // End Video Dummy
+    
+    
 }());
