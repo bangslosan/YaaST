@@ -58,6 +58,40 @@ var Map = (function() {
     	"routes": {},
     	"annotations": {}
     };
+    
+    //Start event listener
+    var handlers = {};
+    var eventHandler = function(event, elementId, e){
+    	Ti.App.fireEvent("API_MAP_EVENT", { event: event, elementId: elementId, data: e });
+    };
+    Ti.App.addEventListener("API_MAP_EDIT_EVENT", function(data){
+    	
+    	//TODO: check events?
+    	
+    	var element = getElement(data.elementType, data.elementId);
+    	if(element == null)
+    		return;
+    		
+    	if(data.action === "add"){
+    		if(handlers[data.elementId] == null){
+    			handlers[data.elementId] = {
+    				count: 1,
+    				handler: eventHandler.bind(null, data.event, data.elementId)
+    			};
+    			element.addEventListener(data.event, handlers[data.elementId].handler);
+    		}else
+    			handlers[data.elementId].count++;
+    	}else if(data.action === "remove"){
+    		
+    		if(handlers[data.elementId] != null){
+    			if(--handlers[data.elementId].count <= 0){
+    				element.removeEventListener(data.event, handlers[data.elementId].handler);
+    				handlers[data.elementId].handler = null;
+    				delete handlers[data.elementId];
+    			}
+    		}
+    	}
+    });
 
 
 	/*
@@ -252,9 +286,37 @@ var Map = (function() {
 	 * @param {options} See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.View
 	 * @return {String} Id of the Map to be used in the methods of this API.
 	 */
-    _self.createMap = function createMap(options){
+    _self.createMap = function createMap(viewId, options){
         mapsId++;
+        
+        // Size
+        if (typeof options.width === 'undefined' || typeof options.height === 'undefined') {
+            options.width = parseInt(Ti.App.tabView.rect.width * 0.7);
+            options.height = parseInt(Ti.App.tabView.rect.height * 0.5);
+            options.top = parseInt((Ti.App.tabView.rect.height * 0.5) / 2);
+            options.left = parseInt((Ti.App.tabView.rect.width * 0.3) / 2);
+        } else {
+            // Position
+            if (typeof options.top !== 'undefined' || typeof options.bottom !== 'undefined') {
+                if (typeof options.bottom === 'undefined') {
+                    options.top = parseInt(options.top + Ti.App.componentPos[viewId].top);
+                } else {
+                    options.top = parseInt(Ti.App.componentPos[viewId].top + (Ti.App.componentPos[viewId].height - options.bottom));
+                }
+            }
+            if (typeof options.left !== 'undefined' || typeof options.right !== 'undefined') {
+                if (typeof options.right === 'undefined') {
+                    options.left = parseInt(options.left + Ti.App.componentPos[viewId].left);
+                } else {
+                    options.left = parseInt(Ti.App.componentPos[viewId].left + (Ti.App.componentPos[viewId].width - options.right));
+                }
+            }
+        }
+
+
         mapsList[mapsId] = _self.Map.createView(options);
+        Ti.App.tabView.add( mapsList[mapsId]);
+        
         return mapsId;
     };
     
@@ -371,6 +433,42 @@ var Map = (function() {
     /*
 	 * ----------------------------------- MAP VIEW -----------------------------------------------------------------
 	 */
+	
+	_self.setBound = function setBound(mapId, viewId, options) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.setVideoPlayerBound] Unknown Video Player id: ' + playerId);
+            return false;
+        }
+        if (typeof options.width === 'undefined' || typeof options.height === 'undefined') {
+            options.width = parseInt(Ti.App.tabView.rect.width * 0.7);
+            options.height = parseInt(Ti.App.tabView.rect.height * 0.5);
+            options.top = 'undefined';
+            options.left = 'undefined';
+        } else {
+            // Position
+            if (typeof options.top !== 'undefined' || typeof options.bottom !== 'undefined') {
+                if (typeof options.bottom === 'undefined') {
+                    options.top = parseInt(options.top + Ti.App.componentPos[viewId].top);
+                } else {
+                    options.top = parseInt(Ti.App.componentPos[viewId].top + (Ti.App.componentPos[viewId].height - options.bottom));
+                }
+            }
+            if (typeof options.left !== 'undefined' || typeof options.right !== 'undefined') {
+                if (typeof options.right === 'undefined') {
+                    options.left = parseInt(options.left + Ti.App.componentPos[viewId].left);
+                } else {
+                    options.left = parseInt(Ti.App.componentPos[viewId].left + (Ti.App.componentPos[viewId].width - options.right));
+                }
+            }
+        }
+        videoPlayerList[playerId].height = options.height;
+        videoPlayerList[playerId].width = options.width;
+        videoPlayerList[playerId].top = options.top;
+        videoPlayerList[playerId].left = options.left;
+        Ti.API.info('[API.Media.setVideoPlayerBound] VideoPlayer: ' + playerId);
+        return true;
+    };
 	
   	/**
   	 * Zooms in or out by specifying a relative zoom level. 

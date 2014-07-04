@@ -139,14 +139,14 @@
                     Map : (function () {
 	
 							"use strict";
-							
+	
 							var Map = function Map(){
 								
-								this.createMap = function(options, callback){
+								this.createMap = function(viewId, options, callback){
 									var handleCreateMap = function(callback, mapId){
 										callback(new MapView(mapId));
 									}.bind(null, callback);
-									_genericMethodHandler.call(this, handleCreateMap, 'API.SW.Map.createMap', [], options);
+									_genericMethodHandler.call(this, handleCreateMap, 'API.SW.Map.createMap', [viewId], options);
 								};
 								
 								
@@ -200,11 +200,75 @@
 								};
 								
 								
+								
 								var voidCallback = function(){ /*This callback is void*/};
+								var events = {};
+								
+								//Create the event listener
+								Ti.App.addEventListener("API_MAP_EVENT", function(eventInfo){
+									
+									console.log("[DEBUG] Received event API_MAP_EVENT");
+									var event = eventInfo.event;
+									var elementId = eventInfo.elementId;
+									var data = eventInfo.data;
+									
+									if(events[event] != null && events[event][elementId] != null){
+										for(var index in events[event][elementId]){
+											events[event][elementId][index](data);
+											console.log("[DEBUG] Called the corresponding callback");
+										}
+									}
+									
+								});
+								
+								var _registerEventHandler = function(event, callback){
+									
+									if(event != null && event != ""){
+										
+										var alreadyExists = false;
+										if(events[event] != null && events[event][this.id] != null)
+											alreadyExists = true;
+										else{
+											if(events[event] == null)
+												events[event] = {};
+											events[event][this.id] = [];
+										}
+										
+										console.log("[DEBUG] Added callback to the array of callbacks");
+										events[event][this.id].push(callback);
+										
+										if(!alreadyExists){
+											Ti.App.fireEvent("API_MAP_EDIT_EVENT", { action: "add", event: event, elementId: this.id, elementType: this.type });
+											console.log("[DEBUG] Sent event API_MAP_EDIT_EVENT");
+										}
+									}
+									
+								};
+								
+								var _removeEventHandler = function(event, callback){
+									
+									if(event != null && event != "" && events[event] != null && events[event][this.id] != null){
+										
+										var index = events[event][this.id].indexOf(callback);
+										if(index != -1){
+											events[event][this.id].splice(index, 1);
+											console.log("[DEBUG] Removed callback from the array of callbacks");
+											Ti.App.fireEvent("API_MAP_EDIT_EVENT", {action: "remove", event: event, elementId: this.id});
+											console.log("[DEBUG] Sent event API_MAP_EDIT_EVENT");
+										}
+											
+									}
+									
+								};
 								
 								var MapView = function MapView(id){
 								
 									this.id = id;
+									this.type = "map";
+									
+									this.setBound = function(viewId, options){
+										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setBound', [this.id, viewId], options);
+									};
 									
 									this.zoom = function(delta){
 										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.getShapesFromGeoJson', [this.id, delta]);
@@ -302,15 +366,21 @@
 										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setBaseLayer', [this.id, layer.id]);
 									};
 									
+									this.addEventListener = function(event, callback){
+										_registerEventHandler.call(this, event, callback);
+									};
 									
-									//TODO: addEventListener
-									//TODO: removeEventListener
+									this.removeEventListener = function(event, callback){
+										_removeEventHandler.call(this, event, callback);
+									};
+									
 									//TODO: display in DOM		
 									
 								};
 								
 								var Annotation = function Annotation(id){
 									this.id = id;
+									this.type = "annotation";
 									
 									this.getProperty = function(propertyName, callback){
 										_genericMethodHandler.call(this, callback, 'API.SW.Map.getAnnotationProperty', [this.id, propertyName]);
@@ -323,6 +393,7 @@
 								
 								var Polygon = function Polygon(id){
 									this.id = id;
+									this.type = "polygon";
 									
 									this.getProperty = function(propertyName, callback){
 										_genericMethodHandler.call(this, callback, 'API.SW.Map.getPolygonProperty', [this.id, propertyName]);
@@ -332,13 +403,19 @@
 										_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setPolygonProperty', [this.id, propertyName, propertyValue]);
 									};
 									
-									//TODO: addEventListener
-									//TODO: removeEventListener
+									this.addEventListener = function(event, callback){
+										_registerEventHandler.call(this, event, callback);
+									};
+									
+									this.removeEventListener = function(event, callback){
+										_removeEventHandler.call(this, event, callback);
+									};
 								};
 								
 								
 								var Route = function Route(id){
 									this.id = id;
+									this.type = "route";
 									
 									this.getProperty = function(propertyName, callback){
 										_genericMethodHandler.call(this, callback, 'API.SW.Map.getRouteProperty', [this.id, propertyName]);
@@ -352,6 +429,7 @@
 								
 								var Layer = function Layer(id){
 									this.id = id;
+									this.type = "layer";
 									
 									this.getProperty = function(propertyName, callback){
 										_genericMethodHandler.call(this, callback, 'API.SW.Map.getLayerProperty', [this.id, propertyName]);
