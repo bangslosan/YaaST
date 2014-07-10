@@ -61,8 +61,13 @@ var Map = (function() {
     
     //Start event listener
     var handlers = {};
-    var eventHandler = function(event, elementId, e){
-    	Ti.App.fireEvent("API_MAP_EVENT", { event: event, elementId: elementId, data: e });
+    var eventHandler = function(event, elementType, elementId, e){
+    	for(var key in e){
+    		if(e[key].getId != null){
+    			e[key] = e[key].getId();
+    		}
+    	}
+    	Ti.App.fireEvent("API_MAP_EVENT", { event: event, elementId: elementId, data: e, elementType: elementType });
     };
     Ti.App.addEventListener("API_MAP_EDIT_EVENT", function(data){
     	
@@ -76,7 +81,7 @@ var Map = (function() {
     		if(handlers[data.elementId] == null){
     			handlers[data.elementId] = {
     				count: 1,
-    				handler: eventHandler.bind(null, data.event, data.elementId)
+    				handler: eventHandler.bind(null, data.event, data.elementType, data.elementId)
     			};
     			element.addEventListener(data.event, handlers[data.elementId].handler);
     		}else
@@ -260,9 +265,8 @@ var Map = (function() {
 	 * ------------------------ MAP -------------------------------
 	 */
 	
-	// Constants
-	/**
-	 * 
+	/*
+	 * CONSTANTS
 	 */
 	_self.PRIORITY_BALANCED_POWER_ACCURACY = _self.Map.PRIORITY_BALANCED_POWER_ACCURACY;
 	_self.PRIORITY_HIGH_ACCURACY = _self.Map.PRIORITY_HIGH_ACCURACY;
@@ -362,7 +366,7 @@ var Map = (function() {
 	 * 		- strokeWidth: Number
 	 * 		- annotation: Object (same properties of the createAnnotation method)
 	 * 		
-	 * @return {String} Id of the route to be used in the methods of this API.
+	 * @return {String} Id of the polygon to be used in the methods of this API.
 	 */
     _self.createPolygon = function createPolygon(options){
 
@@ -387,7 +391,7 @@ var Map = (function() {
 	 * 		- opacity: Number Percentage of opacity [0 - 100].
 	 * 		- format: Tipe of image of the tiles (Map.FORMAT_PNG | Map.FORMAT_JPEG)
 	 * 		
-	 * @return {String} Id of the route to be used in the methods of this API.
+	 * @return {String} Id of the layer to be used in the methods of this API.
 	 */
     _self.createLayer = function createLayer(options){
 
@@ -434,10 +438,16 @@ var Map = (function() {
 	 * ----------------------------------- MAP VIEW -----------------------------------------------------------------
 	 */
 	
+	/**
+	 * Sets the bounds of the map view.
+	 * @param {mapId} The id of the map.
+	 * @param {viewId} The id of the view.
+	 * @param {options} Top, left, right, bottom, height, width.
+	 */
 	_self.setBound = function setBound(mapId, viewId, options) {
-        if (videoPlayerList[playerId] == null) {
+        if (mapsList[mapId] == null) {
             //TODO: error. Unknown Video Player ID
-            Ti.API.info('[API.Media.setVideoPlayerBound] Unknown Video Player id: ' + playerId);
+            Ti.API.info('[API.Map.setBound] Unknown Map id: ' + mapId);
             return false;
         }
         if (typeof options.width === 'undefined' || typeof options.height === 'undefined') {
@@ -462,12 +472,22 @@ var Map = (function() {
                 }
             }
         }
-        videoPlayerList[playerId].height = options.height;
-        videoPlayerList[playerId].width = options.width;
-        videoPlayerList[playerId].top = options.top;
-        videoPlayerList[playerId].left = options.left;
-        Ti.API.info('[API.Media.setVideoPlayerBound] VideoPlayer: ' + playerId);
+        mapsList[mapId].height = options.height;
+        mapsList[mapId].width = options.width;
+        mapsList[mapId].top = options.top;
+        mapsList[mapId].left = options.left;
+
         return true;
+    };
+    
+    /**
+     * Removes the map from the view that contains it
+     * @param {mapId} Map in which execute the action. 
+     */
+    _self.removeBound = function removeBound(mapId) {
+    	Ti.API.info("Antes del remove Bound");
+    	Ti.App.tabView.remove(mapsList[mapId]);
+    	Ti.API.info("Despues del remove Bound");
     };
 	
   	/**
@@ -503,6 +523,7 @@ var Map = (function() {
     
     /**
 	 * Set how the map should follow the location of the device.
+	 * @param {mapId} Map 
 	 * @param {followLocation} True if the map camera must follow the location of the device. 
 	 * @param {followBearing} True if the map camera must follow the bearing of the device.
 	 * @param {options}:
