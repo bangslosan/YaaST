@@ -290,36 +290,15 @@ var Map = (function() {
 	 * @param {options} See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.View
 	 * @return {String} Id of the Map to be used in the methods of this API.
 	 */
-    _self.createMap = function createMap(viewId, options){
+    _self.createMap = function createMap(options){
+    	
+        delete options.width;
+        delete options.height;
+        delete options.top;
+        delete options.left;
+    	
         mapsId++;
-        
-        // Size
-        if (typeof options.width === 'undefined' || typeof options.height === 'undefined') {
-            options.width = parseInt(Ti.App.tabView.rect.width * 0.7);
-            options.height = parseInt(Ti.App.tabView.rect.height * 0.5);
-            options.top = parseInt((Ti.App.tabView.rect.height * 0.5) / 2);
-            options.left = parseInt((Ti.App.tabView.rect.width * 0.3) / 2);
-        } else {
-            // Position
-            if (typeof options.top !== 'undefined' || typeof options.bottom !== 'undefined') {
-                if (typeof options.bottom === 'undefined') {
-                    options.top = parseInt(options.top + Ti.App.componentPos[viewId].top);
-                } else {
-                    options.top = parseInt(Ti.App.componentPos[viewId].top + (Ti.App.componentPos[viewId].height - options.bottom));
-                }
-            }
-            if (typeof options.left !== 'undefined' || typeof options.right !== 'undefined') {
-                if (typeof options.right === 'undefined') {
-                    options.left = parseInt(options.left + Ti.App.componentPos[viewId].left);
-                } else {
-                    options.left = parseInt(Ti.App.componentPos[viewId].left + (Ti.App.componentPos[viewId].width - options.right));
-                }
-            }
-        }
-
-
         mapsList[mapsId] = _self.Map.createView(options);
-        Ti.App.tabView.add( mapsList[mapsId]);
         
         return mapsId;
     };
@@ -331,7 +310,17 @@ var Map = (function() {
 	 * @return {String} Id of the annotation to be used in the methods of this API.
 	 */
     _self.createAnnotation = function createAnnotation(options){
-
+		
+		//If the ID is set, check that it does not exist
+		if(options.id != null){
+			if(getElement("annotation", options.id) != null){
+				Ti.API.info('[API.Map.createAnnotation] Annotation ID already in use(' + options.id + ')');
+				return;
+			}
+		}else
+			delete options.id;
+		
+		
         var anon = _self.Map.createAnnotation(options);
         var id = anon.getId();
         freeElements["annotations"][id] = anon;
@@ -346,6 +335,15 @@ var Map = (function() {
 	 * @return {String} Id of the route to be used in the methods of this API.
 	 */
     _self.createRoute = function createRoute(options){
+    	
+    	//If the ID is set, check that it does not exist
+		if(options.id != null){
+			if(getElement("route", options.id) != null){
+				Ti.API.info('[API.Map.createRoute] Route ID already in use(' + options.id + ')');
+				return;
+			}
+		}else
+			delete options.id;
 
         var route = _self.Map.createRoute(options);
         var id = route.getId();
@@ -359,6 +357,7 @@ var Map = (function() {
 	/**
 	 * Creates a Polygon. 
 	 * @param {options} 
+	 * 		- id: optional. Must be unique.
 	 * 		- points: Array of points ({latitude: Number, longitude: Number})
 	 * 		- holePoints: Array with holes. A hole is an array of points.
 	 * 		- fillColor: Color
@@ -369,6 +368,15 @@ var Map = (function() {
 	 * @return {String} Id of the polygon to be used in the methods of this API.
 	 */
     _self.createPolygon = function createPolygon(options){
+    	
+    	//If the ID is set, check that it does not exist
+		if(options.id != null){
+			if(getElement("polygon", options.id) != null){
+				Ti.API.info('[API.Map.createPolygon] Polygon ID already in use(' + options.id + ')');
+				return;
+			}
+		}else
+			delete options.id;
 
         var polygon = _self.Map.createPolygon(options);
         var id = polygon.getId();
@@ -381,7 +389,8 @@ var Map = (function() {
     
 	/**
 	 * Creates a Layer.
-	 * @param {options} 
+	 * @param {options}
+	 * 		- id: optional. Must be unique.
 	 * 		- baseUrl: String with the url of the service
 	 * 		- type: Type of service (Map.LAYER_TYPE_WMS_1_1_1 | Map.LAYER_TYPE_WMS_1_3_0)
 	 * 		- name: String with the name of the layer.
@@ -394,6 +403,15 @@ var Map = (function() {
 	 * @return {String} Id of the layer to be used in the methods of this API.
 	 */
     _self.createLayer = function createLayer(options){
+    	
+    	//If the ID is set, check that it does not exist
+		if(options.id != null){
+			if(getElement("layer", options.id) != null){
+				Ti.API.info('[API.Map.createLayer] Layer ID already in use(' + options.id + ')');
+				return;
+			}
+		}else
+			delete options.id;
 
         var layer = _self.Map.createLayer(options);
         var id = layer.getId();
@@ -437,6 +455,24 @@ var Map = (function() {
     /*
 	 * ----------------------------------- MAP VIEW -----------------------------------------------------------------
 	 */
+	
+	/**
+	 * Adds the map view to a view.
+	 * @param {mapId} The id of the map.
+	 * @param {viewId} The id of the view.
+	 * @param {options} Top, left, right, bottom, height, width.
+	 */
+	_self.addBound = function addBound(mapId, viewId, options) {
+		
+		if (mapsList[mapId] == null) {
+            //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Map.setBound] Unknown Map id: ' + mapId);
+            return false;
+        }
+		
+		Ti.App.tabView.add( mapsList[mapsId]);
+		_self.setBound(mapId, viewId, options);
+	};
 	
 	/**
 	 * Sets the bounds of the map view.
