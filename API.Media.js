@@ -466,11 +466,12 @@ var Media = (function() {
             width: options.width,
             top: options.top,
             left: options.left,
-            mediaControlStyle : Titanium.Media.VIDEO_CONTROL_NONE,
-            scalingMode : Titanium.Media.VIDEO_SCALING_ASPECT_FIT
+            mediaControlStyle: Titanium.Media.VIDEO_CONTROL_NONE,
+            scalingMode: Titanium.Media.VIDEO_SCALING_ASPECT_FIT,
+            repeatMode: options.repeatMode
         });
 
-        Ti.App.tabView.add(tiVideoPlayer);
+        //Ti.App.tabView.add(tiVideoPlayer);
         videoPlayerList[videoPlayerId] = tiVideoPlayer;
         return videoPlayerId;
     };
@@ -504,11 +505,13 @@ var Media = (function() {
             Ti.API.info('[API.Media.setVideoPlayerBound] Unknown Video Player id: ' + playerId);
             return false;
         }
+        Ti.App.tabView.add(videoPlayerList[playerId]);
+        Ti.API.info('[API.Media.setVideoPlayerBound] options: ' + JSON.stringify(options));
         if (typeof options.width === 'undefined' || typeof options.height === 'undefined') {
             options.width = parseInt(Ti.App.tabView.rect.width * 0.7);
             options.height = parseInt(Ti.App.tabView.rect.height * 0.5);
-            options.top = 'undefined';
-            options.left = 'undefined';
+            options.top = parseInt((Ti.App.tabView.rect.height * 0.5) / 2);
+            options.left = parseInt((Ti.App.tabView.rect.width * 0.3) / 2);
         } else {
             // Position
             if (typeof options.top !== 'undefined' || typeof options.bottom !== 'undefined') {
@@ -534,6 +537,22 @@ var Media = (function() {
         return true;
     };
 
+    self.getVideoPlayerBound = function getVideoPlayerBound(viewId, playerId) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.getVideoPlayerBound] Unknown Video Player id: ' + playerId);
+            return false;
+        }
+        var bound = {
+            height: videoPlayerList[playerId].height,
+            width:videoPlayerList[playerId].width,
+            top:videoPlayerList[playerId].top,
+            left:videoPlayerList[playerId].left
+        };
+        Ti.API.info('[API.Media.getVideoPlayerBound] VideoPlayer: ' + playerId + '; bound: ' + JSON.stringify(bound));
+        return bound;
+    };
+
     /** Hide a VideoPlayer */
     self.hideVideoPlayer = function hideVideoPlayer(playerId) {
         if (videoPlayerList[playerId] == null) {
@@ -546,6 +565,17 @@ var Media = (function() {
         return true;
     };
 
+    self.setVideoPlayerURL = function setVideoPlayerURL(playerId, url) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.setVideoPlayerURL] Unknown Video Player id: ' + playerId);
+            return false;
+        }
+        videoPlayerList[playerId].setUrl(url);
+        Ti.API.info('[API.Media.setVideoPlayerURL] VideoPlayer: ' + playerId + ', url: ' + url);
+        return true;
+    };
+
     /** Show a VideoPlayer */
     self.showVideoPlayer = function showVideoPlayer(playerId) {
         if (videoPlayerList[playerId] == null) {
@@ -555,6 +585,18 @@ var Media = (function() {
         }
         videoPlayerList[playerId].show();
         Ti.API.info('[API.Media.showVideoPlayer] VideoPlayer: ' + playerId);
+        return true;
+    };
+
+    /** Play a VideoPlayer */
+    self.playVideoPlayer = function playVideoPlayer(playerId) {
+        if (videoPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.playVideoPlayer] Unknown Video Player id: ' + playerId);
+            return false;
+        }
+        videoPlayerList[playerId].play();
+        Ti.API.info('[API.Media.playVideoPlayer] VideoPlayer: ' + playerId);
         return true;
     };
 
@@ -611,21 +653,33 @@ var Media = (function() {
     };
 
     self.destroyVideoPlayer = function destroyVideoPlayer(playerId) {
+        var event;
+
         if (videoPlayerList[playerId] == null) {
             //TODO: error. Unknown Video Player ID
             Ti.API.info('[API.Media.destroyVideoPlayer] Unknown Video Player id: ' + playerId);
             return false;
         }
         // Remove events
-       /*for (VPHandlers[id][event]) {
-            VPHandlersinfo[id][event][VPHandlers[id][event].indexOf(handler)]
-        }*/
+        var id;
+        for (event in VPHandlers[playerId]) {
+            // BUG en Android detectado: [null,null,null].lenght --> undefined :)
+            if (event == 'complete') {
+                continue;
+            }
+            for (id in VPHandlersinfo[playerId][event]) {
+                Ti.API.info('[API.Media.destroyVideoPlayer] REMOVE pending ' + event + ' EVENTLISTENER: ' + VPHandlers[playerId][event][id]);
+                self.removeEventListener(event, VPHandlers[playerId][event][id], playerId, 'video');
+            }
+        }
+        delete VPHandlers[playerId];
+        delete VPHandlersinfo[playerId];
 
         videoPlayerList[playerId].hide();
         videoPlayerList[playerId].release();
         Ti.App.tabView.remove(videoPlayerList[playerId]);
         videoPlayerList[playerId] = null;
-        Ti.API.info('[API.Media.destroyVideoPlayer] playerId: ' + playerId);
+        Ti.API.info('[API.Media.destroyVideoPlayer] Video player: ' + playerId + ' destroyed');
         return true;
     };
 
