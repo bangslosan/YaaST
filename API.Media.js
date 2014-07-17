@@ -42,11 +42,15 @@ var Media = (function() {
      *  asynchronous.
      * @param {pattern} [Number[]=[100, 300, 100, 200, 100, 50]] optional vibrate pattern only available for Android.*/
     self.vibrate = function vibrate(pattern) {
-        if (Ti.App.isApple || pattern == null || !(pattern instanceof Array)) {
+        if (Ti.App.API.HW.System.isApple() || pattern == null || !(pattern instanceof Array)) {
             Titanium.Media.vibrate();
+            Ti.API.info('[API.Media.vibrate]  Vibrate!! ');
+            return true;
         }
         // pattern only available for Android
         Titanium.Media.vibrate(pattern);
+        Ti.API.info('[API.Media.vibrate]  Android pattern: ' + pattern);
+        return true;
     };
 
     // Audio Player
@@ -69,6 +73,9 @@ var Media = (function() {
     var audioPlayerId = 0;
     var APHandlers = {};
     var APHandlersinfo = {};
+    var APListenerCounters = {};
+    // special var for iOS event control
+    var APManualStopInfo = {};
 
     /** Create new AudioPlayer
      * @param {audioPlayerOptions} options
@@ -78,17 +85,28 @@ var Media = (function() {
 
         audioPlayerId ++;
         Ti.API.info('[API.Media.createAudioPlayer]  ID: ' + audioPlayerId);
-        tiAudioPlayer = Ti.Media.createSound({});
+        /*if (Ti.App.API.HW.System.isApple()) {
+            tiAudioPlayer = Ti.Media.createAudioPlayer({});
+        } else {
+            tiAudioPlayer = Ti.Media.createSound({});
+        }*/
+            tiAudioPlayer = Ti.Media.createAudioPlayer({});
 
         // Events
-        APHandlers[audioPlayerId] = {'progress': [], 'change': [], 'complete': []};
-        APHandlersinfo[audioPlayerId] = {'progress': [], 'change': [], 'complete': []};
+        APHandlers[audioPlayerId] = {'progress': [], 'change': []};
+        APHandlersinfo[audioPlayerId] = {'progress': [], 'change': []};
+        APManualStopInfo[audioPlayerId] = false;
 
         // Creation
         audioPlayerCounters[audioPlayerId] = {
             'progress': 0,
             'change': 0,
-            'success': 0
+            'complete': 0
+        };
+        APListenerCounters[audioPlayerId] = {
+            'progress': 0,
+            'change': 0,
+            'complete': 0
         };
         audioPlayerList[audioPlayerId] = tiAudioPlayer;
         Ti.API.info('[API.Media]  Audio Player created: ' + audioPlayerId);
@@ -104,8 +122,17 @@ var Media = (function() {
             Ti.API.info('[API.Media.isAudioPlayerPaused] Unknown Audio Player ID: ' + audioPlayerId);
             return false;
         }
-        Ti.API.info('[API.Media.isAudioPlayerPaused] Audio Player paused: ' + audioPlayerList[playerId].paused);
-        return audioPlayerList[playerId].paused;
+        if (Ti.App.API.HW.System.isApple()) {
+            var isPaused = false;
+            if (audioPlayerList[playerId].getState() === 8) {
+                isPaused = true;
+            }
+            return isPaused;
+            //Ti.API.info('[API.Media.isAudioPlayerPlaying] iOS Audio Player playing: ' + isPaused);
+        } else {
+            //Ti.API.info('[API.Media.isAudioPlayerPaused] Audio Player paused: ' + audioPlayerList[playerId].paused);
+            return audioPlayerList[playerId].paused;
+        }
     };
 
     /** Check if a player is playing
@@ -117,8 +144,17 @@ var Media = (function() {
             Ti.API.info('[API.Media.isAudioPlayerPlaying] Unknown Audio Player ID: ' + audioPlayerId);
             return false;
         }
-        Ti.API.info('[API.Media.isAudioPlayerPlaying] Audio Player playing: ' + audioPlayerList[playerId].playing);
-        return audioPlayerList[playerId].playing;
+        if (Ti.App.API.HW.System.isApple()) {
+            var isPlaying = false;
+            if (audioPlayerList[playerId].getState() === 4) {
+                isPlaying = true;
+            }
+            return isPlaying;
+            //Ti.API.info('[API.Media.isAudioPlayerPlaying] iOS Audio Player playing: ' + isPlaying);
+        } else {
+            //Ti.API.info('[API.Media.isAudioPlayerPlaying] Android Audio Player playing: ' + audioPlayerList[playerId].playing);
+            return audioPlayerList[playerId].playing;
+        }
     };
 
     /** Get Audio Player URL
@@ -137,13 +173,21 @@ var Media = (function() {
     /** Set Audio Player URL
      * @param {Number} playerId, the audio player ID number
      * @param {String} url, The Audio Player URL */
-    self.setAudioPlayerURL = function getAudioPlayerURL(playerId, url) {
+    self.setAudioPlayerURL = function setAudioPlayerURL(playerId, url) {
         if (audioPlayerList[playerId] == null) {
             //TODO: error. Unknown Audio Player ID
             Ti.API.info('[API.Media.setAudioPlayerURL] Unknown Audio Player ID: ' + playerId);
             return false;
         }
-        audioPlayerList[playerId].url = url;
+        if (audioPlayerList[playerId].url === url){
+            Ti.API.info('[API.Media.setAudioPlayerURL] This URL is already active. return false');
+            return false;
+        }
+        if (!Ti.App.API.HW.System.isApple()) {
+            Ti.API.info('[API.Media.setAudioPlayerURL] release() for Android AudioPlayer');
+            self.releaseAudioPlayer(playerId);
+        }
+        audioPlayerList[playerId].setUrl(url);
         Ti.API.info('[API.Media.setAudioPlayerURL] Audio Player URL changed: ' + audioPlayerList[playerId].url);
         return true;
     };
@@ -184,9 +228,14 @@ var Media = (function() {
             Ti.API.info('[API.Media.pauseAudioPlayer] Unknown Audio Player id: ' + playerId);
             return false;
         }
-        audioPlayerList[playerId].pause();
-        Ti.API.info('[API.Media.pauseAudioPlayer] AudioPlayer ' + playerId + ' Paused!');
-        return true;
+        if (self.isAudioPlayerPaused(playerId)) {
+            Ti.API.info('[API.Media.pauseAudioPlayer] AudioPlayer ' + playerId + ' Is already paused.');
+            return true;
+        } else {
+            audioPlayerList[playerId].pause();
+            Ti.API.info('[API.Media.pauseAudioPlayer] AudioPlayer ' + playerId + ' Paused!');
+            return true;
+        }
     };
 
     /** Play Audio Player
@@ -197,12 +246,28 @@ var Media = (function() {
             Ti.API.info('[API.Media.playAudioPlayer] Unknown Audio Player id: ' + playerId);
             return false;
         }
-        if (audioPlayerList[playerId].paused == true) {
-            audioPlayerList[playerId].start();
-            Ti.API.info('[API.Media.playAudioPlayer]  Resume player ' + playerId + ' with URL: ' + audioPlayerList[playerId].url);
+        if (self.isAudioPlayerPaused(playerId)) {
+
+            if (Ti.App.API.HW.System.isApple()) {
+                // Resume player in iOS -> pause()
+                audioPlayerList[playerId].pause();
+                Ti.API.info('[API.Media.playAudioPlayer]  Resuming iOS Player ' + playerId);
+            } else {
+                // Resume player in Android -> play()
+                Ti.API.info('[API.Media.playAudioPlayer]  Resuming Android player ' + playerId);
+                audioPlayerList[playerId].play();
+            }
+            return true;
+        } else if (self.isAudioPlayerPlaying(playerId)){
+            // Already Playing
+            Ti.API.info('[API.Media.playAudioPlayer]  Play' + playerId + 'is already activated.');
+            return false;
         } else {
-            audioPlayerList[playerId].play();
+            // Single Play
             Ti.API.info('[API.Media.playAudioPlayer]  Play activated in player ' + playerId + ' with URL: ' + audioPlayerList[playerId].url);
+            audioPlayerList[playerId].play();
+            // Teoricamente solo funciona en Android y en iOS es start()... pero va a ser que no...
+            return true;
         }
         return true;
     };
@@ -215,29 +280,20 @@ var Media = (function() {
             //TODO: error. Unknown Audio Player ID
             return false;
         }
-        Ti.API.info('[API.Media.stopAudioPlayer] Audio player playing: ' + audioPlayerList[playerId].playing + '. paused: ' + audioPlayerList[playerId].paused);
-        if (!audioPlayerList[playerId].playing && !audioPlayerList[playerId].paused) {
-            Ti.API.info('[API.Media.stopAudioPlayer] Audio player ' + playerId + '. Is stopped yet');
-            /*// Only for AudioPlayer. not for Sound
-            if(Ti.App.isApple){
-                audioPlayerList[playerId].stop();
-            }
-            else {*/
-            //audioPlayerList[playerId].stop();
-            Ti.API.info('[API.Media.stopAudioPlayer] *release()');
-            audioPlayerList[playerId].release();
-            //}
+        var isPlaying = self.isAudioPlayerPlaying(playerId);
+        var isPaused = self.isAudioPlayerPaused(playerId);
+        Ti.API.info('[API.Media.stopAudioPlayer] Audio player playing: ' + isPlaying + '. paused: ' + isPaused);
+        if (!isPlaying && !isPaused) {
+            Ti.API.info('[API.Media.stopAudioPlayer] Audio player ' + playerId + '. Is already stopped.');
             return false;
         }
-        audioPlayerList[playerId].release();
-        /*// Only for AudioPlayer. not for Sound
-        if (Ti.App.isApple) {
-            audioPlayerList[playerId].stop();
-        } else {
-            Ti.API.info('[API.Media.stopAudioPlayer] release() for Android ');
+        // Manual stop in iOS --> dont fire stopped event, stopped event in Android is complete event, and in iOS must be something similar
+        APManualStopInfo[playerId] = true;
+        audioPlayerList[playerId].stop();
+        if (!Ti.App.API.HW.System.isApple()) {
             audioPlayerList[playerId].release();
-        }*/
-        Ti.API.info('[API.Media.stopAudioPlayer] Stopping Audio player (release)' + playerId);
+        }
+        Ti.API.info('[API.Media.stopAudioPlayer] Stopping Audio player (stop): ' + playerId);
         return true;
     };
 
@@ -249,31 +305,41 @@ var Media = (function() {
             Ti.API.info('[API.Media.releaseAudioPlayer] Unknown Audio Player id: ' + playerId);
             return false;
         }
-        audioPlayerList[playerId].release();
-        Ti.API.info('[API.Media.releaseAudioPlayer] AudioPlayer ' + playerId + ' Paused!');
-        return true;
-    };
-
-    /** Reset Audio Player
-     * @param {Number} playerId, the audio player ID number */
-    self.resetAudioPlayer = function resetAudioPlayer(playerId) {
-        if (audioPlayerList[playerId] == null) {
-            //TODO: error. Unknown Audio Player ID
-            Ti.API.info('[API.Media.resetAudioPlayer] Unknown Audio Player id: ' + playerId);
+        if (Ti.App.API.HW.System.isApple()) {
+            Ti.API.info('[API.Media.releaseAudioPlayer] iOS Audio Player nas not method release');
             return false;
         }
-        audioPlayerList[playerId].reset();
-        Ti.API.info('[API.Media.resetAudioPlayer] AudioPlayer ' + playerId + ' Paused!');
+        audioPlayerList[playerId].release();
+        Ti.API.info('[API.Media.releaseAudioPlayer] AudioPlayer released: ' + playerId);
         return true;
     };
 
-    // TODO
-    // Private?
-    self.convertPointToView = function convertPointToView(point, destinationView) {
-        if (destinationView == null) {
-            destinationView = 'Titanium.UI.View';
+    self.destroyAudioPlayer = function destroyAudioPlayer(playerId) {
+        var event;
+
+        if (audioPlayerList[playerId] == null) {
+            //TODO: error. Unknown Video Player ID
+            Ti.API.info('[API.Media.destroyAudioPlayer] Unknown Video Player id: ' + playerId);
+            return false;
         }
-        convertPointToView(point, destinationView);
+        // Stop
+        self.stopAudioPlayer(playerId);
+        // Remove events
+        var id;
+        for (event in APHandlers[playerId]) {
+            // BUG en Android detectado: [null,null,null].lenght --> undefined :)
+            for (id in APHandlersinfo[playerId][event]) {
+                Ti.API.info('[API.Media.destroyAudioPlayer] REMOVE pending ' + event + ' EVENTLISTENER: ' + APHandlers[playerId][event][id]);
+                self.removeEventListener(event, APHandlers[playerId][event][id], playerId, 'audio');
+            }
+        }
+        delete APHandlers[playerId];
+        delete APHandlersinfo[playerId];
+        delete APManualStopInfo[playerId];
+
+        audioPlayerList[playerId] = null;
+        Ti.API.info('[API.Media.destroyaudioPlayer] Audio player: ' + playerId + ' destroyed');
+        return true;
     };
 
     // Video Player
@@ -327,6 +393,7 @@ var Media = (function() {
     var videoPlayerId = 0;
     var VPHandlers = {};
     var VPHandlersinfo = {};
+    var VPListenerCounters = {};
 
     /** Create new VideoPlayer
      * @param {videoPlayerOptions} options
@@ -336,13 +403,23 @@ var Media = (function() {
 
         videoPlayerId ++;
         Ti.API.info('[API.Media.createVideoPlayer]  ID: ' + videoPlayerId + ', viewId: ' + viewId + ', options: ' + JSON.stringify(options));
+
         videoPlayerCounters[videoPlayerId] = {
+            'complete': 0
+        };
+
+        VPListenerCounters[videoPlayerId] = {
             'complete': 0
         };
 
         // Autoplay
         if (typeof options.autoplay === 'undefined') {
             options.autoplay = true;
+        }
+
+        // RepeatMode (Only run in iOS)
+        if (typeof options.repeatMode === 'undefined') {
+            options.repeatMode = Titanium.Media.VIDEO_REPEAT_MODE_NONE;
         }
 
         // FullScreen
@@ -667,7 +744,7 @@ var Media = (function() {
         'audioChange': {
             event: 'change',
             listener: null,
-            source: "Ti.Media.Sound",
+            source: "Ti.Media.AudioPlayer",
             keylist: ['description', 'state', 'type', 'order'],
             dummy: true
         },
@@ -681,7 +758,7 @@ var Media = (function() {
         'audioProgress': {
             event: 'progress',
             listener: null,
-            source: "Ti.Media.Sound",
+            source: "Ti.Media.AudioPlayer",
             keylist: ['progress', 'type', 'order'],
             dummy: true
         },
