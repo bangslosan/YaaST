@@ -59,7 +59,7 @@ var Map = (function() {
     	"annotations": {}
     };
     
-    //Start event listener
+    //Start event listener for the bridge
     var handlers = {};
     var eventHandler = function(event, elementType, elementId, e){
     	for(var key in e){
@@ -148,6 +148,9 @@ var Map = (function() {
 		
 	};
 	
+	/**
+	 * ElementType: map | annotation | layer | polygon | route
+	 */
 	var getElement = function(elementType, elementId){
 		
 		//If it is a map, it does not need search, just return it
@@ -900,6 +903,47 @@ var Map = (function() {
 			return;
 		}
 	};
+	
+		/**
+	 * Adds the specified callback as an event listener for the named event.
+	 * @param {annotationId} The annotation id.
+	 * @param {event} Name of the event.
+	 * @param {func} Callback function to invoke when the event is fired.
+	 */
+	_self.addAnnotationEventListener = function(annotationId, event, func){
+        
+        var annotation = getElement("annotation", annotationId);
+        
+        if(annotation == null){
+            //TODO: Error Unknown Annotation Id on Map Id
+            return;
+        }
+        else{
+            annotation.addEventListener(event, func);
+        }
+
+        
+	};
+	
+	/**
+	 * Removes the specified callback as an event listener for the named event.
+	 * Multiple listeners can be registered for the same event, so the callback parameter is used to determine which listener to remove. 
+	 * @param {annotationId} The annotation id.
+	 * @param {event} Name of the event.
+	 * @param {func} Callback function to invoke when the event is fired.
+	 */
+	_self.removeAnnotationEventListener = function(annotationId, event, func){
+        
+        var annotation = getElement("annotation", annotationId);
+        
+        if(annotation == null){
+            //TODO: Error Unknown Polygon Id on Map Id
+            return;
+        }
+        else{
+            annotation.removeEventListener(event, func);
+        }
+	};
 
 
 	/*
@@ -939,7 +983,7 @@ var Map = (function() {
             return;
         }
         
-        var route = getElement("routes", routeId);
+        var route = getElement("route", routeId);
 
         if(route == null){
             //TODO: Error Unknown Annotation Id on Map Id
@@ -1037,7 +1081,7 @@ var Map = (function() {
             return;
         }
         
-        var polygon = getElement("polygons", polygonId);
+        var polygon = getElement("polygon", polygonId);
         
         if(polygon == null){
             //TODO: Error Unknown Annotation Id on Map Id
@@ -1119,7 +1163,7 @@ var Map = (function() {
 	 */
 	_self.addPolygonEventListener = function(polygonId, event, func){
         
-        var polygon = getElement("polygons", polygonId);
+        var polygon = getElement("polygon", polygonId);
         
         if(polygon == null){
             //TODO: Error Unknown Polygon Id on Map Id
@@ -1141,7 +1185,7 @@ var Map = (function() {
 	 */
 	_self.removePolygonEventListener = function(polygonId, event, func){
         
-        var polygon = getElement("polygons", polygonId);
+        var polygon = getElement("polygon", polygonId);
         
         if(polygon == null){
             //TODO: Error Unknown Polygon Id on Map Id
@@ -1190,7 +1234,7 @@ var Map = (function() {
             return;
         }
 
- 		var layer = getElement("layers", layerId);
+ 		var layer = getElement("layer", layerId);
         
         if(layer == null){
             //TODO: Error Unknown Annotation Id on Map Id
@@ -1242,7 +1286,7 @@ var Map = (function() {
 
 		if((layerId + "").indexOf("-") != -1){ //It is a layer id
 			
-        	var layer = getElement("layers", layerId);
+        	var layer = getElement("layer", layerId);
 	        
 	        if(layer == null){
 	            //TODO: Error Unknown Annotation Id on Map Id
