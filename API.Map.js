@@ -127,7 +127,7 @@ var Map = (function() {
 				}
 				
 			} else { //Setter
-				
+
 				// Check if the getter method exists
 				if(element["set"+ propertyName] != null){
 
@@ -281,6 +281,17 @@ var Map = (function() {
 	_self.TERRAIN_TYPE = _self.Map.TERRAIN_TYPE;
 	_self.SATELLITE_TYPE = _self.Map.SATELLITE_TYPE;
 	_self.HYBRID_TYPE = _self.Map.HYBRID_TYPE;
+	
+	_self.ANNOTATION_AZURE = _self.Map.ANNOTATION_AZURE;
+	_self.ANNOTATION_BLUE = _self.Map.ANNOTATION_BLUE;
+	_self.ANNOTATION_CYAN = _self.Map.ANNOTATION_CYAN;
+	_self.ANNOTATION_GREEN = _self.Map.ANNOTATION_GREEN;
+	_self.ANNOTATION_MAGENTA = _self.Map.ANNOTATION_MAGENTA;
+	_self.ANNOTATION_ORANGE = _self.Map.ANNOTATION_ORANGE;
+	_self.ANNOTATION_RED = _self.Map.ANNOTATION_RED;
+	_self.ANNOTATION_ROSE = _self.Map.ANNOTATION_ROSE;
+	_self.ANNOTATION_VIOLET = _self.Map.ANNOTATION_VIOLET;
+	_self.ANNOTATION_YELLOW = _self.Map.ANNOTATION_YELLOW;
 	
 	_self.LAYER_TYPE_WMS_1_1_1 = _self.Map.LAYER_TYPE_WMS_1_1_1;
 	_self.LAYER_TYPE_WMS_1_3_0 = _self.Map.LAYER_TYPE_WMS_1_3_0;
@@ -524,9 +535,7 @@ var Map = (function() {
      * @param {mapId} Map in which execute the action. 
      */
     _self.removeBound = function removeBound(mapId) {
-    	Ti.API.info("Antes del remove Bound");
     	Ti.App.tabView.remove(mapsList[mapId]);
-    	Ti.API.info("Despues del remove Bound");
     };
 	
   	/**

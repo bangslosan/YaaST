@@ -193,6 +193,17 @@
 									this.SATELLITE_TYPE = 2;
 									this.HYBRID_TYPE = 4;
 									
+									this.ANNOTATION_AZURE = 210.0;
+									this.ANNOTATION_BLUE = 240.0;
+									this.ANNOTATION_CYAN = 180.0;
+									this.ANNOTATION_GREEN = 120.0;
+									this.ANNOTATION_MAGENTA = 300.0;
+									this.ANNOTATION_ORANGE = 30.0;
+									this.ANNOTATION_RED = 0.0;
+									this.ANNOTATION_ROSE = 330.0;
+									this.ANNOTATION_VIOLET = 270.0;
+									this.ANNOTATION_YELLOW = 60.0;
+									
 									this.LAYER_TYPE_WMS_1_1_1 = 1;
 									this.LAYER_TYPE_WMS_1_3_0 = 2;
 									this.FORMAT_PNG = 1;
