@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
- * Titanium Appcelerator 3.2.1GA
+ * Titanium Appcelerator 3.3.0GA
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
  */
@@ -10,41 +10,39 @@
 var System = (function() {
 
     /** It provides several useful methods to collect information about current device.
-     * @author Carlos Blanco
-     * @version 1.0.0
      * @alias API.System
      * @namespace */
     var _self = {};
 
-    /** Check Apple platform
+    /** Check Apple platform.
      * @method
      * @return {Boolean} */
     _self.isApple = function isApple(){
-        return Ti.App.isApple;
+        return (Ti.Platform.getOsname() === 'ipad' || Ti.Platform.getOsname() === 'iphone');
     };
 
-    /** Check Apple Retina Display
+    /** Check Apple Retina Display.
      * @method
      * @return {Boolean} */
     _self.isRetina = function isRetina(){
-        return Ti.App.isRetina;
+        if(_self.isApple()){
+            if(_self.isTablet()) return Ti.Platform.displayCaps.getDpi() === 260;
+            else return Ti.Platform.displayCaps.getDpi() === 320;
+        }
+        else return false;
     };
 
-    /** Get Display Platform Width
+    /** Check Tablet Display
      * @method
-     * @return {Number} */
-    _self.getPlatformWidth = function getPlatformWidth() {
-        return Ti.App.platformWidth;
+     * @return {Boolean} */
+    _self.isTablet = function isTablet() {
+        return (Ti.Platform.getOsname() === 'ipad') || (Ti.Platform.getOsname() === 'android' && (
+           (Ti.Platform.Android.getPhysicalSizeCategory() === Ti.Platform.Android.PHYSICAL_SIZE_CATEGORY_LARGE) ||
+           (Ti.Platform.Android.getPhysicalSizeCategory() === Ti.Platform.Android.PHYSICAL_SIZE_CATEGORY_XLARGE))
+        ) || Math.min(Ti.Platform.displayCaps.getPlatformHeight(), Ti.Platform.displayCaps.getPlatformWidth()) >= 400;
     };
 
-    /** Get Display Platform Height
-     * @method
-     * @return {Number} */
-    _self.getPlatformHeight = function getPlatformHeight() {
-        return Ti.App.platformHeight;
-    };
-
-    /** Get device platform
+    /** Get device platform.
      * @method
      * @return {String} It should return 'ios' or 'android' */
     _self.getDeviceOs = function getDeviceOs() {
@@ -60,6 +58,19 @@ var System = (function() {
      * @return {String} */
     _self.getVersion = function getVersion() {
         return Ti.Platform.getVersion();
+    };
+
+    /** Get System's OS version String.
+     * @method
+     * @return {String} Android => Version Name. iOS = Version Number */
+    _self.getVersionString = function getVersionString() {
+        var splited = _self.getVersion().split('.');
+        if(splited[0] === '2' && splited[1] === '2') return "Froyo";
+        else if(splited[0] === '2' && splited[1] !== '2') return "Gingerbread";
+        else if(splited[0] === '3') return "Honeycomb";
+        else if(splited[0] === '4' && splited[1] === '0') return "Ice Cream Sandwich";
+        else if(splited[0] === '4' && splited[1] !== '0') return "Jelly Bean";
+        else return splited[0]+"."+splited[1];
     };
 
     /** Get device's Model.
@@ -81,7 +92,7 @@ var System = (function() {
      * @return {Number} an integer (Bytes) */
     _self.getAvailableMemory = function getAvailableMemory() {
         var mem = Ti.Platform.getAvailableMemory();
-        if (_self.isApple) {
+        if (_self.isApple()) {
             mem = mem * 1024; // Megabytes to bytes
         }
         return mem;
@@ -117,7 +128,7 @@ var System = (function() {
 
     /** Get system's default language.
      * @method
-     * @return {String} ISO639-1 + - + ISO3166-1Alpha2 */
+     * @return {String} ISO639-1 or ISO3166-1Alpha2 */
     _self.getLocale = function getLocale() {
         return Ti.Platform.getLocale();
     };
