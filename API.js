@@ -14,48 +14,45 @@
 
 'use strict';
 
-// System Global Variables
-Ti.App.isApple = (Ti.Platform.getOsname() === 'ipad' || Ti.Platform.getOsname() === 'iphone');
-Ti.App.isRetina = (Ti.App.isApple && Ti.Platform.displayCaps.getDpi() === 260) ? true : false;
-Ti.App.platformHeight = Ti.Platform.displayCaps.getPlatformHeight();
-Ti.App.platformWidth = Ti.Platform.displayCaps.getPlatformWidth();
-
 var API = (function() {
-    var _self;
 
     //TODO: only for debug
     var eventcounter = {};
 
-    _self = {
-        SW : {
-            Contacts : require('lib/API.Contacts'),
-            Calendar : '',
-            FileSystem : require('lib/API.FileSystem'),
-            DataBase : '',
-            Log : '',
-            Map : require('lib/API.Map'),
-            Notification : require('lib/API.Notification'),
-            Social : ''
-        },
-        HW : {
-            Acceloremeter : require('lib/API.Accelerometer'),
-            Battery : require('lib/API.Battery'),
-            Camera : require('lib/API.Camera'),
-            GeoLocation : '',
-            Gesture : '',
-            Media : require('lib/API.Media'),
-            Network : require('lib/API.Network'),
-            System : require('lib/API.System')
-        }
+    /** YaaST API.
+     * @version 1.0.0
+     * @alias API
+     * @namespace */
+    Yaast.API = {
+        SW: {},
+        HW: {}
     };
+    
+    Yaast.API.HW.System = require('lib/API.System');
+    Yaast.API.HW.Network = require('lib/API.Network');
+    Yaast.API.SW.FileSystem = require('lib/API.FileSystem');
+    
+    Yaast.API.SW.Contacts = require('lib/API.Contacts');
+    Yaast.API.SW.Calendar = '';
+    Yaast.API.SW.DataBase = '';
+    Yaast.API.SW.Map = require('lib/API.Map');
+    Yaast.API.SW.Notification = require('lib/API.Notification');
+    Yaast.API.SW.Social = '';
+    Yaast.API.HW.Acceloremeter = require('lib/API.Accelerometer');
+    Yaast.API.HW.Battery = require('lib/API.Battery');
+    Yaast.API.HW.Camera = require('lib/API.Camera');
+    Yaast.API.HW.GeoLocation = '';
+    Yaast.API.HW.Gesture = '';
+    Yaast.API.HW.Media = require('lib/API.Media');
+    Yaast.API.HW.UI = require('lib/API.UI');
 
-    _self.events = {
+    var events = {
         activeHandlers: {},
         availableEvents: {},
         publicEvents: {}
     };
 
-    var _initEvents = function _initEvents() {
+    var initEvents = function initEvents() {
         var key, eventId, eventData, enventId;
 
         /* TODO new class eventData
@@ -67,68 +64,68 @@ var API = (function() {
          * };
          */
 
-        for (key in _self.SW) {
-            if (_self.SW[key].events) {
-                for (eventId in _self.SW[key].events) {
-                    eventData = _self.SW[key].events[eventId];
+        for (key in Yaast.API.SW) {
+            if (Yaast.API.SW[key].events) {
+                for (eventId in Yaast.API.SW[key].events) {
+                    eventData = Yaast.API.SW[key].events[eventId];
                     if (typeof eventData.source === 'undefined') {
-                        Ti.API.info('[API._initEvents] Error. event source undefined. self.SW.' + key + '.events.' + eventId + ' = ' + JSON.stringify(eventData));
+                        Ti.API.info('[API._initEvents] Error. event source undefined. Yaast.API.SW.' + key + '.events.' + eventId + ' = ' + JSON.stringify(eventData));
                         continue;
                     } else {
                         if (eventData.dummy) {
-                            _self.events.availableEvents[eventId] = {
+                            events.availableEvents[eventId] = {
                                 keylist: eventData.keylist,
                                 event: eventData.event,
-                                listener: _self.SW[key],
+                                listener: Yaast.API.SW[key],
                                 source: eventData.source,
                                 dummy: true
                             };
                         } else {
-                            _self.events.availableEvents[eventId] = {
+                            events.availableEvents[eventId] = {
                                 keylist: eventData.keylist,
                                 event: eventData.event,
                                 listener: eventData.listener,
                                 source: eventData.source
                             };
                         }
-                        //_self.events.publicEvents[eventData.event] = eventId;
-                        if (_self.events.publicEvents[eventData.source] == null) {
-                            _self.events.publicEvents[eventData.source] = {};
+                        //events.publicEvents[eventData.event] = eventId;
+                        if (events.publicEvents[eventData.source] == null) {
+                            events.publicEvents[eventData.source] = {};
                         }
-                        _self.events.publicEvents[eventData.source][eventData.event] = eventId;
+                        events.publicEvents[eventData.source][eventData.event] = eventId;
                     }
                 }
             }
         }
-        for (key in _self.HW) {
-            if (_self.HW[key].events) {
-                for (eventId in _self.HW[key].events) {
-                    eventData = _self.HW[key].events[eventId];
+        for (key in Yaast.API.HW) {
+            if (Yaast.API.HW[key].events) {
+                for (eventId in Yaast.API.HW[key].events) {
+                    eventData = Yaast.API.HW[key].events[eventId];
                     if (typeof eventData.source === 'undefined') {
-                        Ti.API.info('[API._initEvents] Error. event source undefined. self.HW.' + key + '.events.' + eventId + ' = ' + JSON.stringify(eventData));
+                        Ti.API.info('[API._initEvents] Error. event source undefined. Yaast.API.HW.' + key + '.events.' + eventId + ' = ' + JSON.stringify(eventData));
                         continue;
                     } else {
                         if (eventData.dummy) {
-                            _self.events.availableEvents[eventId] = {
+                            events.availableEvents[eventId] = {
                                 keylist: eventData.keylist,
                                 event: eventData.event,
-                                listener: _self.HW[key],
+                                listener: Yaast.API.HW[key],
                                 source: eventData.source,
                                 dummy: true
                             };
                         } else {
-                            _self.events.availableEvents[eventId] = {
+                            events.availableEvents[eventId] = {
                                 keylist: eventData.keylist,
                                 event: eventData.event,
                                 listener: eventData.listener,
                                 source: eventData.source
                             };
                         }
-                        //_self.events.publicEvents[eventData.event] = eventId;
-                        if (_self.events.publicEvents[eventData.source] == null) {
-                            _self.events.publicEvents[eventData.source] = {};
+                        //events.publicEvents[eventData.event] = eventId;
+                        if (events.publicEvents[eventData.source] == null) {
+                            events.publicEvents[eventData.source] = {};
                         }
-                        _self.events.publicEvents[eventData.source][eventData.event] = eventId;
+                        events.publicEvents[eventData.source][eventData.event] = eventId;
                     }
                 }
             }
@@ -139,18 +136,26 @@ var API = (function() {
      * @param: {eventName} the name of the Titanium event.
      * @param: {data} event data.
      * @return : Bool true if success or false if error*/
-    _self.events.fireHTMLEvents = function fireHTMLEvents(data) {
+    events.fireHTMLEvents = function fireHTMLEvents(data) {
         var key, viewId, result;
 
-        if (_self.events.activeHandlers[data.publicEvent]) {
+        if (events.activeHandlers[data.publicEvent]) {
+            /*
+             TODO: other way... maybe more efficient
+            for (key in events.activeHandlers[publicEvent].views) {
+                viewId = events.activeHandlers[publicEvent].views[key];
+                // This event must be send to each view
+                evaljs...
+            }*/
             eventcounter[data.publicEvent] ++;
             // for all events with timestamp
             if (data.timestamp != null && (data.timestamp - eventControl[data.publicEvent]) < 500){
                 // discart event to improve
             } else {
                 // TODO: only for debug
-                Ti.API.info('[API.events.fireHTMLEvents] ---> publicEvent: ' + data.publicEvent + ' counter: ' + eventcounter[data.publicEvent] + '; data: ' + JSON.stringify(data));
+                console.log('[API]---------> new event: ' + data.publicEvent + ' counter: ' + eventcounter[data.publicEvent] + '; data: ' + JSON.stringify(data));
                 Ti.App.fireEvent(data.publicEvent, data);
+                console.log('[API] event fired');
             }
             result = true;
         } else {
@@ -158,67 +163,55 @@ var API = (function() {
         }
         return result;
     };
-
     // Create new handler
-    _self.eventHandler = function(e) {
+    var eventHandler = function(e) {
         var i;
         var data = {};
-        var publicEvent = _self.events.publicEvents[e.source.apiName][e.type];
+        var publicEvent = events.publicEvents[e.source.apiName][e.type];
         data['publicEvent'] = publicEvent;
-        for (i = 0; i < _self.events.availableEvents[publicEvent].keylist.length; i++) {
-            data[_self.events.availableEvents[publicEvent].keylist[i]] = e[_self.events.availableEvents[publicEvent].keylist[i]];
+        for (i = 0; i < events.availableEvents[publicEvent].keylist.length; i++) {
+            data[events.availableEvents[publicEvent].keylist[i]] = e[events.availableEvents[publicEvent].keylist[i]];
         }
-        _self.events.fireHTMLEvents(data);
+        events.fireHTMLEvents(data);
     };
-
     /** AddEventListener from a HTML view (througth APICommons.js TODO)
      * @param: {publicEvent} the public html name for the event.
      * @param: {viewId} the id of the interested html view.
      * @return : Bool true if success or false if error*/
-    _self.events.addEventListener = function addEventListener(publicEvent, viewId, entityId, dummy) {
+    events.addEventListener = function addEventListener(publicEvent, viewId, entityId, dummy) {
         var eventData;
 
-        eventData = _self.events.availableEvents[publicEvent];
+        eventData = events.availableEvents[publicEvent];
         if (!eventData) {
             // Public event doesn't exist
             return false;
         }
-        if (typeof _self.events.activeHandlers[publicEvent] !== 'undefined') {
+        if (typeof events.activeHandlers[publicEvent] !== 'undefined') {
             // Main listener active yet
-            _self.events.activeHandlers[publicEvent].nlisteners += 1;
-            if (_self.events.activeHandlers[publicEvent].views[viewId] !== 0) {
-                _self.events.activeHandlers[publicEvent].views[viewId] = 0;
+            events.activeHandlers[publicEvent].nlisteners += 1;
+            if (events.activeHandlers[publicEvent].views[viewId] !== 0) {
+                events.activeHandlers[publicEvent].views[viewId] = 0;
             }
-            _self.events.activeHandlers[publicEvent].views[viewId] += 1;
+            events.activeHandlers[publicEvent].views[viewId] += 1;
         } else {
             // Inicialize handler for this event
-            Ti.API.info('[API.events.addEventListener] Initializing handler for event: ' + publicEvent +
-                        ', privateEvent: ' + _self.events.availableEvents[publicEvent].event +
-                        ', entityId: ' + entityId + ', dummy: ' + dummy +
-                        ', isDummy?: ' + _self.events.availableEvents[publicEvent].dummy
-            );
-
-            _self.events.activeHandlers[publicEvent] = {
+            events.activeHandlers[publicEvent] = {
                 nlisteners: 1,
                 views: {}
             };
-
+            Ti.API.info('[API.addEventListener] event: ' + publicEvent + ', privateEvent: ' + events.availableEvents[publicEvent].event, ', entityId: ' + entityId + ', dummy: ' + dummy + ', isDummy?: ' + events.availableEvents[publicEvent].dummy);
             eventcounter[publicEvent] = 0;
-            if (_self.events.availableEvents[publicEvent].listener === 'accelerometer') {
+            if (events.availableEvents[publicEvent].listener === 'accelerometer') {
                 // Accelerometer is special.
-                Ti.Accelerometer.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
-            } else if (_self.events.availableEvents[publicEvent].dummy) {
+                Ti.Accelerometer.addEventListener(events.availableEvents[publicEvent].event, eventHandler);
+            } else if (events.availableEvents[publicEvent].dummy) {
                 // Special Dummy events. This events depends of Titnaium Objects
-                Ti.API.info('[API.events.addEventListener] Listening special event for dummy: ' + publicEvent +
-                            ', privateEvent: ' + _self.events.availableEvents[publicEvent].event +
-                            ', entityId: ' + entityId + ', dummy: ' + dummy +
-                            ', isDummy?: ' + _self.events.availableEvents[publicEvent].dummy
-                );
-                _self.events.availableEvents[publicEvent].listener.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler, entityId, dummy);
+                Ti.API.info('[API.addEventListener] special event for dummy: ' + publicEvent + ', privateEvent: ' + events.availableEvents[publicEvent].event, ', entityId: ' + entityId + ', dummy: ' + dummy);
+                events.availableEvents[publicEvent].listener.addEventListener(events.availableEvents[publicEvent].event, eventHandler, entityId, dummy);
             } else {
-                _self.events.availableEvents[publicEvent].listener.addEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
+                events.availableEvents[publicEvent].listener.addEventListener(events.availableEvents[publicEvent].event, eventHandler);
             }
-            _self.events.activeHandlers[publicEvent].views[viewId] = 1;
+            events.activeHandlers[publicEvent].views[viewId] = 1;
         }
     };
 
@@ -226,26 +219,26 @@ var API = (function() {
      * @param: {publicEvent} the public html name for the event.
      * @param: {viewId} the id of the interested html view.
      * @return : Bool true if success or false if error*/
-    _self.events.removeEventListener = function removeEventListener(publicEvent, viewId, entityId, dummy) {
+    events.removeEventListener = function removeEventListener(publicEvent, viewId, entityId, dummy) {
         var eventData;
 
-        eventData = _self.events.availableEvents[publicEvent];
-        if (!eventData || !_self.events.activeHandlers[publicEvent]) {
+        eventData = events.availableEvents[publicEvent];
+        if (!eventData || !events.activeHandlers[publicEvent]) {
             // Public event doesn't exist
             return false;
         }
 
-        _self.events.activeHandlers[publicEvent].nlisteners -= 1;
-        _self.events.activeHandlers[publicEvent].views[viewId] -= 1 ;
-        if (_self.events.availableEvents[publicEvent].listener === 'accelerometer') {
+        events.activeHandlers[publicEvent].nlisteners -= 1;
+        events.activeHandlers[publicEvent].views[viewId] -= 1 ;
+        if (events.availableEvents[publicEvent].listener === 'accelerometer') {
             // Accelerometer is special.
-            Ti.Accelerometer.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler);
+            Ti.Accelerometer.removeEventListener(events.availableEvents[publicEvent].event, eventHandler);
         } else {
-            Ti.API.info('[API.removeEventListener] special event: ' + publicEvent + ', privateEvent' + _self.events.availableEvents[publicEvent].event + ', entityId: ' + entityId + ', dummy: ' + dummy);
-            _self.events.availableEvents[publicEvent].listener.removeEventListener(_self.events.availableEvents[publicEvent].event, _self.eventHandler, entityId, dummy);
+            Ti.API.info('[API.removeEventListener] special event: ' + publicEvent + ', privateEvent' + events.availableEvents[publicEvent].event + ', entityId: ' + entityId + ', dummy: ' + dummy);
+            events.availableEvents[publicEvent].listener.removeEventListener(events.availableEvents[publicEvent].event, eventHandler, entityId, dummy);
         }
-        if (_self.events.activeHandlers[publicEvent].nlisteners == 0) {
-            delete _self.events.activeHandlers[publicEvent];
+        if (events.activeHandlers[publicEvent].nlisteners == 0) {
+            delete events.activeHandlers[publicEvent];
         }
     };
 
@@ -257,12 +250,12 @@ var API = (function() {
      *     'dummy': dummy name optional param.
      * }
      **/
-    _self.events.APIEventHandler = function APIEventHandler(data) {
+    events.APIEventHandler = function APIEventHandler(data) {
         Ti.API.info('[API.APIEventHandler]: entityId: ' + data.entityId, ', viewId: ' + data.viewId + ', event: ' + data.event + ', dummy: ' + data.dummy);
         if (data.action === 'addEventListener') {
-            _self.events.addEventListener(data.event, data.viewId, data.entityId, data.dummy);
+            events.addEventListener(data.event, data.viewId, data.entityId, data.dummy);
         } else if (data.action === 'removeEventListener') {
-            _self.events.removeEventListener(data.event, data.viewId, data.entityId, data.dummy);
+            events.removeEventListener(data.event, data.viewId, data.entityId, data.dummy);
         }
     };
 
@@ -274,7 +267,7 @@ var API = (function() {
      *     'eventName': eventName
      * }
      **/
-    _self.events.APIMethodHandler = function APIMethodHandler(data) {
+    events.APIMethodHandler = function APIMethodHandler(data) {
         var result;
         Ti.API.info('[API.APIMethodHandler] Method event recieved: ' + JSON.stringify(data));
         Ti.API.info('[API.APIMethodHandler] Params:' + JSON.stringify(data.params));
@@ -284,7 +277,7 @@ var API = (function() {
                 result = _self[data.method.type][data.method.subapi][data.method.name]();
             } catch (e) {
                 // TODO
-                Ti.API.info('[----- ¡¡API METHOD ERROR!! -----] ' + e);
+                Ti.API.info('[----- ¡¡API METHOD ERROR!!] ' + e);
             }
         } else if (data.method !== null && data.params !== null) {
             if (data.options !== null) {
@@ -294,7 +287,7 @@ var API = (function() {
                 result = _self[data.method.type][data.method.subapi][data.method.name].apply(null, data.params);
             } catch (e) {
                 // TODO
-                Ti.API.info('[----- ¡¡API METHOD ERROR!! -----] ' + e);
+                Ti.API.info('[----- ¡¡API METHOD ERROR!!] ' + e);
             }
         } else {
             // Error. Method doesn't exist
@@ -305,7 +298,7 @@ var API = (function() {
         Ti.App.fireEvent(data.method.eventName + '_' + data.viewId + '_' + data.callId, {'returnedData': result});
     };
 
-    _self.events.APIMethodAsyncHandler = function APIMethodAsyncHandler(data) {
+    events.APIMethodAsyncHandler = function APIMethodAsyncHandler(data) {
         var result;
 
         Ti.API.info('[API.APIMethodAsyncHandler] Async Method event recived: ' + JSON.stringify(data));
@@ -334,17 +327,15 @@ var API = (function() {
         }
     };
 
-    _self.init = function init() {
-        _initEvents(_self);
-        Ti.App.addEventListener('APIEvent', _self.events.APIEventHandler);
-        Ti.App.addEventListener('APIMethod', _self.events.APIMethodHandler);
-        Ti.App.addEventListener('APIMethodAsync', _self.events.APIMethodAsyncHandler);
+    var init = function init() {
+        initEvents();
+        Ti.App.addEventListener('APIEvent', events.APIEventHandler);
+        Ti.App.addEventListener('APIMethod', events.APIMethodHandler);
+        Ti.App.addEventListener('APIMethodAsync', events.APIMethodAsyncHandler);
     };
 
-    _self.init();
-
-    return _self;
-
+    init();
+	
 }());
 
 module.exports = API;
