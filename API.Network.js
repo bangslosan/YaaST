@@ -134,10 +134,10 @@ var Network = (function () {
      * @alias API.Network
      * @namespace */
     var _self = {},
-    mainURL = 'http://138.100.12.106:8088/',
-    loginURL = 'http://138.100.12.106:8088/login',
-    oauthURL = 'http://138.100.12.106:8088/',
-    tokenURL = 'http://138.100.12.106:8088/',
+    mainURL = 'https://wirecloud.conwet.fi.upm.es/',
+    loginURL = 'https://wirecloud.conwet.fi.upm.es/login',
+    oauthURL = 'https://wirecloud.conwet.fi.upm.es/',
+    tokenURL = 'https://wirecloud.conwet.fi.upm.es/',
     typeServer = 'wirecloud',
     tim = 90000;
 
@@ -145,35 +145,46 @@ var Network = (function () {
      *  @param {Object} data: username, password, cookie
      *  @param {Function} callback */
     var loginWirecloud = function loginWirecloud(data, callback){
-        var csrftoken = data.cook.substr(10, 32), boundary,
-        sessionid = data.cook.substr(data.cook.indexOf('sessionid')+10, 32),
+        var csrftoken = data.cook.substr(10, 32), boundary, sessionid,
         client = Ti.Network.createHTTPClient({
             onload: function(e) {
-                if(this.responseText.indexOf('csrfmiddlewaretoken') === -1 &&
-                   this.responseText.indexOf('CSRF verification failed') === -1){
-                    Ti.App.Properties.setString('cookie_csrftoken', csrftoken);
-                    Ti.App.Properties.setString('cookie_sessionid', sessionid);
-                    callback('Success Credential');
-                }
-                else{
-                    callback('Error Credential');
-                }
+                var csrfHTML = this.responseText.substr(this.responseText.indexOf('csrfmiddlewaretoken')+28, 32);
+                boundary = Ti.Network.encodeURIComponent('csrfmiddlewaretoken') + '=' + Ti.Network.encodeURIComponent(csrfHTML) +
+                           '&' + Ti.Network.encodeURIComponent('username') + '=' + Ti.Network.encodeURIComponent(data.user) +
+                           '&' + Ti.Network.encodeURIComponent('password') + '=' + Ti.Network.encodeURIComponent(data.pass);
+                client = Ti.Network.createHTTPClient({
+                    onload: function(e) {
+                        if(this.responseText.indexOf('csrfmiddlewaretoken') === -1 &&
+                            this.responseText.indexOf('CSRF verification failed') === -1){
+                                Ti.App.Properties.setString('cookie_csrftoken', csrftoken);
+                                var sessid = this.getResponseHeader('Set-Cookie');
+                                Ti.App.Properties.setString('cookie_sessionid', sessid.substr(sessid.indexOf('sessionid') + 10, 32));
+                                callback('Success Credential');
+                        }
+                        else callback('Error Credential');
+                    },
+                    onerror: function(e) {
+                        callback('Error Server');
+                    },
+                    timeout: tim
+                });
+                client.open("POST", loginURL);
+                client.clearCookies(loginURL);
+                client.clearCookies(mainURL);
+                client.setRequestHeader("Cookie", "csrftoken=" + csrftoken);
+                client.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+                client.send(boundary);
             },
             onerror: function(e) {
                 callback('Error Server');
             },
             timeout: tim
         });
-        boundary = Ti.Network.encodeURIComponent('csrfmiddlewaretoken') + '=' + Ti.Network.encodeURIComponent(csrftoken) +
-             '&' + Ti.Network.encodeURIComponent('username') + '=' + Ti.Network.encodeURIComponent(data.user) +
-             '&' + Ti.Network.encodeURIComponent('password') + '=' + Ti.Network.encodeURIComponent(data.pass);
-        client.open("POST", loginURL);
-        client.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+        client.open("GET", loginURL);
         client.clearCookies(loginURL);
         client.clearCookies(mainURL);
         client.setRequestHeader("Cookie", "csrftoken=" + csrftoken);
-        client.setRequestHeader("Cookie", "sessionid=" + sessionid);
-        client.send(boundary);
+        client.send();
     };
 
     /** Private function to connect FiWare
