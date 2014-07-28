@@ -240,7 +240,7 @@ var Camera = (function() {
         }
 
         setDefaultOptions(options);
-        if (Ti.App.isApple()) {
+        if (Yaast.API.HW.System.isApple()) {
             showCameraIos(callback, options);
         } else {
             showCameraAndroid(callback, options);
