@@ -66,6 +66,7 @@ var Contacts = (function() {
     var _self = {
         'tempContacts': []
     };
+    var _isApple = Yaast.API.HW.System.isApple();
 
     /** Get Authorization Property
      * @param {Function} callback
@@ -97,12 +98,12 @@ var Contacts = (function() {
             if(people[i].getFirstName() === null || people[i].getFirstName() === undefined){
                 name = people[i].getFullName();
             }
-            else if((people[i].getMiddleName() !== null && Ti.App.isApple) ||
-                (people[i].getMiddleName() !== undefined && !Ti.App.isApple)){
+            else if((people[i].getMiddleName() !== null && _isApple) ||
+                (people[i].getMiddleName() !== undefined && !_isApple)){
                 name = people[i].getFirstName() + ' ' + people[i].getMiddleName();
             }
-            else if((people[i].getMiddleName() === null && Ti.App.isApple) ||
-                (people[i].getMiddleName() === undefined && !Ti.App.isApple)){
+            else if((people[i].getMiddleName() === null && _isApple) ||
+                (people[i].getMiddleName() === undefined && !_isApple)){
                 name = people[i].getFirstName();
             }
             newPerson = {
@@ -110,24 +111,24 @@ var Contacts = (function() {
                 'birthday': (people[i].getBirthday() !== null) ? people[i].getBirthday() : '',
                 'date': (people[i].getDate() === undefined) ? {} : people[i].getDate(),
                 'email': (people[i].getEmail() === undefined) ? {} : people[i].getEmail(),
-                'id': (Ti.App.isApple) ? people[i].getRecordId() : people[i].getId(),
+                'id': (_isApple) ? people[i].getRecordId() : people[i].getId(),
                 'im': (people[i].getInstantMessage() === undefined) ? {} : people[i].getInstantMessage(),
                 'image' : (people[i].getImage()) ? 'data:image/png;base64,' +
                             Ti.Utils.base64encode(people[i].getImage()).toString() : '',
                 'name': name,
-                'surname': ((people[i].getLastName() !== null && Ti.App.isApple) ||
-                            (people[i].getLastName() !== undefined && !Ti.App.isApple))
+                'surname': ((people[i].getLastName() !== null && _isApple) ||
+                            (people[i].getLastName() !== undefined && !_isApple))
                             ? people[i].getLastName() : '',
                 'fullname': people[i].getFullName(),
-                'nick': ((people[i].getNickname() !== null && Ti.App.isApple) ||
-                            (people[i].getNickname() !== undefined && !Ti.App.isApple))
+                'nick': ((people[i].getNickname() !== null && _isApple) ||
+                            (people[i].getNickname() !== undefined && !_isApple))
                             ? people[i].getNickname() : '',
-                'note': ((people[i].getNote() !== null && Ti.App.isApple) ||
-                            (people[i].getNote() !== undefined && !Ti.App.isApple))
+                'note': ((people[i].getNote() !== null && _isApple) ||
+                            (people[i].getNote() !== undefined && !_isApple))
                             ? people[i].getNote() : '',
                 'phone': (people[i].getPhone() === undefined) ? {} : people[i].getPhone(),
-                'organization': ((people[i].getOrganization() !== null && Ti.App.isApple) ||
-                            (people[i].getOrganization() !== undefined && !Ti.App.isApple))
+                'organization': ((people[i].getOrganization() !== null && _isApple) ||
+                            (people[i].getOrganization() !== undefined && !_isApple))
                             ? people[i].getOrganization() : '',
                 'website': (people[i].getUrl() === undefined) ? {} : people[i].getUrl()
             };
@@ -462,7 +463,7 @@ var Contacts = (function() {
 
     /** Save Changes */
     _self.saveChanges = function() {
-        if(!Ti.App.isApple){
+        if(!_isApple){
             Ti.Contacts.save(_self.tempContacts);
         }
         else{
