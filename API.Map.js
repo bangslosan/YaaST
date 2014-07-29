@@ -623,7 +623,7 @@ var Map = (function() {
 			return ids;
 			
 		} else {
-			//TODO: Error Getter method not found
+			Ti.API.info("Error Getter method not found");
 			return;
 		}
 		
