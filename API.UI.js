@@ -7,7 +7,11 @@
 
 'use strict';
 
-var UI = (function() {
+var UI = function (APIReferences) {
+
+    var Yaast = {
+        "API" : APIReferences
+    };
 
     /** It provides several useful methods to get or create User Interface.
      * @alias API.UI
@@ -16,11 +20,60 @@ var UI = (function() {
 
     /** Get constant Row Height on Android or iOS Table.
      * @method
-     * @return {String} */
+     * @return {Number} */
     _self.getDefaultRowHeight = function getDefaultRowHeight() {
-      if(Yaast.API.HW.System.isRetina()) return '88px';
-      else if(Yaast.API.HW.System.isApple()) return '44px';
-      else return '48dp';
+      if(Yaast.API.HW.System.isRetina()) return 88;
+      else if(Yaast.API.HW.System.isApple()) return 44;
+      else {
+          var density = _self.getDensityScreen();
+          if(density === 'low') return 33;
+          else if(density === 'medium') return 44;
+          else if(density === 'high') return 72;
+          else if(density === 'xhigh') return 96;
+          else if(density === 'xxhigh') return 144;
+          else if(density === 'xxxhigh') return 192;
+      }
+    };
+
+    /** Get constant Size Button (Square - width = height) on Android or iOS.
+     * @method
+     * @return {Number} */
+    _self.getDefaultSizeButton = function getDefaultSizeButton() {
+      if(Yaast.API.HW.System.isRetina()) return 60;
+      else if(Yaast.API.HW.System.isApple()) return 30;
+      else {
+          var density = _self.getDensityScreen();
+          if(density === 'low') return 33;
+          else if(density === 'medium') return 30;
+          else if(density === 'high') return 45;
+          else if(density === 'xhigh') return 60;
+          else if(density === 'xxhigh') return 90;
+          else if(density === 'xxxhigh') return 120;
+      }
+    };
+    
+    /** Get constant Padding Button (Square - top = bottom) on Android or iOS.
+     * @method
+     * @return {Number} */
+    _self.getDefaultPaddingButton = function getDefaultPaddingButton() {
+      if(Yaast.API.HW.System.isRetina()) return 14;
+      else if(Yaast.API.HW.System.isApple()) return 7;
+      else {
+          var density = _self.getDensityScreen();
+          if(density === 'low') return 33;
+          else if(density === 'medium') return 7;
+          else if(density === 'high') return 10.5;
+          else if(density === 'xhigh') return 14;
+          else if(density === 'xxhigh') return 21;
+          else if(density === 'xxxhigh') return 28;
+      }
+    };
+
+    /** Get Screen Type of Android Device
+     * @method
+     * @return {String} */
+    _self.getDensityScreen = function getDensityScreen() {
+        return Ti.Platform.displayCaps.getDensity();
     };
 
     /** Get Padding Top of Application Window.
@@ -53,6 +106,6 @@ var UI = (function() {
 
     return _self;
 
-}());
+};
 
 module.exports = UI;
