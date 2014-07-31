@@ -56,7 +56,11 @@
 
 "use strict";
 
-var Contacts = (function() {
+var Contacts = function (APIReferences) {
+
+    var Yaast = {
+        API: APIReferences
+    };
 
     /** It allows to manage local contacts from device.
      * @author Alejandro FCarrera
@@ -495,6 +499,6 @@ var Contacts = (function() {
 
     return _self;
 
-}());
+};
 
 module.exports = Contacts;
