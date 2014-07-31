@@ -13,6 +13,9 @@ var UI = function (APIReferences) {
         "API" : APIReferences
     };
 
+    var viewsById = {};
+    var nextZindex = 100;
+
     /** It provides several useful methods to get or create User Interface.
      * @alias API.UI
      * @namespace */
@@ -51,7 +54,7 @@ var UI = function (APIReferences) {
           else if(density === 'xxxhigh') return 120;
       }
     };
-    
+
     /** Get constant Padding Button (Square - top = bottom) on Android or iOS.
      * @method
      * @return {Number} */
@@ -102,6 +105,66 @@ var UI = function (APIReferences) {
      * @return {Number} */
     _self.getPlatformHeight = function getPlatformHeight() {
         return Ti.Platform.displayCaps.getPlatformHeight();
+    };
+
+    /** Add new view into parentView
+     * @param options {'wView': theUpGraphView, 'type': 'widget', 'isNative': false, 'id':99}
+     * @return {Boolean} */
+    _self.addView = function addView(parentView, options) {
+        options.wView.zIndex = nextZindex;
+        parentView.add(options.wView);
+        var bound = {
+            'top': null,
+            'left': null,
+            'width': null,
+            'height': null,
+            'zindex': nextZindex
+        };
+        viewsById[options.id] = {'view': options.wView, 'defaultBound': bound, 'parentView': parentView};
+        Ti.API.info('[UI.addView]viewsById.defaultBound: ' + JSON.stringify(viewsById[options.id].defaultBound));
+        nextZindex ++;
+        return true;
+    };
+
+    /** Remove view from parentView
+     * @method
+     * @return {Boolean} */
+    _self.removeView = function removeView(id) {
+        viewsById[id].parentView.remove(viewsById[id].view);
+        delete viewsById[id];
+        return true;
+    };
+
+    /** Set the View asociated with viewId to fullScreen
+     * @method
+     * @return {Boolean} */
+    _self.setViewFullScreen = function setViewFullScreen(viewId) {
+        Ti.API.info('[UI.setViewFullScreen]viewId: ' + JSON.stringify(viewId));
+        viewsById[viewId].defaultBound.top = viewsById[viewId].view.rect.y;
+        viewsById[viewId].defaultBound.left = viewsById[viewId].view.rect.x;
+        viewsById[viewId].defaultBound.width = viewsById[viewId].view.rect.width;
+        viewsById[viewId].defaultBound.height = viewsById[viewId].view.rect.height;
+        Ti.API.info('[UI.setViewFullScreen]viewsById[viewId].view.rect: ' + JSON.stringify(viewsById[viewId].view.rect));
+        Ti.API.info('[UI.setViewFullScreen]viewsById[viewId].defaultBound: ' + JSON.stringify(viewsById[viewId].defaultBound));
+        viewsById[viewId].view.top = 0;
+        viewsById[viewId].view.left = 0;
+        viewsById[viewId].view.width = "100%";
+        viewsById[viewId].view.height = "100%";
+        viewsById[viewId].view.zIndex = 10000;
+        return true;
+    };
+
+    /** Restore the View asociated with viewId size
+     * @method
+     * @return {Boolean} */
+    _self.restoreViewSize = function restoreViewSize(viewId) {
+        Ti.API.info('[UI.restoreViewSize]theView: ' + JSON.stringify(viewId));
+        viewsById[viewId].view.top = viewsById[viewId].defaultBound.top;
+        viewsById[viewId].view.left = viewsById[viewId].defaultBound.left;
+        viewsById[viewId].view.width = viewsById[viewId].defaultBound.width;
+        viewsById[viewId].view.height = viewsById[viewId].defaultBound.height;
+        viewsById[viewId].view.zIndex = viewsById[viewId].defaultBound.zindex;
+        return true;
     };
 
     return _self;
