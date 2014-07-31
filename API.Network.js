@@ -126,7 +126,13 @@
 
 "use strict";
 
-var Network = (function () {
+var Network = function (APIReferences) {
+
+    var Yaast = {
+        "API" : APIReferences
+    };
+
+    var isApple = Yaast.API.HW.System.isApple();
 
     /** It contains several useful methods to manage network.
      * @author Alejandro FCarrera
@@ -145,46 +151,42 @@ var Network = (function () {
      *  @param {Object} data: username, password, cookie
      *  @param {Function} callback */
     var loginWirecloud = function loginWirecloud(data, callback){
-        var csrftoken = data.cook.substr(10, 32), boundary, sessionid,
-        client = Ti.Network.createHTTPClient({
+        var boundary = isApple ? {
+               "csrfmiddlewaretoken": data.csrf,
+               "username": data.user,
+               "password": data.pass
+            } : Ti.Network.encodeURIComponent('csrfmiddlewaretoken') + '=' +
+            Ti.Network.encodeURIComponent(data.csrf) + '&' +
+            Ti.Network.encodeURIComponent('username') + '=' + Ti.Network.encodeURIComponent(data.user) + '&' +
+            Ti.Network.encodeURIComponent('password') + '=' + Ti.Network.encodeURIComponent(data.pass);
+        var client = Ti.Network.createHTTPClient({
             onload: function(e) {
-                var csrfHTML = this.responseText.substr(this.responseText.indexOf('csrfmiddlewaretoken')+28, 32);
-                boundary = Ti.Network.encodeURIComponent('csrfmiddlewaretoken') + '=' + Ti.Network.encodeURIComponent(csrfHTML) +
-                           '&' + Ti.Network.encodeURIComponent('username') + '=' + Ti.Network.encodeURIComponent(data.user) +
-                           '&' + Ti.Network.encodeURIComponent('password') + '=' + Ti.Network.encodeURIComponent(data.pass);
-                client = Ti.Network.createHTTPClient({
-                    onload: function(e) {
-                        if(this.responseText.indexOf('csrfmiddlewaretoken') === -1 &&
-                            this.responseText.indexOf('CSRF verification failed') === -1){
-                                Ti.App.Properties.setString('cookie_csrftoken', csrftoken);
-                                var sessid = this.getResponseHeader('Set-Cookie');
-                                Ti.App.Properties.setString('cookie_sessionid', sessid.substr(sessid.indexOf('sessionid') + 10, 32));
-                                callback('Success Credential');
-                        }
-                        else callback('Error Credential');
-                    },
-                    onerror: function(e) {
-                        callback('Error Server');
-                    },
-                    timeout: tim
-                });
-                client.open("POST", loginURL);
-                client.clearCookies(loginURL);
-                client.clearCookies(mainURL);
-                client.setRequestHeader("Cookie", "csrftoken=" + csrftoken);
-                client.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
-                client.send(boundary);
+                if(this.responseText.indexOf('CSRF verification failed') > -1 ||
+                  this.responseText.indexOf('Retrieving wirecloud code: 0%') < 0){
+                    if(isApple) Ti.Network.removeAllHTTPCookies();
+                    else Ti.Network.removeAllSystemCookies();
+                    callback('Error Credential');
+                }
+                else {
+                    Ti.App.Properties.setString('cookie_csrftoken', data.csrf);
+                    var session = isApple ? Ti.Network.getAllHTTPCookies()[1].value :
+                        this.getResponseHeader('Set-Cookie').substr(10, 32);
+                    Ti.App.Properties.setString('cookie_sessionid', session);
+                    if(isApple) Ti.Network.removeAllHTTPCookies();
+                    else Ti.Network.removeAllSystemCookies();
+                    callback('Success Credential');
+                }
             },
             onerror: function(e) {
+                if(isApple) Ti.Network.removeAllHTTPCookies();
+                else Ti.Network.removeAllSystemCookies();
                 callback('Error Server');
             },
             timeout: tim
         });
-        client.open("GET", loginURL);
-        client.clearCookies(loginURL);
-        client.clearCookies(mainURL);
-        client.setRequestHeader("Cookie", "csrftoken=" + csrftoken);
-        client.send();
+        client.open("POST", loginURL);
+        client.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+        client.send(boundary);
     };
 
     /** Private function to connect FiWare
@@ -271,13 +273,12 @@ var Network = (function () {
 	_self.login = function login(username, password, callback) {
 		var client = Ti.Network.createHTTPClient({
 			onload: function(e) {
-			    var data = {
-			        'user': username,
-			        'pass': password,
-			        'cook': this.getResponseHeader('Set-Cookie')
-			    };
 			    if(typeServer === 'wirecloud') {
-			        loginWirecloud(data, function(response){
+			        loginWirecloud({
+			            "user": username,
+			            "pass": password,
+			            "csrf": this.getResponseHeader('Set-Cookie').substr(10, 32)
+			        }, function(response){
 			            callback(response);
                     });
 			    }
@@ -302,10 +303,9 @@ var Network = (function () {
 			},
 			timeout: tim
 		});
+		Ti.Network.removeAllHTTPCookies();
 		client.open("GET", loginURL);
 		client.setRequestHeader("Content-Type", 'text/html');
-        client.clearCookies(loginURL);
-		client.clearCookies(mainURL);
 		client.send();
 	};
 
@@ -611,6 +611,6 @@ var Network = (function () {
 
     return _self;
 
-}());
+};
 
 module.exports = Network;
