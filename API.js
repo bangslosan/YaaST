@@ -42,7 +42,7 @@ var API = (function() {
     self.SW.Social = '';
     self.HW.Acceloremeter = require('lib/API.Accelerometer');
     self.HW.Battery = require('lib/API.Battery');
-    self.HW.Camera = require('lib/API.Camera');
+    self.HW.Camera = require('lib/API.Camera')(self);
     self.HW.GeoLocation = '';
     self.HW.Gesture = '';
 
@@ -337,7 +337,7 @@ var API = (function() {
     init();
 
     return self;
-	
+
 }());
 
 module.exports = API;
