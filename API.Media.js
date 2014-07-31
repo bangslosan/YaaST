@@ -16,7 +16,11 @@
  */
 
 /* FYI: http://docs.appcelerator.com/titanium/3.0/#!/api/Titanium.Media*/
-var Media = (function() {
+var Media = function (APIReferences) {
+
+    var Yaast = {
+        API: APIReferences
+    };
 
     /** It allows to manage photo gallery and other native services.
      * @author Santiago Blanco & Carlos Blanco
@@ -43,7 +47,7 @@ var Media = (function() {
      * @param {pattern} [Number[]=[100, 300, 100, 200, 100, 50]] optional vibrate pattern only available for Android.*/
     self.vibrate = function vibrate(pattern) {
         if (Yaast.API.HW.System.isApple() || pattern == null || !(pattern instanceof Array)) {
-            Titanium.Media.vibrate();
+            Ti.Media.vibrate();
         }
         // pattern only available for Android
         Titanium.Media.vibrate(pattern);
@@ -697,6 +701,6 @@ var Media = (function() {
 
     return self;
 
-}());
+};
 
 module.exports = Media;
