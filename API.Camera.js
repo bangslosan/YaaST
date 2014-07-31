@@ -24,7 +24,11 @@
  * @param {ResponseCallback} response */
 
 /* FYI: http://docs.appcelerator.com/titanium/3.0/#!/api/Titanium.Media*/
-var Camera = (function() {
+var Camera = function (APIReferences) {
+
+    var Yaast = {
+        API: APIReferences
+    };
 
     var checkOptions = function checkOptions(options) {
         if (!options) {
@@ -256,6 +260,6 @@ var Camera = (function() {
 
     return self;
 
-}());
+};
 
 module.exports = Camera;
