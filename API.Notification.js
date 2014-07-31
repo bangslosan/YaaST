@@ -22,7 +22,11 @@
 
 "use strict";
 
-var Notification = (function() {
+var Notification = function (APIReferences) {
+
+    var Yaast = {
+        API: APIReferences
+    };
 
     /** It contains a method to manage notifications.
      * @author Alejandro FCarrera
@@ -163,6 +167,6 @@ var Notification = (function() {
 
 	return _self;
 
-}());
+};
 
 module.exports = Notification;
