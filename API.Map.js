@@ -298,6 +298,15 @@ var Map = ( function() {
         _self.LAYER_TYPE_WMTS_1_0_0 = _self.Map.LAYER_TYPE_WMTS_1_0_0;
         _self.FORMAT_PNG = _self.Map.FORMAT_PNG;
         _self.FORMAT_JPEG = _self.Map.FORMAT_JPEG;
+        
+        
+        /*
+         * Check if there is support for the map.
+         * @return {Boolean} True if it can be used.
+         */
+        _self.isMapAvailable = function isMapAvailable(){
+        	return _self.Map.isGooglePlayServicesAvailable() == 0; //0 for Android
+        };
 
         /**
          * Creates a new map view.
@@ -592,28 +601,46 @@ var Map = ( function() {
         /**
          * Gets the value of a property of the map.
          * @param {mapId} The map.
-         * @param {propertyName} String with the name of the property.
-         * @return {Object} The value of the property.
+         * @param {propertyName} String with the name of the property or array with a list of properties.
+         * @return {Object} The value of the property or an object with the properties and values requested in the property list.
          */
         _self.getMapProperty = function(mapId, propertyName) {
-
-            var validProperties = ["userLocation", "userLocationButton", "mapType", "region", "animate", "traffic", "enableZoomControls", "rect", "region", "zoom"];
-            var onlyIdProperties = ["annotations", "polygons", "layers", "routes"];
-
-            if (validProperties.indexOf(propertyName) >= 0) {
-                return getSetProperty("map", mapId, propertyName);
-
-            } else if (onlyIdProperties.indexOf(propertyName) >= 0) {
-                var values = getSetProperty("map", mapId, propertyName);
-                var ids = [];
-                for (var id in values)
-                ids.push(id);
-                return ids;
-
-            } else {
-                Ti.API.info("Error Getter method not found");
-                return;
-            }
+        	
+        	if(propertyName instanceof Array){
+        		
+        		var result = {};
+        		
+        		for(var x = 0; x < propertyName.length; x++){
+        			var val = _self.getMapProperty(mapId, propertyName[x]);
+        			if(typeof(val) !== 'undefined'){
+        				result[propertyName[x]] = val;
+        			}
+        		}
+        		
+        		return result;
+        		
+        	} else {
+        		
+        		var validProperties = ["userLocation", "userLocationButton", "mapType", "region", "animate", "traffic", "enableZoomControls", "rect", "region", "zoom"];
+	            var onlyIdProperties = ["annotations", "polygons", "layers", "routes"];
+	
+	            if (validProperties.indexOf(propertyName) >= 0) {
+	                return getSetProperty("map", mapId, propertyName);
+	
+	            } else if (onlyIdProperties.indexOf(propertyName) >= 0) {
+	                var values = getSetProperty("map", mapId, propertyName);
+	                var ids = [];
+	                for (var id in values)
+	                ids.push(id);
+	                return ids;
+	
+	            } else {
+	                Ti.API.info("Error Getter method not found");
+	                return;
+	            }
+        		
+        	}
+            
 
         };
 
@@ -858,19 +885,38 @@ var Map = ( function() {
         /**
          * Gets the value of a property of an annotation.
          * @param {annotationId} The annotation id.
-         * @param {propertyName} String with the name of the property.
-         * @return {Object} The value of the property.
+         * @param {propertyName} String with the name of the property or array with a list of properties.
+         * @return {Object} The value of the property or an object with the properties and values requested in the property list.
          */
         _self.getAnnotationProperty = function(annotationId, propertyName) {
+        	
+        	if(propertyName instanceof Array){
+        		
+        		var result = {};
+        		
+        		for(var x = 0; x < propertyName.length; x++){
+        			var val = _self.getAnnotationProperty(annotationId, propertyName[x]);
+        			if(typeof(val) !== 'undefined'){
+        				result[propertyName[x]] = val;
+        			}
+        		}
+        		
+        		return result;
+        		
+        	} else {
+        	
+        		var validProperties = ["id", "subtitle", "subtitleid", "title", "titleid", "latitude", "longitude", "draggable", "image", "pincolor", "customView", "leftButton", "leftView", "rightButton", "rightView", "showInfoWindow", "visible"];
 
-            var validProperties = ["id", "subtitle", "subtitleid", "title", "titleid", "latitude", "longitude", "draggable", "image", "pincolor", "customView", "leftButton", "leftView", "rightButton", "rightView", "showInfoWindow", "visible"];
-
-            if (validProperties.indexOf(propertyName) >= 0) {
-                return getSetProperty("annotation", annotationId, propertyName);
-            } else {
-                //TODO: Error Getter method not found
-                return;
-            }
+	            if (validProperties.indexOf(propertyName) >= 0) {
+	                return getSetProperty("annotation", annotationId, propertyName);
+	            } else {
+	                //TODO: Error Getter method not found
+	                return;
+	            }
+        		
+        	}
+        
+            
         };
 
         /**
@@ -991,19 +1037,36 @@ var Map = ( function() {
         /**
          * Gets the value of a property of a route.
          * @param {routeId} The route id.
-         * @param {propertyName} String with the name of the property.
-         * @return {Object} The value of the property.
+         * @param {propertyName} String with the name of the property or array with a list of properties.
+         * @return {Object} The value of the property or an object with the properties and values requested in the property list.
          */
         _self.getRouteProperty = function(routeId, propertyName) {
+        	
+        	if(propertyName instanceof Array){
+        		
+        		var result = {};
+        		
+        		for(var x = 0; x < propertyName.length; x++){
+        			var val = _self.getRouteProperty(routeId, propertyName[x]);
+        			if(typeof(val) !== 'undefined'){
+        				result[propertyName[x]] = val;
+        			}
+        		}
+        		
+        		return result;
+        		
+        	} else {
+        		
+        		var validProperties = ["id", "points", "width", "color"];
 
-            var validProperties = ["id", "points", "width", "color"];
-
-            if (validProperties.indexOf(propertyName) >= 0) {
-                return getSetProperty("route", routeId, propertyName);
-            } else {
-                //TODO: Error Getter method not found
-                return;
-            }
+	            if (validProperties.indexOf(propertyName) >= 0) {
+	                return getSetProperty("route", routeId, propertyName);
+	            } else {
+	                //TODO: Error Getter method not found
+	                return;
+	            }
+        		
+        	}
 
         };
 
@@ -1087,30 +1150,47 @@ var Map = ( function() {
         /**
          * Gets the value of a property of a polygon.
          * @param {polygonId} The polygon id.
-         * @param {propertyName} String with the name of the property.
-         * @return {Object} The value of the property.
+         * @param {propertyName} String with the name of the property or array with a list of properties.
+         * @return {Object} The value of the property or an object with the properties and values requested in the property list.
          */
         _self.getPolygonProperty = function(polygonId, propertyName) {
+        	
+        	if(propertyName instanceof Array){
+        		
+        		var result = {};
+        		
+        		for(var x = 0; x < propertyName.length; x++){
+        			var val = _self.getPolygonProperty(polygonId, propertyName[x]);
+        			if(typeof(val) !== 'undefined'){
+        				result[propertyName[x]] = val;
+        			}
+        		}
+        		
+        		return result;
+        		
+        	} else {
+        		
+        		var validProperties = ["id", "points", "holePoints", "strokeWidth", "strokeColor", "fillColor", "annotationId", "zIndex"];
 
-            var validProperties = ["id", "points", "holePoints", "strokeWidth", "strokeColor", "fillColor", "annotationId", "zIndex"];
-
-            if (validProperties.indexOf(propertyName) >= 0) {
-
-                if (propertyName === "annotationId") {//Special case, this is a "virtual" method
-                    var annotation = getSetProperty("polygon", polygonId, "annotation");
-                    if (annotation != null) {
-                        return annotation.getId();
-                    } else {
-                        return null;
-                    }
-                } else {
-                    return getSetProperty("polygon", polygonId, propertyName);
-                }
-
-            } else {
-                //TODO: Error Getter method not found
-                return;
-            }
+	            if (validProperties.indexOf(propertyName) >= 0) {
+	
+	                if (propertyName === "annotationId") {//Special case, this is a "virtual" method
+	                    var annotation = getSetProperty("polygon", polygonId, "annotation");
+	                    if (annotation != null) {
+	                        return annotation.getId();
+	                    } else {
+	                        return null;
+	                    }
+	                } else {
+	                    return getSetProperty("polygon", polygonId, propertyName);
+	                }
+	
+	            } else {
+	                //TODO: Error Getter method not found
+	                return;
+	            }	
+        			
+        	}
 
         };
 
@@ -1276,19 +1356,37 @@ var Map = ( function() {
         /**
          * Gets the value of a property of a layer.
          * @param {layerId} The layer id.
-         * @param {propertyName} String with the name of the property.
-         * @return {Object} The value of the property.
+         * @param {propertyName} String with the name of the property or array with a list of properties.
+         * @return {Object} The value of the property or an object with the properties and values requested in the property list.
          */
         _self.getLayerProperty = function(layerId, propertyName) {
+        	
+        	if(propertyName instanceof Array){
+        		
+        		var result = {};
+        		
+        		for(var x = 0; x < propertyName.length; x++){
+        			var val = _self.getLayerProperty(layerId, propertyName[x]);
+        			if(typeof(val) !== 'undefined'){
+        				result[propertyName[x]] = val;
+        			}
+        		}
+        		
+        		return result;
+        		
+        	} else {
+        		
+        		var validProperties = ["id", "baseUrl", "type", "name", "srs", "visible", "zIndex", "opacity", "format", "style", "tyleMatrixSet"];
 
-            var validProperties = ["id", "baseUrl", "type", "name", "srs", "visible", "zIndex", "opacity", "format", "style", "tyleMatrixSet"];
+	            if (validProperties.indexOf(propertyName) >= 0) {
+	                return getSetProperty("layer", layerId, propertyName);
+	            } else {
+	                //TODO: Error Getter method not found
+	                return;
+	            }
+        		
+        	}
 
-            if (validProperties.indexOf(propertyName) >= 0) {
-                return getSetProperty("layer", layerId, propertyName);
-            } else {
-                //TODO: Error Getter method not found
-                return;
-            }
         };
 
         /**
