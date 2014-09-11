@@ -34,6 +34,7 @@ var API = (function() {
     self.HW.Network = require('lib/API.Network')(self);
     self.SW.FileSystem = require('lib/API.FileSystem');
     self.SW.Contacts = require('lib/API.Contacts')(self);
+    self.SW.Utils = require('lib/API.Utils')(self);
     self.HW.Media = require('lib/API.Media')(self);
     self.SW.Notification = require('lib/API.Notification')(self);
     self.SW.Calendar = '';
