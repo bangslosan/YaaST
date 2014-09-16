@@ -72,7 +72,7 @@ var Map = ( function() {
             });
         };
         Ti.App.addEventListener("API_MAP_EDIT_EVENT", function(data) {
-
+			Ti.API.info("En Titanium, API_MAP_EDIT_EVENT recibido");
             //TODO: check events?
 
             var element = getElement(data.elementType, data.elementId);
@@ -80,21 +80,31 @@ var Map = ( function() {
                 return;
 
             if (data.action === "add") {
-                if (handlers[data.elementId] == null) {
-                    handlers[data.elementId] = {
+                if (handlers[data.elementId] == null || handlers[data.elementId][data.event] == null) {
+                	if(handlers[data.elementId] == null){
+                		handlers[data.elementId] = {};
+                	}
+                    handlers[data.elementId][data.event] = {
                         count : 1,
                         handler : eventHandler.bind(null, data.event, data.elementType, data.elementId)
                     };
-                    element.addEventListener(data.event, handlers[data.elementId].handler);
+                    element.addEventListener(data.event, handlers[data.elementId][data.event].handler);
+                    Ti.API.info("En Titanium, API_MAP_EDIT_EVENT, addEventListener ejecutado para evento " + data.event);
                 } else
-                    handlers[data.elementId].count++;
+                    handlers[data.elementId][data.event].count++;
             } else if (data.action === "remove") {
 
-                if (handlers[data.elementId] != null) {
-                    if (--handlers[data.elementId].count <= 0) {
-                        element.removeEventListener(data.event, handlers[data.elementId].handler);
-                        handlers[data.elementId].handler = null;
-                        delete handlers[data.elementId];
+                if (handlers[data.elementId] != null && handlers[data.elementId][data.event] != null) {
+                    if (--handlers[data.elementId][data.event].count <= 0) {
+                        element.removeEventListener(data.event, handlers[data.elementId][data.event].handler);
+                        handlers[data.elementId][data.event].handler = null;
+                        delete handlers[data.elementId][data.event];
+                        
+                        var count = 0;
+                        for(var a in handlers[data.elementId]) 
+                        	count++;
+                    	if(count === 0)
+                    		delete handlers[data.elementId];
                     }
                 }
             }

@@ -706,7 +706,7 @@
 						 	 * @param {Object} layer  A layer object or the constant of a Google Layer.
 						     */
 							this.setBaseLayer = function(layer){
-								_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setBaseLayer', [this.id, layer.id]);
+								_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setBaseLayer', [this.id, (layer.id != null ? layer.id : layer)]);
 							};
 							
 							
