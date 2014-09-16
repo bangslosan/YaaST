@@ -438,8 +438,8 @@
 							 * @param {String} The id of the view.
 							 * @param {Object} Options. Top, left, right, bottom, height, width.
 							 */
-							this.addBound = function(viewId, options){
-								_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.addBound', [this.id, viewId], options);
+							this.addBound = function(options){
+								_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.addBound', [this.id, id], options);
 							};
 							
 							
