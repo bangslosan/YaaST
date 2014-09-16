@@ -493,7 +493,7 @@ var Map = ( function() {
                 return false;
             }
 
-            Ti.App.tabView.add(mapsList[mapsId]);
+            Yaast.Sandbox.tabView.add(mapsList[mapsId]);
             _self.setBound(mapId, viewId, options);
         };
 
@@ -510,24 +510,24 @@ var Map = ( function() {
                 return false;
             }
             if ( typeof options.width === 'undefined' || typeof options.height === 'undefined') {
-                options.width = parseInt(Ti.App.tabView.rect.width * 0.7);
-                options.height = parseInt(Ti.App.tabView.rect.height * 0.5);
+                options.width = parseInt(Yaast.Sandbox.tabView.rect.width * 0.7);
+                options.height = parseInt(Yaast.Sandbox.tabView.rect.height * 0.5);
                 options.top = 'undefined';
                 options.left = 'undefined';
             } else {
                 // Position
                 if ( typeof options.top !== 'undefined' || typeof options.bottom !== 'undefined') {
                     if ( typeof options.bottom === 'undefined') {
-                        options.top = parseInt(options.top + Ti.App.componentPos[viewId].top);
+                        options.top = parseInt(options.top + Yaast.Sandbox.componentPos[viewId].top);
                     } else {
-                        options.top = parseInt(Ti.App.componentPos[viewId].top + (Ti.App.componentPos[viewId].height - options.bottom));
+                        options.top = parseInt(Yaast.Sandbox.componentPos[viewId].top + (Yaast.Sandbox.componentPos[viewId].height - options.bottom));
                     }
                 }
                 if ( typeof options.left !== 'undefined' || typeof options.right !== 'undefined') {
                     if ( typeof options.right === 'undefined') {
-                        options.left = parseInt(options.left + Ti.App.componentPos[viewId].left);
+                        options.left = parseInt(options.left + Yaast.Sandbox.componentPos[viewId].left);
                     } else {
-                        options.left = parseInt(Ti.App.componentPos[viewId].left + (Ti.App.componentPos[viewId].width - options.right));
+                        options.left = parseInt(Yaast.Sandbox.componentPos[viewId].left + (Yaast.Sandbox.componentPos[viewId].width - options.right));
                     }
                 }
             }
@@ -544,7 +544,7 @@ var Map = ( function() {
          * @param {mapId} Map in which execute the action.
          */
         _self.removeBound = function removeBound(mapId) {
-            Ti.App.tabView.remove(mapsList[mapId]);
+            Yaast.Sandbox.tabView.remove(mapsList[mapId]);
         };
 
         /**
