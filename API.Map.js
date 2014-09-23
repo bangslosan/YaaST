@@ -72,7 +72,6 @@ var Map = ( function() {
             });
         };
         Ti.App.addEventListener("API_MAP_EDIT_EVENT", function(data) {
-			Ti.API.info("En Titanium, API_MAP_EDIT_EVENT recibido");
             //TODO: check events?
 
             var element = getElement(data.elementType, data.elementId);
@@ -89,7 +88,6 @@ var Map = ( function() {
                         handler : eventHandler.bind(null, data.event, data.elementType, data.elementId)
                     };
                     element.addEventListener(data.event, handlers[data.elementId][data.event].handler);
-                    Ti.API.info("En Titanium, API_MAP_EDIT_EVENT, addEventListener ejecutado para evento " + data.event);
                 } else
                     handlers[data.elementId][data.event].count++;
             } else if (data.action === "remove") {
@@ -234,9 +232,9 @@ var Map = ( function() {
 
             var annotation = null;
 
+			//Search now between the polygon annotations added to the maps
             for (var mapId in mapsList) {
 
-                //Search now between the polygon annotations
                 var polygons = mapsList[mapId].getPolygons();
                 for (var polyId in polygons) {
                     var poly = polygons[polyId];
@@ -645,7 +643,7 @@ var Map = ( function() {
 	                return ids;
 	
 	            } else {
-	                Ti.API.info("Error Getter method not found");
+	                Ti.API.info("[API.Map.getMapProperty] Error Getter method not found");
 	                return;
 	            }
         		
@@ -792,19 +790,11 @@ var Map = ( function() {
         _self.selectAnnotation = function selectAnnotation(mapId, annoId) {
 
             if ( typeof mapsList[mapId] === 'undefined') {
-                Ti.API.info("Error: Unknown Map Id");
+                Ti.API.info("[API.Map.selectAnnotation] Error: Unknown Map Id");
                 return;
             }
 
-            var annotation = getElement("annotation", annoId);
-
-            if (annotation == null) {
-                Ti.API.info("Error: Unknown Annotation Id on Map Id");
-                return;
-            }
-
-            mapsList[mapId].selectAnnotation(annotation);
-            annotation = null;
+            mapsList[mapId].selectAnnotation(annoId);
 
         };
 
@@ -819,15 +809,7 @@ var Map = ( function() {
                 return;
             }
 
-            var annotation = getElement("annotation", annoId);
-
-            if (annotation == null) {
-                Ti.API.info("Error: Unknown Annotation Id on Map Id");
-                return;
-            }
-
-            mapsList[mapId].deselectAnnotation(annotation);
-            annotation = null;
+            mapsList[mapId].deselectAnnotation(annoId);
 
         };
 
@@ -843,15 +825,8 @@ var Map = ( function() {
                 return;
             }
 
-            var annotation = getElement("annotation", annoId);
+            mapsList[mapId].removeAnnotation(annoId);
 
-            if (annotation == null) {
-                Ti.API.info("Error: Unknown Annotation Id on Map Id");
-                return;
-            } else {
-                mapsList[mapId].removeAnnotation(annotation);
-                annotation = null;
-            }
         };
 
         /**
@@ -868,12 +843,7 @@ var Map = ( function() {
 
             while (annotations.length > 0) {
                 var annId = annotations.pop();
-                var annotation = getElement("annotation", annId);
-                if (annotation != null) {
-                    annonToRemove.push(annotation);
-                } else {
-                    //TODO: Warning Unknown Annotation Id
-                }
+                annonToRemove.push(annId);
             }
             mapsList[mapId].removeAnnotations(annonToRemove);
             annon = null;
@@ -1021,15 +991,7 @@ var Map = ( function() {
                 return;
             }
 
-            var route = getElement("route", routeId);
-
-            if (route == null) {
-                //TODO: Error Unknown Annotation Id on Map Id
-                return;
-            } else {
-                mapsList[mapId].removeRoute(route);
-                route = null;
-            }
+            mapsList[mapId].removeRoute(routeId);
         };
 
         /**
@@ -1105,7 +1067,9 @@ var Map = ( function() {
         /**
          * Add a polygon to a map.
          * @param {mapId} The id of the map.
-         * @param {polygonId} The id of the polygon.
+         * @param {polygonId} The id of the polygon. If it has the  annotation property defined, the annotation will be added to the map.<br>
+	 	 * 					If that annotation does not have its latitude or longitude defined, its location will be set at the centroid of the polygon.<br>
+	 	 * 					If that annotation does not have the property visible defined, its will be set as false by default.
          */
         _self.addPolygon = function addPolygon(mapId, polygonId) {
             if ( typeof mapsList[mapId] === 'undefined') {
@@ -1119,6 +1083,10 @@ var Map = ( function() {
             }
 
             mapsList[mapId].addPolygon(freeElements["polygons"][polygonId]);
+            var annotation = freeElements["polygons"][polygonId].getAnnotation();
+            if(annotation != null){
+            	delete freeElements["annotations"][annotation.getId()];
+            }
             delete freeElements["polygons"][polygonId];
 
         };
@@ -1134,15 +1102,7 @@ var Map = ( function() {
                 return;
             }
 
-            var polygon = getElement("polygon", polygonId);
-
-            if (polygon == null) {
-                //TODO: Error Unknown Annotation Id on Map Id
-                return;
-            } else {
-                mapsList[mapId].removePolygon(polygon);
-                polygon = null;
-            }
+            mapsList[mapId].removePolygon(polygonId);
         };
 
         /**
@@ -1180,11 +1140,11 @@ var Map = ( function() {
         		
         	} else {
         		
-        		var validProperties = ["id", "points", "holePoints", "strokeWidth", "strokeColor", "fillColor", "annotationId", "zIndex"];
+        		var validProperties = ["id", "points", "holePoints", "strokeWidth", "strokeColor", "fillColor", "annotation", "zIndex"];
 
 	            if (validProperties.indexOf(propertyName) >= 0) {
 	
-	                if (propertyName === "annotationId") {//Special case, this is a "virtual" method
+	                if (propertyName === "annotation") {//Special case, this is a "virtual" method
 	                    var annotation = getSetProperty("polygon", polygonId, "annotation");
 	                    if (annotation != null) {
 	                        return annotation.getId();
@@ -1215,7 +1175,13 @@ var Map = ( function() {
             var validProperties = ["points", "holePoints", "strokeWidth", "strokeColor", "fillColor", "annotation", "zIndex"];
 
             if (validProperties.indexOf(propertyName) >= 0) {
-                getSetProperty("polygon", polygonId, propertyName, propertyValue);
+            	if(propertyName === 'annotation'){
+            		var annotation = getElement("annotation", propertyValue);
+            		getSetProperty("polygon", polygonId, propertyName, annotation);
+            	} else {
+            		getSetProperty("polygon", polygonId, propertyName, propertyValue);
+            	}
+                
             } else {
                 //TODO: Error Setter method not found
                 return;
@@ -1296,15 +1262,7 @@ var Map = ( function() {
                 return;
             }
 
-            var layer = getElement("layer", layerId);
-
-            if (layer == null) {
-                //TODO: Error Unknown Annotation Id on Map Id
-                return;
-            } else {
-                mapsList[mapId].removeLayer(layer);
-                layer = null;
-            }
+            mapsList[mapId].removeLayer(layerId);
         };
 
         /**

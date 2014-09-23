@@ -812,7 +812,7 @@
 						     * @param {callback} Callback function to invoke with the hashmap of properties and values.
 						     */
 							this.getAllProperties = function(callback){
-								this.getProperty(["id", "points", "holePoints", "strokeWidth", "strokeColor", "fillColor", "annotationId", "zIndex"], callback);
+								this.getProperty(["id", "points", "holePoints", "strokeWidth", "strokeColor", "fillColor", "annotation", "zIndex"], callback);
 							};
 							
 							
