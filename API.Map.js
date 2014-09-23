@@ -403,6 +403,13 @@ var Map = ( function() {
                 }
             } else
                 delete options.id;
+                
+            if(options.annotation != null){
+            	var annotation = getElement("annotation", options.annotation);
+            	if(annotation != null){
+            		options.annotation = annotation;
+            	}
+            }
 
             var polygon = _self.Map.createPolygon(options);
             var id = polygon.getId();
