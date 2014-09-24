@@ -254,7 +254,8 @@ var Map = ( function() {
 
             var result = {
                 "polygons" : [],
-                "routes" : []
+                "routes" : [],
+                "annotations": []
             };
 
             for (var x in obj.polygons) {
@@ -266,6 +267,11 @@ var Map = ( function() {
                 var id = obj.routes[x].getId();
                 freeElements["routes"][id] = obj.routes[x];
                 result.routes.push(id);
+            }
+            for (var x in obj.annotations) {
+                var id = obj.annotations[x].getId();
+                freeElements["annotations"][id] = obj.annotations[x];
+                result.annotations.push(id);
             }
 
             return result;
