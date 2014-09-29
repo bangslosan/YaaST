@@ -25,7 +25,7 @@ var UI = function (APIReferences) {
     /** Get Screen Type of Android Device
      * @method
      * @return {String} */
-    _self.getDensityScreen = function getDensityScreen() {
+    _self.getScreenDensity = function getScreenDensity() {
 		return Ti.Platform.displayCaps.getDensity();
     };
 
@@ -38,7 +38,7 @@ var UI = function (APIReferences) {
 		} else if(Yaast.API.HW.System.isApple()) {
       		return 44;
       	} else {
-  			var density = _self.getDensityScreen();
+  			var density = _self.getScreenDensity();
 			if(density === 'low') return 33;
 			else if(density === 'medium') return 44;
 			else if(density === 'high') return 72;
@@ -57,7 +57,7 @@ var UI = function (APIReferences) {
 		} else if(Yaast.API.HW.System.isApple()) {
 			return 30;
 		} else {
-			var density = _self.getDensityScreen();
+			var density = _self.getScreenDensity();
 			if(density === 'low') return 33;
 			else if(density === 'medium') return 30;
 			else if(density === 'high') return 45;
@@ -76,7 +76,7 @@ var UI = function (APIReferences) {
 		} else if(Yaast.API.HW.System.isApple()) {
 			return 7;
 		} else {
-			var density = _self.getDensityScreen();
+			var density = _self.getScreenDensity();
 			if(density === 'low') return 33;
 			else if(density === 'medium') return 7;
 			else if(density === 'high') return 10.5;
