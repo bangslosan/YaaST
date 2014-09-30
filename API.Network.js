@@ -119,6 +119,9 @@
  *   getNetwork
  *      Return {String} Network Name ["NONE", "WIFI", "LAN", "MOBILE", "UNKNOWN"]
  *
+ *   getIpAddress
+ * 		Return {String} System's WIFI IP address or null. No other network types are supported.
+ * 
  *   isOnline
  *      Return {Boolean} Network Status
  *
@@ -597,6 +600,16 @@ var Network = function (APIReferences) {
      *  @result {Boolean} state */
     _self.isOnline = function isOnline(){
         return Ti.Network.getOnline();
+    };
+
+    /** Get System's WIFI IP address. No other network types are supported.
+     *  @result {String} Ip Address or null */
+    _self.getIpAddress = function getIpAddress(){
+    	if (_self.getNetwork() === 'WIFI') {
+        	return Ti.Platform.getAddress();
+		} else {
+			return null;
+		}
     };
 
     /** Events Listeners of Network */
