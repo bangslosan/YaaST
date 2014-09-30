@@ -130,6 +130,25 @@ var System = (function() {
         return Ti.Platform.getLocale();
     };
 
+    /** Get app ID.
+     * @method
+     * @return {String}  Applications's globally-unique ID (UUID).
+     * On Android, this may be the UDID (unique device ID). For iOS,
+     * this is a unique identifier for this install of the application.*/
+    _self.getAppId = function getAppId() {
+        return Ti.Platform.getId();
+    };
+
+    /** Get Mac Adress.
+     * @method
+     * @return {String}  Applications's globally-unique ID (UUID).
+     * On iOS, this value is the app's UUID. Apple does not allow
+     * access to any hardware identifier information as it can be
+     * used for unique device identification, which they have prohibited.*/
+	_self.getMacAddress = function getMacAddress() {
+		return Ti.Platform.getMacaddress();
+	};
+
     return _self;
 
 }());
