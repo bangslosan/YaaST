@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: API.Map.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: API.Map.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
  * Titanium Appcelerator 3.3.0GA
  * Licensed under the terms of the Apache Public License
@@ -97,8 +125,8 @@ var Map = ( function() {
                 handlers[data.elementId][data.event].count++;
         } else if (data.action === "remove") {
 
-            if (handlers[data.elementId] != null && handlers[data.elementId][data.event] != null) {
-                if (--handlers[data.elementId][data.event].count <= 0) {
+            if (handlers[data.elementId] != null &amp;&amp; handlers[data.elementId][data.event] != null) {
+                if (--handlers[data.elementId][data.event].count &lt;= 0) {
                     element.removeEventListener(data.event, handlers[data.elementId][data.event].handler);
                     handlers[data.elementId][data.event].handler = null;
                     delete handlers[data.elementId][data.event];
@@ -213,7 +241,7 @@ var Map = ( function() {
         }
 
         // If not found and is an annotation, search between the polygon annotations
-        if (element == null && elementType === "annotation") {
+        if (element == null &amp;&amp; elementType === "annotation") {
             element = getAnnotationFromPolygons(elementId);
         }
 
@@ -243,7 +271,7 @@ var Map = ( function() {
             var polygons = mapsList[mapId].getPolygons();
             for (var polyId in polygons) {
                 var poly = polygons[polyId];
-                if (poly.annotation != null && poly.annotation.getId() == annoId) {
+                if (poly.annotation != null &amp;&amp; poly.annotation.getId() == annoId) {
                     return poly.annotation;
                 }
             }
@@ -580,13 +608,13 @@ var Map = ( function() {
      * @memberof API.Map
      * @alias createPolygon
      * @param {object} options 
-     *      - id: optional. Must be unique.<br>
-     *      - points: Array of points [{latitude: Number, longitude: Number}, ...]<br>
-     *      - holePoints: Array with holes. A hole is an array of points.<br>
-     *      - fillColor: Color<br>
-     *      - strokeColor: Color<br>
-     *      - strokeWidth: Number<br>
-     *      - annotation: String Id of an Annotation.<br>
+     *      - id: optional. Must be unique.&lt;br>
+     *      - points: Array of points [{latitude: Number, longitude: Number}, ...]&lt;br>
+     *      - holePoints: Array with holes. A hole is an array of points.&lt;br>
+     *      - fillColor: Color&lt;br>
+     *      - strokeColor: Color&lt;br>
+     *      - strokeWidth: Number&lt;br>
+     *      - annotation: String Id of an Annotation.&lt;br>
      *
      * @return {string} Id of the polygon to be used in the methods of this API.
      */
@@ -621,15 +649,15 @@ var Map = ( function() {
      * @memberof API.Map
      * @alias createLayer
      * @param {object} options 
-     *      - id: optional. Must be unique.<br>
-     *      - baseUrl: String with the url of the service<br>
-     *      - type: Type of service ({@link API.Map.LAYER_TYPE_WMS_1_1_1} | {@link API.Map.LAYER_TYPE_WMS_1_3_0})<br>
-     *      - name: String with the name of the layer.<br>
-     *      - srs: String with the srs of the layer.<br>
-     *      - visible: Boolean<br>
-     *      - zIndex: Number ZIndex of the layer.<br>
-     *      - opacity: Number Percentage of opacity [0 - 100].<br>
-     *      - format: Type of image of the tiles ({@link API.Map.FORMAT_PNG} | {@link API.Map.FORMAT_JPEG})<br>
+     *      - id: optional. Must be unique.&lt;br>
+     *      - baseUrl: String with the url of the service&lt;br>
+     *      - type: Type of service ({@link API.Map.LAYER_TYPE_WMS_1_1_1} | {@link API.Map.LAYER_TYPE_WMS_1_3_0})&lt;br>
+     *      - name: String with the name of the layer.&lt;br>
+     *      - srs: String with the srs of the layer.&lt;br>
+     *      - visible: Boolean&lt;br>
+     *      - zIndex: Number ZIndex of the layer.&lt;br>
+     *      - opacity: Number Percentage of opacity [0 - 100].&lt;br>
+     *      - format: Type of image of the tiles ({@link API.Map.FORMAT_PNG} | {@link API.Map.FORMAT_JPEG})&lt;br>
      *
      * @return {string} Id of the layer to be used in the methods of this API.
      */
@@ -805,7 +833,7 @@ var Map = ( function() {
      * @param {boolean} followLocation True if the map camera must follow the location of the device.
      * @param {boolean} followBearing True if the map camera must follow the bearing of the device.
      * @param {object} options
-     *      - interval: LocationRequest desired interval in milliseconds. Must be > 0; otherwise, default value is 1000.<br>
+     *      - interval: LocationRequest desired interval in milliseconds. Must be > 0; otherwise, default value is 1000.&lt;br>
      *      - priority: LocationRequest priority ({@link API.Map.PRIORITY_BALANCED_POWER_ACCURACY}, {@link API.Map.PRIORITY_HIGH_ACCURACY}, 
      * 					{@link API.Map.PRIORITY_LOW_POWER}, {@link API.Map.PRIORITY_NO_POWER}, {@link API.Map.PRIORITY_UNDEFINED}).
      */
@@ -845,7 +873,7 @@ var Map = ( function() {
     		
     		var result = {};
     		
-    		for(var x = 0; x < propertyName.length; x++){
+    		for(var x = 0; x &lt; propertyName.length; x++){
     			var val = _self.getMapProperty(mapId, propertyName[x]);
     			if(typeof(val) !== 'undefined'){
     				result[propertyName[x]] = val;
@@ -1129,7 +1157,7 @@ var Map = ( function() {
     		
     		var result = {};
     		
-    		for(var x = 0; x < propertyName.length; x++){
+    		for(var x = 0; x &lt; propertyName.length; x++){
     			var val = _self.getAnnotationProperty(annotationId, propertyName[x]);
     			if(typeof(val) !== 'undefined'){
     				result[propertyName[x]] = val;
@@ -1287,7 +1315,7 @@ var Map = ( function() {
     		
     		var result = {};
     		
-    		for(var x = 0; x < propertyName.length; x++){
+    		for(var x = 0; x &lt; propertyName.length; x++){
     			var val = _self.getRouteProperty(routeId, propertyName[x]);
     			if(typeof(val) !== 'undefined'){
     				result[propertyName[x]] = val;
@@ -1340,8 +1368,8 @@ var Map = ( function() {
      * @memberof API.Map
      * @alias addPolygon
      * @param {string} mapId The id of the map.
-     * @param {string} polygonId The id of the polygon. If it has the  annotation property defined, the annotation will be added to the map.<br>
- 	 * 					If that annotation does not have its latitude or longitude defined, its location will be set at the centroid of the polygon.<br>
+     * @param {string} polygonId The id of the polygon. If it has the  annotation property defined, the annotation will be added to the map.&lt;br>
+ 	 * 					If that annotation does not have its latitude or longitude defined, its location will be set at the centroid of the polygon.&lt;br>
  	 * 					If that annotation does not have the property visible defined, its will be set as false by default.
      */
     _self.addPolygon = function addPolygon(mapId, polygonId) {
@@ -1408,7 +1436,7 @@ var Map = ( function() {
     		
     		var result = {};
     		
-    		for(var x = 0; x < propertyName.length; x++){
+    		for(var x = 0; x &lt; propertyName.length; x++){
     			var val = _self.getPolygonProperty(polygonId, propertyName[x]);
     			if(typeof(val) !== 'undefined'){
     				result[propertyName[x]] = val;
@@ -1630,7 +1658,7 @@ var Map = ( function() {
     		
     		var result = {};
     		
-    		for(var x = 0; x < propertyName.length; x++){
+    		for(var x = 0; x &lt; propertyName.length; x++){
     			var val = _self.getLayerProperty(layerId, propertyName[x]);
     			if(typeof(val) !== 'undefined'){
     				result[propertyName[x]] = val;
@@ -1679,3 +1707,26 @@ var Map = ( function() {
 }());
 
 module.exports = Map;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="API.html">API</a></li><li><a href="API.Map.html">Map</a></li></ul><h3>Namespaces</h3><ul></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Tue Sep 30 2014 10:53:06 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

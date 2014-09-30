@@ -1,0 +1,6 @@
+Documentation is generated with JsDoc (http://usejsdoc.org/index.html)
+
+To generate the documentation of the API:
+jsdoc -d <doc_destination> <js_files...>
+Example:
+jsdoc -d .\doc\API .\API.js .\API.Map.js
