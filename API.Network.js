@@ -150,6 +150,16 @@ var Network = function (APIReferences) {
     typeServer = 'wirecloud',
     tim = 90000;
 
+	_self.setMainUrl = function setMainUrl(url) {
+		// TODO check
+		mainURL = url;
+	};
+	
+	_self.setLoginUrl = function setLoginUrl(url) {
+		// TODO check
+		loginURL = url;
+	};
+
     /** Private function to connect Wirecloud
      *  @param {Object} data: username, password, cookie
      *  @param {Function} callback */
