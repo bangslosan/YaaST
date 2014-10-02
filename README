@@ -1,6 +1,23 @@
 Documentation is generated with JsDoc (http://usejsdoc.org/index.html)
 
+
+**** Generate documentation ****
 To generate the documentation of the API:
 jsdoc -d <doc_destination> <js_files...>
 Example:
 jsdoc -d .\doc\API .\API.js .\API.Map.js
+
+
+**** Run JsDoc from Eclipse ****
+You can run jsdoc_toolkit from within eclipse or Aptana by setting up Run -> External Tools -> Open External Tools Dialog...
+
+Location
+C:\DirectoryToWhereJavaIsLocated\Java\jre1.6.0_07\bin\java.exe
+
+Working Directory
+C:\DirectoryToWhereJsDocToolkitIsLocated\jsdoc-toolkit
+
+Arguments
+-jar jsrun.jar app\run.js "C:\PathToSourceFiles" -t=templates\jsdoc -d="C:\PathToOutputDirectory"
+
+Note: You need to enclose the paths in quotes if they contain spaces (at least on windows) 
