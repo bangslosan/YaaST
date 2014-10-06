@@ -29,6 +29,32 @@ var UI = function (APIReferences) {
 		return Ti.Platform.displayCaps.getDensity();
     };
 
+	_self.DEFAULT_FONT_SIZE = 20;
+	
+    /** Set Font Size Constanst.
+     * @method
+     * @return {Number} */
+    _self.setFontSizes = function setFontSizes() {
+		if (Yaast.API.HW.System.isRetina()) {
+			//return 34;
+			_self.DEFAULT_FONT_SIZE = 34;
+		} else if(Yaast.API.HW.System.isApple()) {
+      		//return 17;
+      		_self.DEFAULT_FONT_SIZE = 17;
+      	} else {
+      		//return Ti.Platform.displayCaps.logicalDensityFactor * 20;
+      		_self.DEFAULT_FONT_SIZE = Ti.Platform.displayCaps.logicalDensityFactor * 20;
+		}
+    };
+    _self.setFontSizes();
+
+    /** Get default font Size.
+     * @method
+     * @return {Number} */
+	_self.getDefaultFontSize = function getDefaultFontSize() {
+		return _self.DEFAULT_FONT_SIZE;
+	};
+
     /** Get constant Row Height on Android or iOS Table.
      * @method
      * @return {Number} */
@@ -38,13 +64,14 @@ var UI = function (APIReferences) {
 		} else if(Yaast.API.HW.System.isApple()) {
       		return 44;
       	} else {
-  			var density = _self.getScreenDensity();
+      		return Ti.Platform.displayCaps.logicalDensityFactor * 44;
+  			/*var density = _self.getScreenDensity();
 			if(density === 'low') return 33;
 			else if(density === 'medium') return 44;
 			else if(density === 'high') return 72;
 			else if(density === 'xhigh') return 96;
 			else if(density === 'xxhigh') return 144;
-			else if(density === 'xxxhigh') return 192;
+			else if(density === 'xxxhigh') return 192;*/
 		}
     };
 
