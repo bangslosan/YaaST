@@ -780,22 +780,6 @@ var Map = ( function() {
 
     };
 
-    /**
-     * Changes the location of the map.
-     * @memberof API.Map
-     * @alias setLocation
-     * @param {string} mapId Map
-     * @param {object} location See {@link http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.View-method-setLocation}
-     */
-    _self.setLocation = function setLocation(mapId, location) {//TODO: move to setProperty??
-        if ( typeof mapsList[mapId] === 'undefined') {
-            //TODO: Error Unknown Map Id
-            return;
-        }
-
-        mapsList[mapId].setLocation(location);
-
-    };
 
     /**
      * Set how the map should follow the location of the device.
@@ -889,7 +873,7 @@ var Map = ( function() {
      */
     _self.setMapProperty = function(mapId, propertyName, propertyValue) {
 
-        var validProperties = ["userLocation", "userLocationButton", "mapType", "region", "animate", "traffic", "enableZoomControls", "rect", "region"];
+        var validProperties = ["userLocation", "userLocationButton", "mapType", "region", "animate", "traffic", "enableZoomControls", "rect"];
 
         if (validProperties.indexOf(propertyName) >= 0) {
             return getSetProperty("map", mapId, propertyName, propertyValue);
@@ -1258,6 +1242,30 @@ var Map = ( function() {
 
         mapsList[mapId].removeRoute(routeId);
     };
+    
+    /**
+     * Removes multiple routes from a map.
+     * @memberof API.Map
+     * @alias removeRoutes
+     * @param {string} mapId The id of the map.
+     * @param {Array} routes Array with the ids of the routes.
+     */
+    _self.removeRoutes = function removeRoutes(mapId, routes) {
+        if ( typeof mapsList[mapId] === 'undefined') {
+            //TODO: Error Unknown Map Id
+            return;
+        }
+        var routesToRemove = [], i, j;
+
+        while (routes.length > 0) {
+            var routeId = routes.pop();
+            routesToRemove.push(routeId);
+        }
+        mapsList[mapId].removeRoutes(routesToRemove);
+        route = null;
+        routesToRemove = null;
+    };
+    
 
     /**
      * Removes all the routes from a map.
@@ -1379,6 +1387,30 @@ var Map = ( function() {
 
         mapsList[mapId].removePolygon(polygonId);
     };
+    
+    /**
+     * Removes multiple polygons from a map.
+     * @memberof API.Map
+     * @alias removePolygons
+     * @param {string} mapId The id of the map.
+     * @param {Array} polygons Array with the ids of the polygons.
+     */
+    _self.removePolygons = function removePolygons(mapId, polygons) {
+        if ( typeof mapsList[mapId] === 'undefined') {
+            //TODO: Error Unknown Map Id
+            return;
+        }
+        var polygonsToRemove = [], i, j;
+
+        while (polygons.length > 0) {
+            var polygonId = polygons.pop();
+            polygonsToRemove.push(polygonId);
+        }
+        mapsList[mapId].removePolygons(polygonsToRemove);
+        polygons = null;
+        polygonsToRemove = null;
+    };
+    
 
     /**
      * Removes all the polygons from a map.
@@ -1552,6 +1584,29 @@ var Map = ( function() {
         }
 
         mapsList[mapId].removeLayer(layerId);
+    };
+    
+    /**
+     * Removes multiple layers from a map.
+     * @memberof API.Map
+     * @alias removeLayers
+     * @param {string} mapId The id of the map.
+     * @param {Array} layers Array with the ids of the layers.
+     */
+    _self.removeLayers = function removeLayers(mapId, layers) {
+        if ( typeof mapsList[mapId] === 'undefined') {
+            //TODO: Error Unknown Map Id
+            return;
+        }
+        var layersToRemove = [], i, j;
+
+        while (layers.length > 0) {
+            var layerId = layers.pop();
+            layersToRemove.push(layerId);
+        }
+        mapsList[mapId].removeLayers(layersToRemove);
+        layers = null;
+        layersToRemove = null;
     };
 
     /**

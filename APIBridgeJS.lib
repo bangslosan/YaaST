@@ -683,20 +683,7 @@
 								_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.getShapesFromGeoJson', [this.id, delta]);
 							};
 							
-							
-							/**
-						     * Changes the location of the map.
-						     * @memberof Map.MapView
-     						 * @alias setLocation
-						     * @instance
-     						 * @public
-							 * @param {Object} location See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.View-method-setLocation
-						     */
-							this.setLocation = function(location){
-								_genericMethodHandler.call(this, voidCallback, 'API.SW.Map.setLocation', [this.id, location]);
-							};
-							
-							
+
 							/**
 							 * Set how the map should follow the location of the device.
 							 * @memberof Map.MapView
