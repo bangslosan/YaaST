@@ -579,13 +579,16 @@ var Network = function (APIReferences) {
             timeout: tim
         });
         client.open(data.options.method, data.url);
-        var enc = (!data.options.encoding) ? "charset=UTF-8" : "charset=" + data.options.encoding;
-        if (!data.options.contentType){
-            client.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; ' + enc);
-        }
-        else{
-            client.setRequestHeader("Content-Type", data.options.contentType + "; " + enc);
-        }
+        
+        if(data.options.contentType != 'multipart/form-data'){
+	        var enc = (!data.options.encoding) ? "charset=UTF-8" : "charset=" + data.options.encoding;
+	        if (!data.options.contentType){
+	            client.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; ' + enc);
+	        }
+	        else{
+	            client.setRequestHeader("Content-Type", data.options.contentType + "; " + enc);
+	        }
+       	}
         client.clearCookies(data.url);
         if (data.options.requestHeaders) {
             for (i in data.options.requestHeaders) {
@@ -593,7 +596,10 @@ var Network = function (APIReferences) {
             }
         }
         if (data.options.parameters && data.options.method !== 'GET') {
-            client.send(JSON.stringify(data.options.parameters));
+        	if(Yaast.API.HW.System.isApple())
+            	client.send(JSON.stringify(data.options.parameters));
+        	else
+            	client.send(data.options.parameters);	
         }
         else{
             client.send();
