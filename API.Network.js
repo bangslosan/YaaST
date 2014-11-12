@@ -574,7 +574,7 @@ var Network = function (APIReferences) {
                 callback(this);
             },
             onerror: function(e) {
-                callback(this);
+                callback(this, e);
             },
             timeout: tim
         });
