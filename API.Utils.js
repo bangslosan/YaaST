@@ -60,11 +60,13 @@ var Utils = function (APIReferences) {
             return obj1;
         } else if (Array.isArray(obj1)) {
             result = [];
-        } else {
+        } else if (typeof obj1 === 'object') {
             result = {};
+        } else {
+        	return obj1;
         }
         for (var key in obj1) {
-            result[key] = obj1[key];
+            result[key] = _self.clone(obj1[key]);
         }
         return result;
 	};
