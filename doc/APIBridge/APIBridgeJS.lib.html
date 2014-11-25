@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: APIBridgeJS.lib</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: APIBridgeJS.lib</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
  * Titanium Appcelerator 3.2.0GA
  * Licensed under the terms of the Apache Public License
@@ -473,14 +501,14 @@
 						 * @memberof Map
      					 * @alias createLayer
 						 * @param {options} 
-						 *      - baseUrl: String with the url of the service<br>
-					     *      - type: Type of service ({@link Map.LAYER_TYPE_WMS_1_1_1} | {@link Map.LAYER_TYPE_WMS_1_3_0})<br>
-					     *      - name: String with the name of the layer.<br>
-					     *      - srs: String with the srs of the layer.<br>
-					     *      - visible: Boolean<br>
-					     *      - zIndex: Number ZIndex of the layer.<br>
-					     *      - opacity: Number Percentage of opacity [0 - 100].<br>
-					     *      - format: Type of image of the tiles ({@link Map.FORMAT_PNG} | {@link Map.FORMAT_JPEG})<br>
+						 *      - baseUrl: String with the url of the service&lt;br>
+					     *      - type: Type of service ({@link Map.LAYER_TYPE_WMS_1_1_1} | {@link Map.LAYER_TYPE_WMS_1_3_0})&lt;br>
+					     *      - name: String with the name of the layer.&lt;br>
+					     *      - srs: String with the srs of the layer.&lt;br>
+					     *      - visible: Boolean&lt;br>
+					     *      - zIndex: Number ZIndex of the layer.&lt;br>
+					     *      - opacity: Number Percentage of opacity [0 - 100].&lt;br>
+					     *      - format: Type of image of the tiles ({@link Map.FORMAT_PNG} | {@link Map.FORMAT_JPEG})&lt;br>
 					     * @param {function} callback Function that receives a Layer object. 
 						 */
 						this.createLayer = function(options, callback){
@@ -497,13 +525,13 @@
 					     * @memberof Map
 					     * @alias createPolygon
 					     * @param {object} options 
-					     *      - id: optional. Must be unique.<br>
-					     *      - points: Array of points [{latitude: Number, longitude: Number}, ...]<br>
-					     *      - holePoints: Array with holes. A hole is an array of points.<br>
-					     *      - fillColor: Color<br>
-					     *      - strokeColor: Color<br>
-					     *      - strokeWidth: Number<br>
-					     *      - annotation: Annotation object.<br>
+					     *      - id: optional. Must be unique.&lt;br>
+					     *      - points: Array of points [{latitude: Number, longitude: Number}, ...]&lt;br>
+					     *      - holePoints: Array with holes. A hole is an array of points.&lt;br>
+					     *      - fillColor: Color&lt;br>
+					     *      - strokeColor: Color&lt;br>
+					     *      - strokeWidth: Number&lt;br>
+					     *      - annotation: Annotation object.&lt;br>
 					     *
 					     * @param {function} callback Function that receives a Polygon object. 
 					     */
@@ -576,7 +604,7 @@
 							var data = eventInfo.data;
 							var elementType = eventInfo.elementType;
 							
-							if(events[elementType] != null && events[elementType][event] != null && events[elementType][event][elementId] != null){
+							if(events[elementType] != null &amp;&amp; events[elementType][event] != null &amp;&amp; events[elementType][event][elementId] != null){
 								for(var index in events[elementType][event][elementId]){
 									events[elementType][event][elementId][index](_filterEventData(elementType, event, data));
 								}
@@ -586,17 +614,17 @@
 						
 						var _filterEventData = function(elementType, event, data){
 							var newData = {};
-							if(_allowedEventsData[elementType] != null && _allowedEventsData[elementType][event] != null){
+							if(_allowedEventsData[elementType] != null &amp;&amp; _allowedEventsData[elementType][event] != null){
 								var asIs = _allowedEventsData[elementType][event]["asIs"];
 								var id = _allowedEventsData[elementType][event]["id"];
 								if(asIs != null){
-									for(var x = 0; x < asIs.length; x++){
+									for(var x = 0; x &lt; asIs.length; x++){
 										var propertyType = asIs[x];
 										newData[propertyType] = data[propertyType];
 									}
 								}
 								if(id != null){
-									for(var x = 0; x < id.length; x++){
+									for(var x = 0; x &lt; id.length; x++){
 										var propertyType = id[x];
 										if(data[propertyType] != null){
 											newData[propertyType] = _convertToElement(data[propertyType], elementType);
@@ -612,10 +640,10 @@
 						
 						var _registerEventHandler = function(event, callback){
 							
-							if(event != null && event != "" && this.type != null && this.type != ""){
+							if(event != null &amp;&amp; event != "" &amp;&amp; this.type != null &amp;&amp; this.type != ""){
 								
 								var alreadyExists = false;
-								if(events[this.type] != null && events[this.type][event] != null && events[this.type][event][this.id] != null)
+								if(events[this.type] != null &amp;&amp; events[this.type][event] != null &amp;&amp; events[this.type][event][this.id] != null)
 									alreadyExists = true;
 								else{
 									if(events[this.type] == null)
@@ -636,7 +664,7 @@
 						
 						var _removeEventHandler = function(event, callback){
 							
-							if(event != null && event != "" && this.type != null && this.type != "" && events[this.type] != null && events[this.type][event] != null && events[this.type][event][this.id] != null){
+							if(event != null &amp;&amp; event != "" &amp;&amp; this.type != null &amp;&amp; this.type != "" &amp;&amp; events[this.type] != null &amp;&amp; events[this.type][event] != null &amp;&amp; events[this.type][event][this.id] != null){
 								
 								var index = events[this.type][event][this.id].indexOf(callback);
 								if(index != -1){
@@ -721,7 +749,7 @@
 							 * @param {Boolean} followLocation True if the map camera must follow the location of the device. 
 							 * @param {Boolean} followBearing True if the map camera must follow the bearing of the device.
 							 * @param {Object} options
-							 *      - interval: LocationRequest desired interval in milliseconds. Must be > 0; otherwise, default value is 1000.<br>
+							 *      - interval: LocationRequest desired interval in milliseconds. Must be > 0; otherwise, default value is 1000.&lt;br>
 						     *      - priority: LocationRequest priority ({@link Map.PRIORITY_BALANCED_POWER_ACCURACY}, {@link Map.PRIORITY_HIGH_ACCURACY}, 
 						     * 					{@link Map.PRIORITY_LOW_POWER}, {@link Map.PRIORITY_NO_POWER}, {@link Map.PRIORITY_UNDEFINED}).
 						     */
@@ -1342,7 +1370,7 @@
 						var _convertToElementsArray = function _convertToElementsArray(_idsArray, _type){
 							var _resArray = [];
 							
-							for(var x = 0; x < _idsArray.length; x++){
+							for(var x = 0; x &lt; _idsArray.length; x++){
 								var _id = _idsArray[x];
 								if(_id != null){
 									_resArray.push(_convertToElement(_id, _type));
@@ -1388,15 +1416,15 @@
                          * @param {function} Callback
                          * @param {String} message
                          * @param {Object} options 
-                         *        - height: {Number}            -default = 100<br>
-                         *        - opacity: {Number}           -default = 1 [0 .. 1]<br>
-                         *        - borderColor: {String}       -default = #D3D3D3<br>
-                         *        - borderWidth: {Number}       -default = 1<br>
-                         *        - borderRadius: {Number}      -default = 5<br>
-                         *        - backgroundColor: {String}   -default = #E6E6E6<br>
-                         *        - fontSize: {Number}          -default = 16<br>
-                         *        - fontWeight: {String}        -default = normal ['bold', 'normal']<br>
-                         *        - textColor: {String}         -default = #000000<br>
+                         *        - height: {Number}            -default = 100&lt;br>
+                         *        - opacity: {Number}           -default = 1 [0 .. 1]&lt;br>
+                         *        - borderColor: {String}       -default = #D3D3D3&lt;br>
+                         *        - borderWidth: {Number}       -default = 1&lt;br>
+                         *        - borderRadius: {Number}      -default = 5&lt;br>
+                         *        - backgroundColor: {String}   -default = #E6E6E6&lt;br>
+                         *        - fontSize: {Number}          -default = 16&lt;br>
+                         *        - fontWeight: {String}        -default = normal ['bold', 'normal']&lt;br>
+                         *        - textColor: {String}         -default = #000000&lt;br>
                          * @return {String} JSON Information of Notification created */
                         createNotification: function (callback, msg, options) {
                             if (typeof msg !== 'string') {
@@ -1598,7 +1626,7 @@
 
             if (eventHandlers[publicEvent] != null) { 
                 if (eventHandlers[publicEvent].length > 0) {
-                    for (i = 0; i < eventHandlers[publicEvent].length; i ++) {
+                    for (i = 0; i &lt; eventHandlers[publicEvent].length; i ++) {
                         Ti.API.info('[APIBridge] invocando event callback html ' + publicEvent);
                         eventHandlers[publicEvent][i](data);
                     }
@@ -1612,7 +1640,7 @@
     Object.defineProperty(window.API, 'addEventListener', {
         value: function addEventListener(publicEvent, handler) {
             Ti.API.info('[APIBridge] addeventlistener de ' + publicEvent);
-            if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
+            if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length &lt;= 0) {
                 // First event listener for this publicEvent
                 eventHandlers[publicEvent] = [];
                 Ti.API.info(' [APIBridge] eventHandlers[' + publicEvent + '].length : ' + eventHandlers[publicEvent].length);
@@ -1635,7 +1663,7 @@
             var index;
 
             Ti.API.info('[APIBridge] eventHandlers[' + publicEvent + '].length : ' + eventHandlers[publicEvent].length);
-            if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
+            if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length &lt;= 0) {
                 return false;
             }
             index = eventHandlers[publicEvent].indexOf(handler);
@@ -1765,7 +1793,7 @@
             // Real Next
             Ti.API.info('[Audio DUMMY eventHandler] change event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
             this.lastChange += 1;
-            for (i = 0; i < this.callbacks.audioChange.length; i ++) {
+            for (i = 0; i &lt; this.callbacks.audioChange.length; i ++) {
                 Ti.API.info('[Audio DUMMY eventHandler] launching HTML callback... ' + this.callbacks.audioChange[i]);
                 this.callbacks.audioChange[i](event);
             }
@@ -1774,13 +1802,13 @@
                 this.changeHandler(this.pendingEvents.audioChange[event.order + 1]);
                 delete this.pendingEvents.audioChange[event.order + 1];
             }
-        } else if (this.lastChange + 1 < event.order) {
+        } else if (this.lastChange + 1 &lt; event.order) {
             // Push this event
             Ti.API.info('[Audio DUMMY eventHandler] save this change event: ' + event.order);
             this.pendingEvents.audioChange[event.order] = event;
         } else {
             // ORDER ERROR
-            Ti.API.info('[Audio DUMMY eventHandler] change event order error ' + event.order + ' < ' + this.lastChange + ', event: ' + JSON.stringify(event));
+            Ti.API.info('[Audio DUMMY eventHandler] change event order error ' + event.order + ' &lt; ' + this.lastChange + ', event: ' + JSON.stringify(event));
             // discard event
         }
     };
@@ -1792,7 +1820,7 @@
             // Real Next
             Ti.API.info('[Audio DUMMY eventHandler] progress event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
             this.lastProgress += 1;
-            for (i = 0; i < this.callbacks.audioProgress.length; i ++) {
+            for (i = 0; i &lt; this.callbacks.audioProgress.length; i ++) {
                 this.callbacks.audioProgress[i](event);
             }
             if (this.pendingEvents.audioProgress[event.order + 1] != null) {
@@ -1800,20 +1828,20 @@
                 this.changeHandler(this.pendingEvents.audioProgress[event.order + 1]);
                 delete this.pendingEvents.audioProgress[event.order + 1];
             }
-        } else if (this.lastProgress + 1 < event.order) {
+        } else if (this.lastProgress + 1 &lt; event.order) {
             // Push this event
             Ti.API.info('[Audio DUMMY eventHandler] save this progress event: ' + event.order);
             this.pendingEvents.audioProgress[event.order]= event;
         } else {
             // ORDER ERROR
-            Ti.API.info('[Audio DUMMY eventHandler] progress event order error ' + event.order + ' < ' + this.lastChange + ', event: ' + JSON.stringify(event));
+            Ti.API.info('[Audio DUMMY eventHandler] progress event order error ' + event.order + ' &lt; ' + this.lastChange + ', event: ' + JSON.stringify(event));
             // discard event
         }
     };
 
     dummyAudioPlayer.prototype.syncAddEventListener = function SyncAddEventListener(publicEvent, callback) {
         Ti.API.info('[Audio DUMMY] Sync-addEventListener. event: ' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
-        if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
+        if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length &lt;= 0) {
             // First event listener for this publicEvent
             eventHandlers[publicEvent] = [];
             // Listen the event
@@ -1831,7 +1859,7 @@
         Ti.API.info('[Audio DUMMY] Sync-removeEventListener. event:' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
         var index;
 
-        if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
+        if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length &lt;= 0) {
             return false;
         }
         index = eventHandlers[publicEvent].indexOf(callback);
@@ -1865,7 +1893,7 @@
         var i, isRedund;
 
         Ti.API.info('[Audio DUMMY] trying to process. Busy-> ' + this.busy + '; pendings: ' + JSON.stringify(this.pendings));
-        if (!this.busy && this.pendings.length > 0) {
+        if (!this.busy &amp;&amp; this.pendings.length > 0) {
             var newOrder = this.pendings.shift();
             Ti.API.info('[Audio DUMMY] ¡¡¡__ processing ' + JSON.stringify(newOrder));
             this.busy = true;
@@ -1873,7 +1901,7 @@
                 case 1:
                     // PLAY
                     isRedund = false;
-                    for (i = 0; i < this.pendings.length; i ++) {
+                    for (i = 0; i &lt; this.pendings.length; i ++) {
                         if (this.pendings[i].type == 1) {
                             isRedund = true;
                             break;
@@ -1890,7 +1918,7 @@
                 case 2:
                     // PAUSE
                     isRedund = false;
-                    for (i = 0; i < this.pendings.length; i ++) {
+                    for (i = 0; i &lt; this.pendings.length; i ++) {
                         if (this.pendings[i].type == 2) {
                             isRedund = true;
                             break;
@@ -1907,7 +1935,7 @@
                 case 3:
                     // STOP
                     isRedund = false;
-                    for (i = 0; i < this.pendings.length; i ++) {
+                    for (i = 0; i &lt; this.pendings.length; i ++) {
                         if (this.pendings[i].type == 3) {
                             isRedund = true;
                             break;
@@ -1924,7 +1952,7 @@
                 case 4:
                     // SETURL
                     isRedund = false;
-                    for (i = 0; i < this.pendings.length; i ++) {
+                    for (i = 0; i &lt; this.pendings.length; i ++) {
                         if (this.pendings[i].type == 4) {
                             isRedund = true;
                             break;
@@ -2135,7 +2163,7 @@
             // Real Next
             Ti.API.info('[Video DUMMY videoCompleteHandler] complete event ' + event.order + ', viewId: ' + id + ', entityId: ' + this.id +', event: ' + JSON.stringify(event));
             this.lastComplete += 1;
-            for (i = 0; i < this.callbacks.videoComplete.length; i ++) {
+            for (i = 0; i &lt; this.callbacks.videoComplete.length; i ++) {
                 Ti.API.info('[Video DUMMY videoCompleteHandler] launching HTML callback... ' + this.callbacks.videoComplete[i]);
                 this.callbacks.videoComplete[i](event);
             }
@@ -2144,20 +2172,20 @@
                 this.videoCompleteHandler(this.pendingEvents.videoComplete[event.order + 1]);
                 delete this.pendingEvents.videoComplete[event.order + 1];
             }
-        } else if (this.lastComplete + 1 < event.order) {
+        } else if (this.lastComplete + 1 &lt; event.order) {
             // Push this event
             Ti.API.info('[Video DUMMY videoCompleteHandler] save this complete event: ' + event.order);
             this.pendingEvents.videoComplete[event.order] = event;
         } else {
             // ORDER ERROR
-            Ti.API.info('[Video DUMMY videoCompleteHandler] complete event order error ' + event.order + ' < ' + this.lastComplete + ', event: ' + JSON.stringify(event));
+            Ti.API.info('[Video DUMMY videoCompleteHandler] complete event order error ' + event.order + ' &lt; ' + this.lastComplete + ', event: ' + JSON.stringify(event));
             // discard event
         }
     };
 
     dummyVideoPlayer.prototype.syncAddEventListener = function SyncAddEventListener(publicEvent, callback) {
         Ti.API.info('[Video DUMMY] Sync-addEventListener. event: ' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
-        if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
+        if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length &lt;= 0) {
             // First event listener for this publicEvent
             eventHandlers[publicEvent] = [];
             // Listen the event
@@ -2175,7 +2203,7 @@
         Ti.API.info('[Video DUMMY] Sync-removeEventListener. event:' + publicEvent + ', viewId: ' + id + ', entityId: ' + this.id);
         var index;
 
-        if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length <= 0) {
+        if (eventHandlers[publicEvent] == null || eventHandlers[publicEvent].length &lt;= 0) {
             Ti.API.info('[Video DUMMY] Sync-removeEventListener. Error. eventListener not found. eventHandlers[publicEvent]:' + JSON.stringify(eventHandlers[publicEvent]));
             return false;
         }
@@ -2206,7 +2234,7 @@
 
     var videoProcess = function videoProcess() {
         Ti.API.info('[Video DUMMY] trying to process. Busy-> ' + this.busy + '; pendings: ' + JSON.stringify(this.pendings));
-        if (!this.busy && this.pendings.length > 0) {
+        if (!this.busy &amp;&amp; this.pendings.length > 0) {
             var newOrder = this.pendings.shift();
             Ti.API.info('[Video DUMMY] !!!!!!!!!- processing ' + JSON.stringify(newOrder));
             this.busy = true;
@@ -2319,4 +2347,26 @@
     // End Video Dummy
     
     
-}());
+}());</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Contacts.html">Contacts</a></li><li><a href="Map.html">Map</a></li><li><a href="Map.Annotation.html">Annotation</a></li><li><a href="Map.Layer.html">Layer</a></li><li><a href="Map.MapView.html">MapView</a></li><li><a href="Map.Polygon.html">Polygon</a></li><li><a href="Map.Route.html">Route</a></li><li><a href="Notification.html">Notification</a></li><li><a href="System.html">System</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Tue Nov 25 2014 10:32:56 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 Documentation is generated with JsDoc (http://usejsdoc.org/index.html)
 
+**** Configure it to read lib files ****
+In conf.json, set source.includePattern as ".+\\.(js|lib|jsdoc)?$"
 
 **** Generate documentation ****
 To generate the documentation of the API:
