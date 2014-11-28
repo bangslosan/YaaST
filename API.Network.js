@@ -1,8 +1,9 @@
-/*
+/**
  * Copyright (c) 2014 by Center Open Middleware. All Rights Reserved.
- * Titanium Appcelerator 3.2.0GA
+ * Titanium Appcelerator 3.3.0GA
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
+ *
  *
  *  Test Configuration Wirecloud Instance:
  *  mainURL    : 'http://138.100.12.106:8088/'
