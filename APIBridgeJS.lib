@@ -5,6 +5,9 @@
  * Please see the LICENSE included with this distribution for details.
  */
 
+/** 
+ * @namespace Yaast
+ */
 (function () {
 
     "use strict";
@@ -73,17 +76,27 @@
     };
 
     // APIBridge definition
+    /** 
+	 * @namespace Yaast.API
+	 * @memberof Yaast
+	 */
     Object.defineProperty(window, 'API', {value: {
+    	
+    			/** 
+    			 * @namespace Yaast.API.SW
+				 * @memberof Yaast.API
+				 */
                 SW : {
                 	/** 
-					 * Contacts API.
+					 * @classdesc Contacts API.
 					 * @class
 					 * @alias Contacts
+					 * @memberof Yaast.API.SW
 					 */
                     Contacts : {
                         /** Get Authorization Property
                           * Condition AUTHORIZATION_UNKNOWN -> RequestAuthorization
-                          * @memberof Contacts
+                          * @memberof Yaast.API.SW.Contacts
     					  * @alias getAuthorization
                           * @param {function} Callback
                           * @return {Number} AUTHORIZATION_AUTHORIZED or AUTHORIZATION_RESTRICTED
@@ -93,12 +106,12 @@
                         },
                         
                         /** Get Contact List
-                         * @memberof Contacts
+                         * @memberof Yaast.API.SW.Contacts
     					 * @alias getContactList 
     					 * @param {function} Callback
-                         * @param {Object} optional
-                         * 			- name: String
-                         * @return {Array} Array of contacts
+                         * @param {Object} options The following options:<br>
+                         * 			- name: {String} (optional)
+                          * @return {Array} Array of contacts
                          */
                         getContactList: function(callback, options) {
                             if (!(options instanceof Object) || options.value == null) {
@@ -108,10 +121,10 @@
                         },
                         
                          /** Create Contact.
-                          * @memberof Contacts 
+                          * @memberof Yaast.API.SW.Contacts 
                           * @alias createContact 
                           * @param {function} Callback
-                          * @param {Object}
+                          * @param {Object} options
                           * @return {Object} 
                           */
                         createContact: function(callback, options) {
@@ -122,7 +135,7 @@
                         },
                         
                         /** Save Changes
-                         * @memberof Contacts 
+                         * @memberof Yaast.API.SW.Contacts 
                          * @alias saveChanges 
                          * @param {function} Callback
                          */
@@ -130,7 +143,7 @@
                             _genericMethodHandler.call(this, callback, 'API.SW.Contacts.saveChanges');
                         },
                         /** Revert Changes from last save
-                         * @memberof Contacts 
+                         * @memberof Yaast.API.SW.Contacts 
                          * @alias revertChanges 
                          * @param {function} Callback
                          */
@@ -139,7 +152,7 @@
                         },
                         
                         /** Delete Contact
-                         * @memberof Contacts 
+                         * @memberof Yaast.API.SW.Contacts 
                          * @alias deleteContact 
                          * @param {function} Callback
                          * @param {String} Contact Name
@@ -169,9 +182,10 @@
 					"use strict";
 					
 					/** 
-					 * Map API.
+					 * @classdesc Map API.
 					 * @class
 					 * @alias Map
+					 * @memberof Yaast.API.SW
 					 */
 					var Map = function Map(){
 												
@@ -219,7 +233,7 @@
 						/**
 					     * Block level accuracy is considered to be about 100 meter accuracy. Using a coarse accuracy such as this often consumes less power.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias PRIORITY_BALANCED_POWER_ACCURACY
 					     */
 						this.PRIORITY_BALANCED_POWER_ACCURACY = 102;
@@ -227,7 +241,7 @@
 						/**
 					     * Request the most accurate locations available. This will return the finest location available. 
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias PRIORITY_HIGH_ACCURACY
 					     */
 						this.PRIORITY_HIGH_ACCURACY = 100;
@@ -236,7 +250,7 @@
 					     * Used to request "city" level accuracy. City level accuracy is considered to be about 10km accuracy. Using a coarse accuracy such as this 
 					     * often consumes less power. 
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias PRIORITY_LOW_POWER
 					     */
 						this.PRIORITY_LOW_POWER = 104;
@@ -245,7 +259,7 @@
 					     * Used to request the best accuracy possible with zero additional power consumption. No locations will be returned unless a different client 
 					     * has requested location updates in which case this request will act as a passive listener to those locations. 
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias PRIORITY_NO_POWER
 					     */
 						this.PRIORITY_NO_POWER = 105;
@@ -253,7 +267,7 @@
 						/**
 					     * Use the default accuracy.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias PRIORITY_UNDEFINED
 					     */
 						this.PRIORITY_UNDEFINED = -1;
@@ -263,7 +277,7 @@
 						/**
 					     * Normal layer.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias NORMAL_TYPE
 					     */
 						this.NORMAL_TYPE = 1;
@@ -271,7 +285,7 @@
 						/**
 					     * Terrain layer.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias TERRAIN_TYPE
 					     */
 						this.TERRAIN_TYPE = 3;
@@ -279,7 +293,7 @@
 						/**
 					     * Satellite layer.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias SATELLITE_TYPE
 					     */
 						this.SATELLITE_TYPE = 2;
@@ -287,7 +301,7 @@
 						/**
 					     * Hybrid layer.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias HYBRID_TYPE
 					     */
 						this.HYBRID_TYPE = 4;
@@ -297,7 +311,7 @@
 						/**
 					     * Predefined HUE azure color for the annotation.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias ANNOTATION_AZURE
 					     */
 						this.ANNOTATION_AZURE = 210.0;
@@ -305,7 +319,7 @@
 						/**
 					     * Predefined HUE blue color for the annotation.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias ANNOTATION_BLUE
 					     */
 						this.ANNOTATION_BLUE = 240.0;
@@ -313,7 +327,7 @@
 						/**
 					     * Predefined HUE cyan color for the annotation.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias ANNOTATION_CYAN
 					     */
 						this.ANNOTATION_CYAN = 180.0;
@@ -321,7 +335,7 @@
 						/**
 					     * Predefined HUE green color for the annotation.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias ANNOTATION_GREEN
 					     */
 						this.ANNOTATION_GREEN = 120.0;
@@ -329,7 +343,7 @@
 						/**
 					     * Predefined HUE magenta color for the annotation.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias ANNOTATION_MAGENTA
 					     */
 						this.ANNOTATION_MAGENTA = 300.0;
@@ -337,7 +351,7 @@
 						/**
 					     * Predefined HUE orange color for the annotation.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias ANNOTATION_ORANGE
 					     */
 						this.ANNOTATION_ORANGE = 30.0;
@@ -345,7 +359,7 @@
 						/**
 					     * Predefined HUE red color for the annotation.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias ANNOTATION_RED
 					     */
 						this.ANNOTATION_RED = 0.0;
@@ -353,7 +367,7 @@
 						/**
 					     * Predefined HUE rose color for the annotation.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias ANNOTATION_ROSE
 					     */
 						this.ANNOTATION_ROSE = 330.0;
@@ -361,7 +375,7 @@
 						/**
 					     * Predefined HUE violet color for the annotation.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias ANNOTATION_VIOLET
 					     */
 						this.ANNOTATION_VIOLET = 270.0;
@@ -369,7 +383,7 @@
 						/**
 					     * Predefined HUE yellow color for the annotation.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias ANNOTATION_YELLOW
 					     */
 						this.ANNOTATION_YELLOW = 60.0;
@@ -379,7 +393,7 @@
 						/**
 					     * WMS 1.1.1 layer type.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias LAYER_TYPE_WMS_1_1_1
 					     */
 						this.LAYER_TYPE_WMS_1_1_1 = 1;
@@ -387,7 +401,7 @@
 						/**
 					     * WMS 1.3.0 layer type.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias LAYER_TYPE_WMS_1_3_0
 					     */
 						this.LAYER_TYPE_WMS_1_3_0 = 2;
@@ -397,7 +411,7 @@
 						/**
 					     * PNG image format.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias FORMAT_PNG
 					     */
 						this.FORMAT_PNG = 1;
@@ -405,14 +419,14 @@
 						/**
 					     * JPEG image format.
 					     * @constant
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias FORMAT_JPEG
 					     */
 						this.FORMAT_JPEG = 2;
 						
 						/**
 						 * Check if there is support for the map.
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
     					 * @alias isMapAvailable
 						 * @param {function} callback Function that receives a boolean. True if the map can be used.	
 						 */
@@ -422,7 +436,7 @@
 						
 						/**
 						 * Creates a new map view.
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
 						 * @alias createMap
      					 * @param {object} options See {@link http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.View}
 						 * @param {function} callback Function that receives a MapView object. 	
@@ -437,7 +451,7 @@
 						
 						/**
 						 * Creates an Annotation. 
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
      					 * @alias createAnnotation
 						 * @param {object} Options {@link See http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.Annotation}
 						 * @param {function} callback Function that receives a Annotation object. 	
@@ -453,7 +467,7 @@
 						
 						/**
 						 * Creates a Route. 
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
      					 * @alias createRoute
 						 * @param {object} options See {@link http://docs.appcelerator.com/titanium/3.0/#!/api/Modules.Map.Route}
 						 * @param {function} callback Function that receives a Route object. 	
@@ -469,7 +483,7 @@
 						
 						/**
 						 * Creates a Layer.
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
      					 * @alias createLayer
 						 * @param {options} 
 						 *      - baseUrl: String with the url of the service<br>
@@ -493,7 +507,7 @@
 						
 						/**
 					     * Creates a Polygon.
-					     * @memberof Map
+					     * @memberof Yaast.API.SW.Map
 					     * @alias createPolygon
 					     * @param {object} options 
 					     *      - id: optional. Must be unique.<br>
@@ -517,7 +531,7 @@
 						
 						/**
 						 * Parses a given KML string  and returns an object with the polygons and routes of the file.
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
      					 * @alias getShapesFromKml
 						 * @param {String} data The KML string to parse
 						 * @param {function} callback Called with an object with results.
@@ -533,7 +547,7 @@
 						
 						/**
 						 * Parses a given WKT string  and returns an object with the polygons and routes.
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
      					 * @alias getShapesFromWkt
 						 * @param {string} data The WKT string to parse
 						 * @param {function} callback Called with an object with results.
@@ -549,7 +563,7 @@
 						
 						/**
 						 * Parses a given GeoJson string  and returns an object with the polygons and routes of the file.
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
      					 * @alias getShapesFromGeoJson
 						 * @param {string} data The GeoJson string to parse
 						 * @param {function} callback Called with an object with results.
@@ -651,7 +665,7 @@
 						/** 
 						 * This class represents a map instance.
 						 * @class
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
 						 */
 						var MapView = function MapView(id){
 						
@@ -661,7 +675,7 @@
 							
 							/**
 							 * Adds the map view to a view.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias addBound
 							 * @instance
      						 * @public
@@ -674,7 +688,7 @@
 							
 							/**
 							 * Sets the bounds of the map view.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias setBound
 							 * @instance
      						 * @public
@@ -688,7 +702,7 @@
 							
 							/**
 						     * Removes the map from the view that contains it.
-						     * @memberof Map.MapView
+						     * @memberof Yaast.API.SW.Map.MapView
      						 * @alias removeBound
 						     * @instance
      						 * @public
@@ -700,7 +714,7 @@
 							
 							/**
 						  	 * Zooms in or out by specifying a relative zoom level. 
-						  	 * @memberof Map.MapView
+						  	 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias zoom
 						  	 * @instance
      						 * @public
@@ -713,7 +727,7 @@
 
 							/**
 							 * Set how the map should follow the location of the device.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias followLocation
 							 * @instance
      						 * @public
@@ -731,7 +745,7 @@
 							
 							/**
 						     * Gets the value of a property of the map.
-						     * @memberof Map.MapView
+						     * @memberof Yaast.API.SW.Map.MapView
      						 * @alias getProperty
 						     * @instance
      						 * @public
@@ -780,7 +794,7 @@
 							
 							/**
 						     * Gets all the properties of the map.
-						     * @memberof Map.MapView
+						     * @memberof Yaast.API.SW.Map.MapView
      						 * @alias getAllProperties
 						     * @instance
      						 * @public
@@ -794,7 +808,7 @@
 							
 							/**
 						     * Sets the value of a property of the map.
-						     * @memberof Map.MapView
+						     * @memberof Yaast.API.SW.Map.MapView
      						 * @alias setProperty
 						     * @instance
      						 * @public
@@ -808,7 +822,7 @@
 							
 							/**
 							 * Add an annotation to the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias addAnnotation
 							 * @instance
      						 * @public
@@ -821,7 +835,7 @@
 							
 							/**
 							 * Selects an annotation in the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias selectAnnotation
 							 * @instance
      						 * @public
@@ -834,7 +848,7 @@
 							
 							/**
 							 * Deselects an annotation in the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias deselectAnnotation
 							 * @instance
      						 * @public
@@ -847,7 +861,7 @@
 							
 							/**
 							 * Removes an annotation from the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias removeAnnotation
 							 * @instance
      						 * @public
@@ -860,7 +874,7 @@
 							
 							/**
 							 * Removes multiple annotations from the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias removeAnnotations
 							 * @instance
      						 * @public
@@ -878,7 +892,7 @@
 							
 							/**
 							 * Removes all the annotations from a map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias removeAllAnnotations
 							 * @instance
      						 * @public
@@ -890,7 +904,7 @@
 							
 							 /**
 							 * Add a route to the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias addRoute
 							 * @instance
      						 * @public
@@ -903,7 +917,7 @@
 							
 							/**
 							 * Removes a route from the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias removeRoute
 							 * @instance
      						 * @public
@@ -916,7 +930,7 @@
 							
 							/**
 							 * Removes all the routes from the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias removeAllRoutes
 							 * @instance
      						 * @public
@@ -928,7 +942,7 @@
 							
 							/**
 							 * Add a polygon to the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias addPolygon
 							 * @instance
      						 * @public
@@ -941,7 +955,7 @@
 							
 							/**
 							 * Removes a polygon from the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias removePolygon
 							 * @instance
      						 * @public
@@ -954,7 +968,7 @@
 							
 							/**
 							 * Removes all the polygons from the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias removeAllPolygons
      						 * @instance
      						 * @public
@@ -966,7 +980,7 @@
 							
 							/**
 							 * Add a layer to the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias addLayer
 							 * @instance
      						 * @public
@@ -979,7 +993,7 @@
 							
 							/**
 							 * Removes a layer from the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias removeLayer
 							 * @instance
      						 * @public
@@ -992,7 +1006,7 @@
 							
 							/**
 							 * Removes all the layers from the map.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias removeAllLayers
 							 * @instance
      						 * @public
@@ -1003,7 +1017,7 @@
 							
 							/**
 						     * Gets the base layer 
-						     * @memberof Map.MapView
+						     * @memberof Yaast.API.SW.Map.MapView
      						 * @alias getBaseLayer
 						     * @instance
      						 * @public
@@ -1016,7 +1030,7 @@
 							
 							/**
 						     * Set the base layer of the map.
-						     * @memberof Map.MapView
+						     * @memberof Yaast.API.SW.Map.MapView
      						 * @alias setBaseLayer
 						 	 * @instance
      						 * @public
@@ -1029,7 +1043,7 @@
 							
 							/**
 							 * Adds the specified callback as an event listener for the named event.
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias addEventListener
 							 * @instance
      						 * @public
@@ -1045,7 +1059,7 @@
 							/**
 							 * Removes the specified callback as an event listener for the named event.
 							 * Multiple listeners can be registered for the same event, so the callback parameter is used to determine which listener to remove. 
-							 * @memberof Map.MapView
+							 * @memberof Yaast.API.SW.Map.MapView
      						 * @alias removeEventListener
 							 * @instance
      						 * @public
@@ -1064,7 +1078,7 @@
 						/** 
 						 * This class represents an annotation.
 						 * @class
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
 						 */
 						var Annotation = function Annotation(id){
 							this.id = id;
@@ -1073,7 +1087,7 @@
 							
 							/**
 						     * Gets the value of a property of the annotation.
-						     * @memberof Map.Annotation
+						     * @memberof Yaast.API.SW.Map.Annotation
      						 * @alias getProperty
 						     * @instance
      						 * @public
@@ -1087,7 +1101,7 @@
 							
 							/**
 						     * Gets all the properties of the annotation.
-						     * @memberof Map.Annotation
+						     * @memberof Yaast.API.SW.Map.Annotation
      						 * @alias getAllProperties
 						     * @instance
      						 * @public
@@ -1102,7 +1116,7 @@
 							
 							/**
 						     * Sets the value of a property of the annotation.
-						     * @memberof Map.Annotation
+						     * @memberof Yaast.API.SW.Map.Annotation
      						 * @alias setProperty
 						     * @instance
      						 * @public
@@ -1115,7 +1129,7 @@
 							
 							/**
 							 * Adds the specified callback as an event listener for the named event.
-							 * @memberof Map.Annotation
+							 * @memberof Yaast.API.SW.Map.Annotation
      						 * @alias addEventListener
 						     * @instance
      						 * @public
@@ -1131,7 +1145,7 @@
 							/**
 							 * Removes the specified callback as an event listener for the named event.
 							 * Multiple listeners can be registered for the same event, so the callback parameter is used to determine which listener to remove. 
-							 * @memberof Map.Annotation
+							 * @memberof Yaast.API.SW.Map.Annotation
      						 * @alias removeEventListener
 						     * @instance
      						 * @public
@@ -1148,7 +1162,7 @@
 						/** 
 						 * This class represents a polygon.
 						 * @class
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
 						 */
 						var Polygon = function Polygon(id){
 							this.id = id;
@@ -1156,7 +1170,7 @@
 							
 							/**
 						     * Gets the value of a property of the polygon.
-						     * @memberof Map.Polygon
+						     * @memberof Yaast.API.SW.Map.Polygon
      						 * @alias getProperty
 						     * @instance
      						 * @public
@@ -1170,7 +1184,7 @@
 							
 							/**
 						     * Gets all the properties of the polygon.
-						     * @memberof Map.Polygon
+						     * @memberof Yaast.API.SW.Map.Polygon
      						 * @alias getAllProperties
 						     * @instance
      						 * @public
@@ -1183,7 +1197,7 @@
 							
 							/**
 						     * Sets the value of a property of the polygon.
-						     * @memberof Map.Polygon
+						     * @memberof Yaast.API.SW.Map.Polygon
      						 * @alias setProperty
 						     * @instance
      						 * @public
@@ -1197,7 +1211,7 @@
 							
 							/**
 							 * Adds the specified callback as an event listener for the named event.
-							 * @memberof Map.Polygon
+							 * @memberof Yaast.API.SW.Map.Polygon
      						 * @alias addEventListener
 						     * @instance
      						 * @public
@@ -1213,7 +1227,7 @@
 							/**
 							 * Removes the specified callback as an event listener for the named event.
 							 * Multiple listeners can be registered for the same event, so the callback parameter is used to determine which listener to remove. 
-							 * @memberof Map.Polygon
+							 * @memberof Yaast.API.SW.Map.Polygon
      						 * @alias getProperty
 						     * @instance
      						 * @public
@@ -1229,7 +1243,7 @@
 						/** 
 						 * This class represents a route.
 						 * @class
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
 						 */
 						var Route = function Route(id){
 							this.id = id;
@@ -1238,7 +1252,7 @@
 							
 							/**
 						     * Gets the value of a property of the route.
-						     * @memberof Map.Route
+						     * @memberof Yaast.API.SW.Map.Route
      						 * @alias getProperty
 						     * @instance
      						 * @public
@@ -1252,7 +1266,7 @@
 							
 							/**
 						     * Gets all the properties of the route.
-						     * @memberof Map.Route
+						     * @memberof Yaast.API.SW.Map.Route
      						 * @alias getAllProperties
 						     * @instance
      						 * @public
@@ -1265,7 +1279,7 @@
 							
 							/**
 						     * Sets the value of a property of the route.
-						     * @memberof Map.Route
+						     * @memberof Yaast.API.SW.Map.Route
      						 * @alias setProperty
 						     * @instance
      						 * @public
@@ -1282,7 +1296,7 @@
 						/** 
 						 * This class represents a layer.
 						 * @class
-						 * @memberof Map
+						 * @memberof Yaast.API.SW.Map
 						 */
 						var Layer = function Layer(id){
 							this.id = id;
@@ -1291,7 +1305,7 @@
 							
 							/**
 						     * Gets the value of a property of the layer.
-						     * @memberof Map.Layer
+						     * @memberof Yaast.API.SW.Map.Layer
      						 * @alias setProperty
 						     * @instance
      						 * @public
@@ -1305,7 +1319,7 @@
 							
 							/**
 						     * Gets all the properties of the layer.
-						     * @memberof Map.Layer
+						     * @memberof Yaast.API.SW.Map.Layer
      						 * @alias setProperty
 						     * @instance
      						 * @public
@@ -1318,7 +1332,7 @@
 							
 							/**
 						     * Sets the value of a property of the layer.
-						     * @memberof Map.Layer
+						     * @memberof Yaast.API.SW.Map.Layer
      						 * @alias setProperty
 						     * @instance
      						 * @public
@@ -1376,26 +1390,27 @@
 					return new Map();
 				}()),
                     /** 
-					 * Notification API.
+					 * @classdesc Notification API.
 					 * @class
 					 * @alias Notification
+					 * @memberof Yaast.API.SW
 					 */
                     Notification : {
                         /** Create Toast Notification
-                         * @memberof Notification
+                         * @memberof Yaast.API.SW.Notification
                          * @alias createNotification
                          * @param {function} Callback
                          * @param {String} message
                          * @param {Object} options 
-                         *        - height: {Number}            -default = 100<br>
-                         *        - opacity: {Number}           -default = 1 [0 .. 1]<br>
-                         *        - borderColor: {String}       -default = #D3D3D3<br>
-                         *        - borderWidth: {Number}       -default = 1<br>
-                         *        - borderRadius: {Number}      -default = 5<br>
-                         *        - backgroundColor: {String}   -default = #E6E6E6<br>
-                         *        - fontSize: {Number}          -default = 16<br>
-                         *        - fontWeight: {String}        -default = normal ['bold', 'normal']<br>
-                         *        - textColor: {String}         -default = #000000<br>
+                         *        - height: {Number}.             Default = 100<br>
+                         *        - opacity: {Number}.            Default = 1 [0 .. 1]<br>
+                         *        - borderColor: {String}.        Default = #D3D3D3<br>
+                         *        - borderWidth: {Number}.        Default = 1<br>
+                         *        - borderRadius: {Number}.       Default = 5<br>
+                         *        - backgroundColor: {String}.    Default = #E6E6E6<br>
+                         *        - fontSize: {Number}.           Default = 16<br>
+                         *        - fontWeight: {String}.         Default = normal ['bold', 'normal']<br>
+                         *        - textColor: {String}.          Default = #000000<br>
                          * @return {String} JSON Information of Notification created */
                         createNotification: function (callback, msg, options) {
                             if (typeof msg !== 'string') {
@@ -1412,6 +1427,11 @@
 
                     },
                 },
+                
+                /** 
+    			 * @namespace Yaast.API.HW
+				 * @memberof Yaast.API
+				 */
                 HW : {
                     Acceloremeter : {
 
@@ -1428,13 +1448,24 @@
                     Gesture : {
 
                     },
+                    
+                    /** 
+					 * @classdesc Media API.
+					 * @class
+					 * @alias Media
+					 * @memberof Yaast.API.HW
+					 */
                     Media : {
 
                             /* VIDEO TODO */
                             /** Opens the photo gallery image picker.
-                              * @param {function} Callback
-                              * @param {Object} {'name': String} optional
-                              * @return {Number} */
+                             * @memberof Yaast.API.HW.Media
+    					 	 * @alias openPhotoGallery  
+    					 	 * @param {function} Callback
+    					 	 * @param {Object} 
+    					 	 * 			- name: {String} (optional)<br>
+    					 	 * @return {Number}
+                             */
                             openPhotoGallery : function openPhotoGallery(callback, options) {
                             if (!(callback instanceof Function)) {
                                 return false;
@@ -1446,13 +1477,19 @@
                             },
                             /** Takes a screen shot of the visible UI on the device. This method is
                              *  asynchronous.
-                             * @param {screenSotCallback} callback that will receive screenshot image as Blob object */
+                             * @memberof Yaast.API.HW.Media
+    					 	 * @alias takeScreenshot
+                             * @param {function} screenSotCallback Callback that will receive screenshot image as Blob object 
+                             */
                             takeScreenshot : function takeScreenshot(callback) {
                                 _genericMethodHandler.call(this, callback, 'API.SW.Media.takeScreenshot', [callback], null, true);
                             },
                             /** Takes a screen shot of the visible UI on the device. This method is
                              *  asynchronous.
-                             * @param {pattern} [Number[]=[100, 300, 100, 200, 100, 50]] optional vibrate pattern only available for Android.*/
+                             * @memberof Yaast.API.HW.Media
+    					 	 * @alias vibrate
+                             * @param {Number[]} patter [Number[]=[100, 300, 100, 200, 100, 50]] optional vibrate pattern only available for Android.
+                             */
                             vibrate : function vibrate(pattern) {
                                 if (Ti.App.isApple || pattern == null || !(pattern instanceof Array)) {
                                     Titanium.Media.vibrate();
@@ -1461,14 +1498,20 @@
                                 Titanium.Media.vibrate(pattern);
                             },
                             /** Create new AudioPlayer
-                             * @param {audioPlayerOptions} options
-                             * @return {Object} audioPlayer Dummy*/
+                             * @memberof Yaast.API.HW.Media
+    					 	 * @alias createAudioPlayer
+                             * @param {Object} audioPlayerOptions
+                             * @return {Object} audioPlayer Dummy
+                             */
                             createAudioPlayer : function createAudioPlayer(options) {
                                 return new dummyAudioPlayer(API, options, this);
                             },
                             /** Create new Video
-                             * @param {videoPlayerOptions} options
-                             * @return {Object} videoPlayer Dummy*/
+                             * @memberof Yaast.API.HW.Media
+    					 	 * @alias createVideoPlayer
+                             * @param {Object} videoPlayerOptions
+                             * @return {Object} videoPlayer Dummy
+                             */
                             createVideoPlayer : function createVideoPlayer(options) {
                                 return new dummyVideoPlayer(API, options, this);
                             }
@@ -1478,13 +1521,14 @@
                     },
                     
                     /** 
-					 * System API.
+					 * @classdesc System API.
 					 * @class
 					 * @alias System
+					 * @memberof Yaast.API.HW
 					 */
                     System : {
                         /** Get device platform
-                         * @memberof System
+                         * @memberof Yaast.API.HW.System
     					 * @alias getDeviceOs 
     					 * @param {function} Callback
     					 * @param {String} Contact Name
@@ -1495,7 +1539,7 @@
                         },
                         
                         /** Get System's OS version.
-                         * @memberof System
+                         * @memberof Yaast.API.HW.System
                          * @alias getVersion
                          * @param {function} Callback
                          * @return {String} 
@@ -1505,7 +1549,7 @@
                         },
                         
                         /** Get device's Model.
-                         * @memberof System
+                         * @memberof Yaast.API.HW.System
                          * @alias getModel
                          * @param {function} Callback
                          * @return {String}
@@ -1515,7 +1559,7 @@
                         },
                         
                         /** Get System's processor architecture.
-                         * @memberof System
+                         * @memberof Yaast.API.HW.System
                          * @alias getArchitecture
                          * @param {function} Callback
                          * @return {String}
@@ -1525,7 +1569,7 @@
                         },
                         
                         /** Get available memory
-                         * @memberof System
+                         * @memberof Yaast.API.HW.System
                          * @alias getAvailableMemory
                          * @param {function} Callback
                          * @return {Integer} Bytes
@@ -1535,7 +1579,7 @@
                         },
 
                         /** Get short name of the JavaScript runtime in use.
-                         * @memberof System
+                         * @memberof Yaast.API.HW.System
                          * @alias getJsRuntime
                          * @param {function} Callback
                          * @return {String}
@@ -1545,7 +1589,7 @@
                         },
 
                         /** Get the manufacturer of the device.
-                         * @memberof System
+                         * @memberof Yaast.API.HW.System
                          * @alias getManufacturer
                          * @param {function} Callback
                          * @return {String}
@@ -1555,7 +1599,7 @@
                         },
 
                         /** Get the number of processing cores.
-                         * @memberof System
+                         * @memberof Yaast.API.HW.System
                          * @alias getProcessorCount
                          * @param {function} Callback
                          * @return {String}
@@ -1565,7 +1609,7 @@
                         },
 
                         /** Get system name
-                         * @memberof System
+                         * @memberof Yaast.API.HW.System
                          * @alias getUsername
                          * @param {function} Callback
                          * @return {String}
@@ -1575,7 +1619,7 @@
                         },
 
                         /** Get system's default language.
-                         * @memberof System
+                         * @memberof Yaast.API.HW.System
                          * @alias getLocale
                          * @param {function} Callback
                          * @return {String}
