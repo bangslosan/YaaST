@@ -15,43 +15,57 @@
 
 'use strict';
 
+/** YaaST API.
+ * @version 1.0.0
+ * @alias API
+ * @namespace 
+ */
+
 /** 
  * Yaast API.
  * @class
  */
-var API = (function() {
+
+/**
+ * @constructs API 
+ * @param initVector Initialization vector. It is an object that indicates the APIs that must be loaded. For example { SW : { Utils: true, Map: true } }
+ */
+var API = function(initVector) {
 
     //TODO: only for debug
     var eventcounter = {};
 
-    /** YaaST API.
-     * @version 1.0.0
-     * @alias API
-     * @namespace */
+
 
     var self = {
         SW: {},
         HW: {}
     };
 
-    self.HW.System = require('lib/API.System');
-    self.HW.UI = require('lib/API.UI')(self);
-    self.HW.Network = require('lib/API.Network')(self);
-    self.SW.FileSystem = require('lib/API.FileSystem');
-    self.SW.Contacts = require('lib/API.Contacts')(self);
-    self.SW.Utils = require('lib/API.Utils')(self);
-    self.HW.Media = require('lib/API.Media')(self);
-    self.SW.Notification = require('lib/API.Notification')(self);
-    self.SW.Calendar = '';
-    self.SW.DataBase = '';
-    self.SW.Map = require('lib/API.Map');
-    self.SW.Social = '';
-    self.HW.Acceloremeter = require('lib/API.Accelerometer');
-    self.HW.Battery = require('lib/API.Battery');
-    self.HW.Camera = require('lib/API.Camera')(self);
-    self.HW.GeoLocation = '';
-    self.HW.Gesture = '';
-
+	if(initVector && initVector.HW) {
+		if (initVector.HW.System) self.HW.System = require('lib/API.System');
+		if (initVector.HW.UI) self.HW.UI = require('lib/API.UI')(self);
+	    if (initVector.HW.Network) self.HW.Network = require('lib/API.Network')(self);
+	    if (initVector.HW.Media) self.HW.Media = require('lib/API.Media')(self);
+	    if (initVector.HW.Acceloremeter) self.HW.Acceloremeter = require('lib/API.Accelerometer');
+	    if (initVector.HW.Battery) self.HW.Battery = require('lib/API.Battery');
+	    if (initVector.HW.Camera) self.HW.Camera = require('lib/API.Camera')(self);
+	    if (initVector.HW.GeoLocation) self.HW.GeoLocation = '';
+	    if (initVector.HW.Gesture) self.HW.Gesture = '';
+	}
+	
+	if(initVector && initVector.SW) {
+		if (initVector.SW.FileSystem) self.SW.FileSystem = require('lib/API.FileSystem');
+	    if (initVector.SW.Contacts) self.SW.Contacts = require('lib/API.Contacts')(self);
+	    if (initVector.SW.Utils) self.SW.Utils = require('lib/API.Utils')(self);
+	    if (initVector.SW.Notification) self.SW.Notification = require('lib/API.Notification')(self);
+	    if (initVector.SW.Calendar) self.SW.Calendar = '';
+	    if (initVector.SW.DataBase) self.SW.DataBase = '';
+	    if (initVector.SW.Map) self.SW.Map = require('lib/API.Map');
+	    if (initVector.SW.Social) self.SW.Social = '';
+	}
+    
+    
     var events = {
         activeHandlers: {},
         availableEvents: {},
@@ -344,6 +358,6 @@ var API = (function() {
 
     return self;
 
-}());
+};
 
 module.exports = API;
