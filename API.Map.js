@@ -136,8 +136,7 @@ var Map = ( function() {
                     return element["get"+ propertyName]();
 
                 } else {
-                    //TODO: Error Getter method not found
-                    return;
+                     throw "Getter method not found";
                 }
 
             } else {//Setter
@@ -147,17 +146,19 @@ var Map = ( function() {
 
                     //Call the setter
                     element["set"+ propertyName](propertyValue);
+                    
+                    //If the value has not changed, an error happened
+                    if(element["get"+ propertyName]() != propertyValue)
+                    	throw "Exception while setting value for " + propertyName;
 
                 } else {
-                    //TODO: Error Getter method not found | Throw error?
-                    return;
+                    throw "Setter method not found";
                 }
 
             }
 
         } else {
-            //TODO: Error Unknown Annotation Id on Map Id
-            return;
+            throw "Unknown Element Id (" + elementId + ")";
         }
 
     };
